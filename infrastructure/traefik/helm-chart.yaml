@@ -1,0 +1,6 @@
+helmChart:
+  chartName: traefik
+  chartVersion: 37.2.0
+  namespace: traefik
+  releaseName: traefik
+  repo: https://traefik.github.io/charts

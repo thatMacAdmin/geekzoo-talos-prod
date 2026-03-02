@@ -1,0 +1,9 @@
+# Flux managed helm repository for the rook operator
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: rook-operator
+  namespace: rook-ceph
+spec:
+  url: https://charts.rook.io/release
+  interval: 24h

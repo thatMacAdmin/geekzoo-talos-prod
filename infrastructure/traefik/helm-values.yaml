@@ -1,0 +1,110 @@
+# Traefik v3.5.0 Configuration
+# Pin the exact version for stability
+image:
+  tag: "v3.5.0"
+
+# Service configuration - Cilium LB
+service:
+  type: LoadBalancer
+  annotations:
+    io.cilium/lb-ipam-ips: 192.168.3.0
+
+# Ports configuration - v3.x format with expose object
+ports:
+  web:
+    port: 8000
+    expose:
+      default: true
+    exposedPort: 80
+  websecure:
+    port: 8443
+    expose:
+      default: true
+    exposedPort: 443
+    http3:
+      enabled: true
+  traefik:
+    port: 8080
+    expose:
+      default: true
+  metrics:
+    port: 9100
+    expose:
+      default: false
+
+ingressClass:
+  enabled: true
+  isDefaultClass: true
+
+providers:
+  file:
+    enabled: true
+    watch: true
+  kubernetesIngress:
+    enabled: true
+    publishedService:
+      enabled: false
+  kubernetesCRD:
+    enabled: true
+    allowCrossNamespace: true
+api:
+  dashboard: true
+  insecure: false
+
+ingressRoute:
+  dashboard:
+    enabled: true
+
+metrics:
+  prometheus:
+    service:
+      enabled: true
+      type: ClusterIP
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9100"
+        prometheus.io/path: "/metrics"
+      labels:
+        monitoring: "true"
+    entryPoint: metrics
+
+# Security plugins configuration
+experimental:
+  plugins:
+    crowdsec-bouncer-traefik-plugin:
+      moduleName: "github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin"
+      version: "v1.4.6"
+
+# Volume mounts for security plugins (optional so Traefik starts without the secret)
+volumes:
+  - name: crowdsec-bouncer-api
+    mountPath: "/etc/crowdsec-bouncer"
+    type: secret
+
+# Logs configuration
+logs:
+  general:
+    level: INFO
+
+# Access logs for CrowdSec to parse
+  access:
+    enabled: true
+    format: json
+    fields:
+      general:
+        defaultmode: keep
+      headers:
+        defaultmode: keep
+
+# Deploy as DaemonSet to run on all nodes for externalTrafficPolicy: Local
+deployment:
+  kind: DaemonSet
+
+# Accept forwarded headers from cluster/LAN ranges (working config)
+additionalArguments:
+  - "--entryPoints.websecure.forwardedHeaders.trustedIPs=10.42.0.0/16,10.43.0.0/16,192.168.0.0/16"
+  - "--entryPoints.web.forwardedHeaders.trustedIPs=10.42.0.0/16,10.43.0.0/16,192.168.0.0/16"
+  - "--accessLog.filePath=/dev/stdout"
+  - "--accessLog.fields.names.ClientHost=keep"
+
+resources: {}

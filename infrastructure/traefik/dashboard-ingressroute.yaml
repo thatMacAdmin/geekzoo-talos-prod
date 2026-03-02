@@ -1,0 +1,32 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: traefik-dashboard-https
+  namespace: traefik
+  labels:
+    app.kubernetes.io/name: traefik
+    app.kubernetes.io/instance: traefik-traefik
+    app.kubernetes.io/component: dashboard
+spec:
+  entryPoints:
+  - websecure
+  routes:
+  - match: Host(`traefik.macbytes.io`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))
+    kind: Rule
+    middlewares:
+      # Using detection-only WAF to avoid blocking legitimate dashboard access
+      - name: crowdsec-bouncer
+        namespace: traefik
+    services:
+      - kind: TraefikService
+        name: api@internal
+  - match: Host(`traefik.macbytes.io`) && Path(`/`)
+    kind: Rule
+    middlewares:
+      - name: dashboard-redirect
+        namespace: traefik
+    services:
+      - kind: TraefikService
+        name: api@internal
+  tls:
+    secretName: traefik-tls-certificate

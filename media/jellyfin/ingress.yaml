@@ -1,0 +1,18 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: jellyfin-ingressroute
+  namespace: media
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`watch.macbytes.io`)
+      kind: Rule
+      middlewares:
+        - name: jellyfin-headers
+      services:
+        - name: jellyfin-svc
+          port: 8096
+  tls:
+    secretName: jellyfin-tls-certificate

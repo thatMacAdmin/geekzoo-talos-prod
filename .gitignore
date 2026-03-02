@@ -1,0 +1,11 @@
+# Sensitive files - never commit these
+omni/*.yaml
+omni/**/*.yaml
+*.kubeconfig
+*kubeconfig.yaml
+*talosconfig*
+
+# Junk files
+*.bak
+*.tmp
+.DS_Store

@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-media-nfs
+  labels:
+    app: media-nfs
+spec:
+  capacity:
+    storage: 203Ti
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nfs
+  mountOptions:
+    - vers=4.1
+    - rsize=1048576
+    - wsize=1048576
+    - hard
+    - timeo=600
+    - retrans=2
+    - intr
+    - nconnect=8
+    - local_lock=none
+  nfs:
+    path: /mnt/geekzoo/media
+    server: 192.168.2.10

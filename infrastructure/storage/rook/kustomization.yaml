@@ -1,0 +1,17 @@
+# Kustomize overlay for Rook/Ceph (operator + cluster).
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - helm_repo.yaml
+  - operator/helm_release.yaml
+  - cluster/helm_release.yaml
+
+configMapGenerator:
+  - name: rook-ceph-cluster-values
+    namespace: rook-ceph
+    files:
+      - values.yaml=cluster/values.yaml
+
+generatorOptions:
+  disableNameSuffixHash: true

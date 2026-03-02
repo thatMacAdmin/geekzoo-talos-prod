@@ -1,0 +1,170 @@
+tunnel: kubernetes
+credentials-file: /etc/cloudflared/creds/credentials.json
+protocol: quic
+warp-routing:
+  enabled: true
+metrics: 0.0.0.0:2000
+no-autoupdate: true
+ingress:
+  - hostname: blocky.macbytes.io
+    service: https://traefik.traefik.svc.cluster.local:443
+    originRequest:
+      noTLSVerify: true
+      originServerName: blocky.macbytes.io
+      httpHostHeader: blocky.macbytes.io
+  - hostname: traefik.macbytes.io
+    service: https://traefik.traefik.svc.cluster.local:443
+    originRequest:
+      noTLSVerify: true
+      originServerName: traefik.macbytes.io
+      httpHostHeader: traefik.macbytes.io
+  - hostname: filedrop.macbytes.io
+    service: https://traefik.traefik.svc.cluster.local:443
+    originRequest:
+      noTLSVerify: true
+      originServerName: filedrop.macbytes.io
+      httpHostHeader: filedrop.macbytes.io
+  - hostname: tdarr.macbytes.io
+    service: https://traefik.traefik.svc.cluster.local:443
+    originRequest:
+      noTLSVerify: true
+      originServerName: tdarr.macbytes.io
+      httpHostHeader: tdarr.macbytes.io
+  - hostname: torrent.macbytes.io
+    service: https://traefik.traefik.svc.cluster.local:443
+    originRequest:
+      noTLSVerify: true
+      originServerName: torrent.macbytes.io
+      httpHostHeader: torrent.macbytes.io
+  - hostname: authentik.macbytes.io
+    service: https://traefik.traefik.svc.cluster.local:443
+    originRequest:
+      noTLSVerify: true
+      originServerName: authentik.macbytes.io
+      httpHostHeader: authentik.macbytes.io
+  - hostname: prowlarr.macbytes.io
+    service: https://traefik.traefik.svc.cluster.local:443
+    originRequest:
+      noTLSVerify: true
+      originServerName: prowlarr.macbytes.io
+      httpHostHeader: prowlarr.macbytes.io
+  - hostname: movies.macbytes.io
+    service: https://traefik.traefik.svc.cluster.local:443
+    originRequest:
+      noTLSVerify: true
+      originServerName: movies.macbytes.io
+      httpHostHeader: movies.macbytes.io
+  - hostname: tv.macbytes.io
+    service: https://traefik.traefik.svc.cluster.local:443
+    originRequest:
+      noTLSVerify: true
+      originServerName: tv.macbytes.io
+      httpHostHeader: tv.macbytes.io
+  - hostname: subtitles.macbytes.io
+    service: https://traefik.traefik.svc.cluster.local:443
+    originRequest:
+      noTLSVerify: true
+      originServerName: subtitles.macbytes.io
+      httpHostHeader: subtitles.macbytes.io
+  - hostname: requests.macbytes.io
+    service: https://traefik.traefik.svc.cluster.local:443
+    originRequest:
+      noTLSVerify: true
+      originServerName: requests.macbytes.io
+      httpHostHeader: requests.macbytes.io
+  - hostname: tautulli.macbytes.io
+    service: https://traefik.traefik.svc.cluster.local:443
+    originRequest:
+      noTLSVerify: true
+      originServerName: tautulli.macbytes.io
+      httpHostHeader: tautulli.macbytes.io
+  - hostname: books.macbytes.io
+    service: https://traefik.traefik.svc.cluster.local:443
+    originRequest:
+      noTLSVerify: true
+      originServerName: books.macbytes.io
+      httpHostHeader: books.macbytes.io
+  - hostname: audiobooks.macbytes.io
+    service: https://traefik.traefik.svc.cluster.local:443
+    originRequest:
+      noTLSVerify: true
+      originServerName: audiobooks.macbytes.io
+      httpHostHeader: audiobooks.macbytes.io
+  - hostname: downloader.macbytes.io
+    service: https://traefik.traefik.svc.cluster.local:443
+    originRequest:
+      noTLSVerify: true
+      originServerName: downloader.macbytes.io
+      httpHostHeader: downloader.macbytes.io
+  - hostname: passwords.macbytes.io
+    service: https://traefik.traefik.svc.cluster.local:443
+    originRequest:
+      noTLSVerify: true
+      originServerName: passwords.macbytes.io
+      httpHostHeader: passwords.macbytes.io
+  - hostname: adguard.macbytes.io
+    service: https://traefik.traefik.svc.cluster.local:443
+    originRequest:
+      noTLSVerify: true
+      originServerName: adguard.macbytes.io
+      httpHostHeader: adguard.macbytes.io
+  - hostname: nzbget.macbytes.io
+    service: https://traefik.traefik.svc.cluster.local:443
+    originRequest:
+      noTLSVerify: true
+      originServerName: nzbget.macbytes.io
+      httpHostHeader: nzbget.macbytes.io
+  - hostname: ups.macbytes.io
+    service: https://traefik.traefik.svc.cluster.local:443
+    originRequest:
+      noTLSVerify: true
+      originServerName: ups.macbytes.io
+      httpHostHeader: ups.macbytes.io
+  - hostname: nvr.macbytes.io
+    service: http://192.168.0.20:80
+  - hostname: proxmox.macbytes.io
+    service: https://192.168.0.10:8006
+    originRequest:
+      noTLSVerify: true
+  - hostname: truenas.macbytes.io
+    service: https://192.168.2.10
+    originRequest:
+      noTLSVerify: true
+  - hostname: unifi.macbytes.io
+    service: https://192.168.0.1
+    originRequest:
+      originServerName: unifi.local
+      noTLSVerify: true
+  - hostname: print.macbytes.io
+    service: https://192.168.4.1
+    originRequest:
+      noTLSVerify: true
+      originServerName: print.macbytes.io
+      httpHostHeader: print.macbytes.io
+  - hostname: ceph.macbytes.io
+    service: https://traefik.traefik.svc.cluster.local:443
+    originRequest:
+      noTLSVerify: true
+      originServerName: ceph.macbytes.io
+      httpHostHeader: ceph.macbytes.io
+  - hostname: watch.macbytes.io
+    service: https://traefik.traefik.svc.cluster.local:443
+    originRequest:
+      noTLSVerify: true
+      originServerName: watch.macbytes.io
+      httpHostHeader: watch.macbytes.io
+  - hostname: invites.macbytes.io
+    service: https://traefik.traefik.svc.cluster.local:443
+    originRequest:
+      noTLSVerify: true
+      originServerName: invites.macbytes.io
+      httpHostHeader: invites.macbytes.io
+  - hostname: smarthome.macbytes.io
+    service: http://192.168.2.13:8123
+  - hostname: chat.macbytes.io
+    service: https://traefik.traefik.svc.cluster.local:443
+    originRequest:
+      noTLSVerify: true
+      originServerName: chat.macbytes.io
+      httpHostHeader: chat.macbytes.io
+  - service: http_status:404

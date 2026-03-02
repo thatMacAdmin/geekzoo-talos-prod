@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-media-nfs
+  namespace: media
+spec:
+  selector:
+    matchLabels:
+      app: media-nfs
+  storageClassName: nfs
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 30Ti
