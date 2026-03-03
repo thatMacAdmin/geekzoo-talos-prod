@@ -1,0 +1,27 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: vaultwarden-pg-cluster
+  namespace: database
+spec:
+  instances: 3
+  enableSuperuserAccess: true
+  plugins:
+    - name: barman-cloud.cloudnative-pg.io
+      isWALArchiver: true
+      parameters:
+        barmanObjectName: wasabi-object-store
+        serverName: vaultwarden-pg-cluster-geekzoo-prod
+  bootstrap:
+    recovery:
+      source: vaultwarden-pg-cluster-restore
+  externalClusters:
+    - name: vaultwarden-pg-cluster-restore
+      plugin:
+        name: barman-cloud.cloudnative-pg.io
+        parameters:
+          barmanObjectName: wasabi-object-store
+          serverName: vaultwarden-pg-cluster
+  storage:
+    storageClass: ceph-block
+    size: 10Gi

@@ -1,0 +1,19 @@
+apiVersion: barmancloud.cnpg.io/v1
+kind: ObjectStore
+metadata:
+  name: wasabi-object-store
+  namespace: database
+spec:
+  retentionPolicy: "30d"
+  configuration:
+    destinationPath: s3://cnpg-backup.macbytes.io/
+    endpointURL: https://s3.wasabisys.com
+    s3Credentials:
+      accessKeyId:
+        name: cnpg-wasabi-credentials
+        key: ACCESS_KEY_ID
+      secretAccessKey:
+        name: cnpg-wasabi-credentials
+        key: ACCESS_SECRET_KEY
+    wal:
+      compression: gzip

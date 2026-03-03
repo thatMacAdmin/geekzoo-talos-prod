@@ -12,3 +12,4 @@ resources:
   - 07-infra-configs.yaml
   - 08-apps.yaml
   - 09-media.yaml
+  - 10-databases.yaml

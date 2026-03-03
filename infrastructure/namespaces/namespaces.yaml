@@ -15,6 +15,13 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
+  name: cnpg-system
+  labels:
+    name: cnpg-system
+---
+apiVersion: v1
+kind: Namespace
+metadata:
   name: database
   labels:
     name: database
