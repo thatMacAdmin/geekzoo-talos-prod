@@ -7,4 +7,6 @@ resources:
   - 02-storage.yaml
   - 03-external-secrets.yaml
   - 04-secrets.yaml
+  - 05-infra-controllers.yaml
+  - 06-infra-configs.yaml
   - 07-apps.yaml
