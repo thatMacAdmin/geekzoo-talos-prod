@@ -1,0 +1,39 @@
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: crowdsec-bouncer
+  namespace: traefik
+  labels:
+    app.kubernetes.io/name: traefik
+    app.kubernetes.io/instance: traefik-traefik
+    app.kubernetes.io/component: security
+spec:
+  plugin:
+    crowdsec-bouncer-traefik-plugin:
+      enabled: true
+      logLevel: INFO
+      updateIntervalSeconds: 10
+      defaultDecisionSeconds: 300
+      httpTimeoutSeconds: 10
+      crowdsecMode: stream
+      crowdsecLapiKey: ""
+      crowdsecLapiKeyFile: /etc/crowdsec-bouncer/api-key
+      crowdsecLapiHost: crowdsec-service.apps.svc.cluster.local:8080
+      crowdsecLapiScheme: http
+      forwardedHeadersCustomName: X-Forwarded-For
+      clientTrustedIPs:
+        - 127.0.0.1/32
+        - 10.0.0.0/8
+        - 172.16.0.0/12
+        - 192.168.0.0/16
+      forwardedHeadersTrustedIPs:
+        - 10.0.0.0/8
+        - 172.16.0.0/12
+        - 192.168.0.0/16
+      crowdsecAppsecEnabled: true
+      crowdsecAppsecHost: crowdsec-appsec-service.apps.svc.cluster.local:7422
+      crowdsecAppsecScheme: http
+      crowdsecAppSecApiKey: ""
+      crowdsecAppSecApiKeyFile: /etc/crowdsec-bouncer/api-key
+      crowdsecAppsecFailureBlock: true
+      crowdsecAppsecUnreachableBlock: true
