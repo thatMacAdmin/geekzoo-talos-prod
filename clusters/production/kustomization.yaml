@@ -5,4 +5,6 @@ resources:
   - 00-namespaces.yaml
   - 01-crds.yaml
   - 02-storage.yaml
+  - 03-external-secrets.yaml
+  - 04-secrets.yaml
   - 07-apps.yaml
