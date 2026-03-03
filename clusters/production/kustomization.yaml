@@ -4,9 +4,10 @@ kind: Kustomization
 resources:
   - 00-namespaces.yaml
   - 01-crds.yaml
-  - 02-storage.yaml
-  - 03-external-secrets.yaml
-  - 04-secrets.yaml
-  - 05-infra-controllers.yaml
-  - 06-infra-configs.yaml
-  - 07-apps.yaml
+  - 02-cilium.yaml
+  - 03-storage.yaml
+  - 04-external-secrets.yaml
+  - 05-secrets.yaml
+  - 06-infra-controllers.yaml
+  - 07-infra-configs.yaml
+  - 08-apps.yaml
