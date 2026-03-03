@@ -11,3 +11,4 @@ resources:
   - 06-infra-controllers.yaml
   - 07-infra-configs.yaml
   - 08-apps.yaml
+  - 09-media.yaml
