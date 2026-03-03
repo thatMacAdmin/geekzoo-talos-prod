@@ -4,3 +4,4 @@ kind: Kustomization
 resources:
   - cloudflare
   - vaultwarden
+  - authentik

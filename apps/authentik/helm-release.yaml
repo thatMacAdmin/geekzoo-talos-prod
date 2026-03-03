@@ -1,0 +1,64 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: authentik
+  namespace: identity
+spec:
+  interval: 30m
+  releaseName: authentik
+  chart:
+    spec:
+      chart: authentik
+      version: "2025.10.1"
+      sourceRef:
+        kind: HelmRepository
+        name: authentik
+        namespace: identity
+  values:
+    authentik:
+      redis:
+        host: redis-master.database
+    global:
+      env:
+        - name: AUTHENTIK_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: authentik-secret-key
+              key: secret_key
+        - name: AUTHENTIK_POSTGRESQL__HOST
+          valueFrom:
+            secretKeyRef:
+              name: authentik-database-config
+              key: hostname
+        - name: AUTHENTIK_POSTGRESQL__NAME
+          valueFrom:
+            secretKeyRef:
+              name: authentik-database-config
+              key: database_name
+        - name: AUTHENTIK_POSTGRESQL__USER
+          valueFrom:
+            secretKeyRef:
+              name: authentik-database-config
+              key: username
+        - name: AUTHENTIK_POSTGRESQL__PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: authentik-database-config
+              key: password
+        - name: AUTHENTIK_REDIS__PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: authentik-redis-config
+              key: password
+    server:
+      enabled: true
+      replicas: 1
+      service:
+        type: ClusterIP
+    worker:
+      enabled: true
+      replicas: 1
+    postgresql:
+      enabled: false
+    redis:
+      enabled: false
