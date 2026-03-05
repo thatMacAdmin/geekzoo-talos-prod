@@ -18,6 +18,12 @@ ingress:
       noTLSVerify: true
       originServerName: traefik.macbytes.io
       httpHostHeader: traefik.macbytes.io
+  - hostname: flux.macbytes.io
+    service: https://traefik.traefik.svc.cluster.local:443
+    originRequest:
+      noTLSVerify: true
+      originServerName: flux.macbytes.io
+      httpHostHeader: flux.macbytes.io
   - hostname: filedrop.macbytes.io
     service: https://traefik.traefik.svc.cluster.local:443
     originRequest:
