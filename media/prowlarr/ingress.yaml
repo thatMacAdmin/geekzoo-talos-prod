@@ -1,0 +1,16 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: prowlarr-ingressroute
+  namespace: media
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`prowlarr.macbytes.io`)
+      kind: Rule
+      services:
+        - name: prowlarr-svc
+          port: 9696
+  tls:
+    secretName: prowlarr-tls-certificate

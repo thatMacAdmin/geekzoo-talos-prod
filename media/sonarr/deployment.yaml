@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sonarr
+  namespace: media
+spec:
+  selector:
+    matchLabels:
+      app: sonarr
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: sonarr
+      annotations:
+        backup.velero.io/backup-volumes-excludes: sonarr-media
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+        fsGroup: 65534
+        seccompProfile:
+          type: RuntimeDefault
+      volumes:
+        - name: sonarr-media
+          persistentVolumeClaim:
+            claimName: pvc-media-nfs
+        - name: sonarr-config
+          persistentVolumeClaim:
+            claimName: sonarr-config-pvc
+      containers:
+        - name: sonarr-server
+          image: linuxserver/sonarr:4.0.16 # {"$imagepolicy": "flux-system:sonarr-image-policy"}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8989
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          env:
+            - name: PUID
+              value: "65534"
+            - name: PGID
+              value: "65533"
+            - name: TZ
+              value: "America/New_York"
+          volumeMounts:
+            - name: sonarr-media
+              mountPath: /media
+            - name: sonarr-config
+              mountPath: /config
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "50m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"

@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prowlarr
+  namespace: media
+spec:
+  selector:
+    matchLabels:
+      app: prowlarr
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: prowlarr
+      annotations:
+        backup.velero.io/backup-volumes-excludes: prowlarr-media
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+        fsGroup: 65534
+        seccompProfile:
+          type: RuntimeDefault
+      volumes:
+        - name: prowlarr-media
+          persistentVolumeClaim:
+            claimName: pvc-media-nfs
+        - name: prowlarr-config
+          persistentVolumeClaim:
+            claimName: prowlarr-config-pvc
+      containers:
+        - name: prowlarr-server
+          image: ghcr.io/hotio/prowlarr:release-2.1.5.5216 # {"$imagepolicy": "flux-system:prowlarr-image-policy"}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 9696
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          env:
+            - name: TZ
+              value: "America/New_York"
+            - name: PUID
+              value: "65534"
+            - name: PGID
+              value: "65533"
+          volumeMounts:
+            - name: prowlarr-media
+              mountPath: /media
+            - name: prowlarr-config
+              mountPath: /config
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "50m"
+            limits:
+              memory: "512Mi"
+              cpu: "250m"

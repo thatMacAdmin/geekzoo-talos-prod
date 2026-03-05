@@ -4,3 +4,6 @@ kind: Kustomization
 resources:
   - nvidia_runtime.yaml
   - jellyfin
+  - sonarr
+  - radarr
+  - prowlarr
