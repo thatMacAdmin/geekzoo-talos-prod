@@ -34,11 +34,6 @@ spec:
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 7878
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
           env:
             - name: PUID
               value: "65534"
