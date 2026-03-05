@@ -1,0 +1,37 @@
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: sonarr-image-policy
+  namespace: flux-system
+spec:
+  imageRepositoryRef:
+    name: sonarr
+  policy:
+    semver:
+      range: ">=4.0.0"
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: radarr-image-policy
+  namespace: flux-system
+spec:
+  imageRepositoryRef:
+    name: radarr
+  policy:
+    semver:
+      range: ">=6.0.0"
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: prowlarr-image-policy
+  namespace: flux-system
+spec:
+  imageRepositoryRef:
+    name: prowlarr
+  filterTags:
+    pattern: '^release-[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$'
+  policy:
+    alphabetical:
+      order: asc

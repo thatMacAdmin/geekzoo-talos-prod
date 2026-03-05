@@ -13,3 +13,4 @@ resources:
   - 08-apps.yaml
   - 09-media.yaml
   - 10-databases.yaml
+  - 11-image-automation.yaml
