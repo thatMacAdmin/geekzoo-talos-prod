@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: blocky
+  namespace: apps
+  labels:
+    app: blocky
+spec:
+  selector:
+    matchLabels:
+      app: blocky
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: blocky
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        fsGroup: 65534
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: blocky
+          image: spx01/blocky:latest
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          args:
+            - --config
+            - /app/config.yml
+          ports:
+            - containerPort: 53
+              protocol: UDP
+            - containerPort: 53
+              protocol: TCP
+            - containerPort: 4000
+              protocol: TCP
+          envFrom:
+            - secretRef:
+                name: blocky-ui-database-url
+            - secretRef:
+                name: pg-app-user-blocky
+          volumeMounts:
+            - name: blocky-config
+              mountPath: /app/config.yml
+              subPath: config.yml
+              readOnly: true
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "50m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+      volumes:
+        - name: blocky-config
+          secret:
+            secretName: blocky-config
+            optional: false

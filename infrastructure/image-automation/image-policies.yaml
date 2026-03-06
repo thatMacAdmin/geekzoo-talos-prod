@@ -31,7 +31,7 @@ spec:
   imageRepositoryRef:
     name: prowlarr
   filterTags:
-    pattern: '^release-[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$'
+    pattern: '^release-[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$'
   policy:
     alphabetical:
-      order: asc
+      order: desc
