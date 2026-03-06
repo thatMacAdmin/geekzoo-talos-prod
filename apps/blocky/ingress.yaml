@@ -1,0 +1,16 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: blocky-ingressroute
+  namespace: apps
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`blocky.macbytes.io`)
+      kind: Rule
+      services:
+        - name: blocky-svc
+          port: 4000
+  tls:
+    secretName: blocky-tls-certificate
