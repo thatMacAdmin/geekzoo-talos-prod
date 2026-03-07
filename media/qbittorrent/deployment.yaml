@@ -63,7 +63,7 @@ spec:
             - name: gluetun-config
               mountPath: /gluetun
         - name: qbittorrent
-          image: lscr.io/linuxserver/qbittorrent:latest # {"$imagepolicy": "flux-system:qbittorrent-image-policy"}
+          image: lscr.io/linuxserver/qbittorrent:20.04.1 # {"$imagepolicy": "flux-system:qbittorrent-image-policy"}
           imagePullPolicy: IfNotPresent
           ports:
             - name: http
