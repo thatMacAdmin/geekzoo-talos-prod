@@ -10,9 +10,18 @@ data:
 
     # qBittorrent bootstrap hook.
     # Keep startup idempotent and safe for future config templating.
-    if [[ ! -f /gluetun/forwarded_port ]]; then
-      echo "bootstrap: vpn forwarded port file not yet available yet"
-      exit 0
+    for _ in {1..30}; do
+      if [[ -f /gluetun/forwarded_port ]]; then
+        break
+      fi
+      echo "bootstrap: waiting for /gluetun/forwarded_port"
+      sleep 2
+    done
+
+    if [[ -f /gluetun/forwarded_port ]]; then
+      echo "bootstrap: current forwarded port: $(cat /gluetun/forwarded_port)"
+    else
+      echo "bootstrap: forwarded port file not available; starting qBittorrent anyway"
     fi
 
-    echo "bootstrap: current forwarded port: $(cat /gluetun/forwarded_port)"
+    exec /init
