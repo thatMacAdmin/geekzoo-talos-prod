@@ -140,7 +140,7 @@ spec:
                 - SETGID
                 - SETUID
         - name: mousehole
-          image: tmmrtn/mousehole:latest # {"$imagepolicy": "flux-system:mousehole-image-policy"}
+          image: tmmrtn/mousehole:0 # {"$imagepolicy": "flux-system:mousehole-image-policy"}
           imagePullPolicy: IfNotPresent
           env:
             - name: TZ
