@@ -1,0 +1,16 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: sabnzbd-ingressroute
+  namespace: media
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`downloader.macbytes.io`)
+      kind: Rule
+      services:
+        - name: sabnzbd-svc
+          port: 8080
+  tls:
+    secretName: sabnzbd-tls-certificate
