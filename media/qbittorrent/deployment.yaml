@@ -86,8 +86,6 @@ spec:
           volumeMounts:
             - name: qbittorrent-gluetun
               mountPath: /gluetun
-            - name: qbittorrent-bootstrap
-              mountPath: /bootstrap
             - name: dev-net-tun
               mountPath: /dev/net/tun
         - name: qbittorrent
