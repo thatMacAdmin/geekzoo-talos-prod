@@ -1,0 +1,11 @@
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: gluetun-image-policy
+  namespace: flux-system
+spec:
+  imageRepositoryRef:
+    name: gluetun
+  policy:
+    semver:
+      range: ">=3.0.0"

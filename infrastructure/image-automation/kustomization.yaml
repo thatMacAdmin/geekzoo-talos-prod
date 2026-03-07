@@ -2,9 +2,13 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
+  - image-repository-gluetun.yaml
+  - image-repository-qbittorrent.yaml
   - image-repository-prowlarr.yaml
   - image-repository-radarr.yaml
   - image-repository-sonarr.yaml
+  - image-policy-gluetun.yaml
+  - image-policy-qbittorrent.yaml
   - image-policy-prowlarr.yaml
   - image-policy-radarr.yaml
   - image-policy-sonarr.yaml

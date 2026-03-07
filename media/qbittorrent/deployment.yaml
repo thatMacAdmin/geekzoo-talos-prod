@@ -1,0 +1,100 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: qbittorrent
+  namespace: media
+spec:
+  selector:
+    matchLabels:
+      app: qbittorrent
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: qbittorrent
+      annotations:
+        backup.velero.io/backup-volumes-excludes: qbittorrent-config
+    spec:
+      volumes:
+        - name: qbittorrent-config
+          persistentVolumeClaim:
+            claimName: qbittorrent-config-pvc
+        - name: qbittorrent-media
+          persistentVolumeClaim:
+            claimName: pvc-media-nfs
+        - name: dev-net-tun
+          hostPath:
+            path: /dev/net/tun
+        - name: gluetun-config
+          emptyDir: {}
+      containers:
+        - name: gluetun
+          image: qmcgaw/gluetun:v3.39.0 # {"$imagepolicy": "flux-system:gluetun-image-policy"}
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: VPN_SERVICE_PROVIDER
+              value: pia
+            - name: VPN_TYPE
+              value: openvpn
+            - name: OPENVPN_USER
+              valueFrom:
+                secretKeyRef:
+                  name: pia-qbittorrent-vpn
+                  key: OPENVPN_USER
+            - name: OPENVPN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: pia-qbittorrent-vpn
+                  key: OPENVPN_PASSWORD
+            - name: SERVER_REGIONS
+              value: US
+            - name: TZ
+              value: America/New_York
+          securityContext:
+            privileged: true
+            capabilities:
+              add:
+                - NET_ADMIN
+          volumeMounts:
+            - name: dev-net-tun
+              mountPath: /dev/net/tun
+            - name: gluetun-config
+              mountPath: /gluetun
+        - name: qbittorrent
+          image: lscr.io/linuxserver/qbittorrent:4.6.8 # {"$imagepolicy": "flux-system:qbittorrent-image-policy"}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+            - name: peer-tcp
+              containerPort: 6881
+            - name: peer-udp
+              containerPort: 6881
+              protocol: UDP
+          env:
+            - name: TZ
+              value: America/New_York
+            - name: PUID
+              value: "65534"
+            - name: PGID
+              value: "65533"
+            - name: WEBUI_PORT
+              value: "8080"
+          volumeMounts:
+            - name: qbittorrent-config
+              mountPath: /config
+            - name: qbittorrent-media
+              mountPath: /downloads
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "50m"
+            limits:
+              memory: "2Gi"
+              cpu: "1500m"
