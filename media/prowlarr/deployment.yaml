@@ -30,7 +30,7 @@ spec:
             claimName: prowlarr-config-pvc
       containers:
         - name: prowlarr-server
-          image: ghcr.io/hotio/prowlarr:release-2.1.5.5216 # {"$imagepolicy": "flux-system:prowlarr-image-policy"}
+          image: ghcr.io/hotio/prowlarr:release-1.10.5.4116 # {"$imagepolicy": "flux-system:prowlarr-image-policy"}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 9696
