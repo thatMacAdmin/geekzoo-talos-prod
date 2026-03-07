@@ -89,7 +89,7 @@ spec:
             - name: dev-net-tun
               mountPath: /dev/net/tun
         - name: qbittorrent
-          image: lscr.io/linuxserver/qbittorrent:20.04.1 # {"$imagepolicy": "flux-system:qbittorrent-image-policy"}
+          image: lscr.io/linuxserver/qbittorrent:version-5.1.4-r0 # {"$imagepolicy": "flux-system:qbittorrent-image-policy"}
           imagePullPolicy: IfNotPresent
           env:
             - name: PUID
