@@ -7,9 +7,11 @@ resources:
   - image-repository-prowlarr.yaml
   - image-repository-radarr.yaml
   - image-repository-sonarr.yaml
+  - image-repository-mousehole.yaml
   - image-policy-gluetun.yaml
   - image-policy-qbittorrent.yaml
   - image-policy-prowlarr.yaml
   - image-policy-radarr.yaml
   - image-policy-sonarr.yaml
+  - image-policy-mousehole.yaml
   - image-update-automation.yaml

@@ -3,6 +3,8 @@ kind: Kustomization
 
 resources:
   - pvc.yaml
+  - gluetun-pvc.yaml
+  - bootstrap-configmap.yaml
   - deployment.yaml
   - service.yaml
   - ingress.yaml
