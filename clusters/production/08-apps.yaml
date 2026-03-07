@@ -6,6 +6,8 @@ metadata:
 spec:
   dependsOn:
     - name: infra-configs
+    - name: secrets
+    - name: databases
   interval: 10m
   retryInterval: 2m
   timeout: 10m
