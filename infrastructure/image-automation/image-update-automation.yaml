@@ -8,6 +8,7 @@ spec:
   sourceRef:
     kind: GitRepository
     name: flux-system
+    namespace: flux-system
   git:
     checkout:
       ref:
@@ -18,6 +19,8 @@ spec:
         name: flux-image-automation
       messageTemplate: 'chore(images): update media app container images'
     push:
+      # Push image updates directly to the main branch.
+      # The configured Git credentials must have write access to this repo and branch.
       branch: main
   update:
     path: ./media
