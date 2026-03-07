@@ -35,14 +35,6 @@ spec:
           hostPath:
             path: /dev/net/tun
             type: CharDevice
-        - name: qbittorrent-bootstrap-config
-          configMap:
-            name: qbittorrent-bootstrap
-            items:
-              - key: qbittorrent-bootstrap.sh
-                path: qbittorrent-bootstrap.sh
-        - name: qbittorrent-bootstrap
-          emptyDir: {}
       containers:
         - name: gluetun
           image: qmcgaw/gluetun:v3.41.1 # {"$imagepolicy": "flux-system:gluetun-image-policy"}
@@ -101,9 +93,6 @@ spec:
         - name: qbittorrent
           image: lscr.io/linuxserver/qbittorrent:20.04.1 # {"$imagepolicy": "flux-system:qbittorrent-image-policy"}
           imagePullPolicy: IfNotPresent
-          command:
-            - /bin/bash
-            - /bootstrap/qbittorrent-bootstrap.sh
           env:
             - name: PUID
               value: "65534"
@@ -141,8 +130,6 @@ spec:
             - name: qbittorrent-gluetun
               mountPath: /gluetun
               readOnly: true
-            - name: qbittorrent-bootstrap
-              mountPath: /bootstrap
           securityContext:
             privileged: true
             runAsUser: 0
@@ -170,16 +157,3 @@ spec:
             - name: qbittorrent-config
               mountPath: /srv/mousehole
               subPath: mousehole
-      # Mount bootstrap script from ConfigMap
-      initContainers:
-        - name: qbittorrent-bootstrap-install
-          image: alpine:3.20
-          command:
-            - /bin/sh
-            - -c
-            - cp /configmap/qbittorrent-bootstrap.sh /bootstrap/qbittorrent-bootstrap.sh && chmod +x /bootstrap/qbittorrent-bootstrap.sh
-          volumeMounts:
-            - name: qbittorrent-bootstrap-config
-              mountPath: /configmap
-            - name: qbittorrent-bootstrap
-              mountPath: /bootstrap
