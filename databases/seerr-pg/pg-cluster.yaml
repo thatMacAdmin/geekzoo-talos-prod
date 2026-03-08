@@ -1,0 +1,18 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: seerr-pg-cluster
+  namespace: database
+spec:
+  imageName: ghcr.io/cloudnative-pg/postgresql:17.6-system-trixie
+  instances: 3
+  enableSuperuserAccess: true
+  bootstrap:
+    initdb:
+      database: seerr
+      owner: seerr
+      secret:
+        name: pg-app-user-seerr
+  storage:
+    storageClass: ceph-block
+    size: 5Gi
