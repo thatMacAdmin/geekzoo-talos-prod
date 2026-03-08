@@ -1,0 +1,40 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: seerr
+  namespace: media
+spec:
+  interval: 30m
+  releaseName: seerr
+  chart:
+    spec:
+      chart: seerr-chart
+      sourceRef:
+        kind: HelmRepository
+        name: seerr
+        namespace: media
+  values:
+    fullnameOverride: seerr
+    extraEnv:
+      - name: DB_TYPE
+        value: postgres
+      - name: DB_HOST
+        value: seerr-pg-cluster-rw.database.svc.cluster.local
+      - name: DB_PORT
+        value: "5432"
+      - name: DB_USER
+        valueFrom:
+          secretKeyRef:
+            name: seerr-database-config
+            key: username
+      - name: DB_PASS
+        valueFrom:
+          secretKeyRef:
+            name: seerr-database-config
+            key: password
+      - name: DB_NAME
+        value: seerr
+      - name: DB_LOG_QUERIES
+        value: "false"
+      - name: DB_USE_SSL
+        value: "false"

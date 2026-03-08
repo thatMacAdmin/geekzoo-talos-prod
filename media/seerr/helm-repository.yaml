@@ -1,0 +1,8 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: seerr
+  namespace: media
+spec:
+  url: oci://ghcr.io/seerr-team/seerr/seerr-chart
+  interval: 24h
