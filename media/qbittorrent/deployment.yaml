@@ -78,6 +78,16 @@ spec:
               value: "8080"
             - name: FIREWALL
               value: "off"
+            - name: BLOCK_MALICIOUS
+              value: "off"
+            - name: BLOCK_ADS
+              value: "off"
+            - name: BLOCK_SURVEILLANCE
+              value: "off"
+            - name: DNS_UPSTREAM_IPV6
+              value: "off"
+            - name: OPENVPN_FLAGS
+              value: '--pull-filter ignore "route-ipv6"'
           securityContext:
             privileged: true
             capabilities:
