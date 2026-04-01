@@ -9,4 +9,9 @@ omni/**/*.yaml
 # Junk files
 *.bak
 *.tmp
+*.dump
+*.tgz
 .DS_Store
+
+# AI tooling
+.claude/
