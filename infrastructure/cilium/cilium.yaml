@@ -2146,6 +2146,7 @@ metadata:
 spec:
   blocks:
   - cidr: "192.168.3.0/24"
+  - cidr: "2603:6010:ce00:1197::3:0/112"
 
 ---
 apiVersion: cilium.io/v2alpha1

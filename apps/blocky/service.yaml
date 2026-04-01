@@ -7,6 +7,10 @@ metadata:
     app: blocky
 spec:
   type: LoadBalancer
+  ipFamilyPolicy: PreferDualStack
+  ipFamilies:
+    - IPv4
+    - IPv6
   selector:
     app: blocky
   ports:
