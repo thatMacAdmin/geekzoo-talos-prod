@@ -5,7 +5,7 @@ metadata:
   namespace: database
 spec:
   cluster:
-    name: vaultwarden-pg-cluster
+    name: vaultwarden-pg-cluster-20260401
   schedule: "0 0 0 * * *"
   backupOwnerReference: self
   method: plugin
