@@ -1,6 +1,7 @@
 # Sensitive files - never commit these
 omni/*.yaml
 omni/**/*.yaml
+!omni/patches/*.yaml
 *.kubeconfig
 *kubeconfig.yaml
 *talosconfig*

@@ -1,0 +1,13 @@
+metadata:
+    namespace: default
+    type: ConfigPatches.omni.sidero.dev
+    id: 400-cm-96766fba-1132-e811-af82-7020840f9bfc
+    labels:
+        omni.sidero.dev/cluster: geekzoo-prod
+        omni.sidero.dev/cluster-machine: 96766fba-1132-e811-af82-7020840f9bfc
+spec:
+    data: |
+        apiVersion: v1alpha1
+        kind: HostnameConfig
+        hostname: "talos-node-03"
+        auto: off
