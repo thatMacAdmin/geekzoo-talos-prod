@@ -117,7 +117,7 @@ data:
 
   # Enable IPv6 addressing. If enabled, all endpoints are allocated an IPv6
   # address.
-  enable-ipv6: "false"
+  enable-ipv6: "true"
   # Users who wish to specify their own custom CNI configuration file must set
   # custom-cni-conf to "true", otherwise Cilium may overwrite the configuration.
   custom-cni-conf: "false"
@@ -232,7 +232,7 @@ data:
   bpf-lb-acceleration: "disabled"
   enable-l2-neigh-discovery: "false"
   k8s-require-ipv4-pod-cidr: "false"
-  k8s-require-ipv6-pod-cidr: "false"
+  k8s-require-ipv6-pod-cidr: "true"
   enable-k8s-networkpolicy: "true"
   enable-endpoint-lockdown-on-policy-overflow: "false"
   # Tell the agent to generate and write a CNI configuration file
