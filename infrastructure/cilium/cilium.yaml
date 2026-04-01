@@ -2156,3 +2156,7 @@ metadata:
 spec:
   externalIPs: true
   loadBalancerIPs: true
+  interfaces:
+  - "^en.*"
+  - "^eth[0-9]+"
+  - "^bond[0-9]+"
