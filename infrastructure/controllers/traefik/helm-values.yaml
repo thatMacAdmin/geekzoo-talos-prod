@@ -12,7 +12,7 @@ service:
       - IPv4
       - IPv6
   annotations:
-    io.cilium/lb-ipam-ips: 192.168.3.0
+    io.cilium/lb-ipam-ips: "192.168.3.0,2603:6010:ce00:1197::3:1"
 
 # Ports configuration - v3.x format with expose object
 ports:
