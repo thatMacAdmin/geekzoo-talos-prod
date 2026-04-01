@@ -11,7 +11,7 @@ cephClusterSpec:
     - name: "talos-node-02"
       devices:
         - name: "nvme0n1"
-        - name: "nvme1n1"
+        - name: "nvme2n1"
     - name: "talos-node-03"
       devices:
         - name: "nvme0n1"
