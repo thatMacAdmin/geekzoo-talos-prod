@@ -6,10 +6,11 @@ image:
 # Service configuration - Cilium LB
 service:
   type: LoadBalancer
-  ipFamilyPolicy: PreferDualStack
-  ipFamilies:
-    - IPv4
-    - IPv6
+  spec:
+    ipFamilyPolicy: PreferDualStack
+    ipFamilies:
+      - IPv4
+      - IPv6
   annotations:
     io.cilium/lb-ipam-ips: 192.168.3.0
 
