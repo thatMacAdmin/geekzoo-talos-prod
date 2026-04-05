@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bazarr
+  namespace: media
+spec:
+  selector:
+    matchLabels:
+      app: bazarr
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: bazarr
+      annotations:
+        backup.velero.io/backup-volumes-excludes: bazarr-media
+    spec:
+      securityContext:
+        fsGroup: 65534
+        seccompProfile:
+          type: RuntimeDefault
+      volumes:
+        - name: bazarr-config
+          persistentVolumeClaim:
+            claimName: bazarr-config-pvc
+        - name: bazarr-media
+          persistentVolumeClaim:
+            claimName: pvc-media-nfs
+      containers:
+        - name: bazarr-server
+          image: ghcr.io/hotio/bazarr:release-398d8d2-1066-linux-amd64 # {"$imagepolicy": "flux-system:bazarr-image-policy"}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 6767
+          env:
+            - name: PUID
+              value: "65534"
+            - name: PGID
+              value: "65533"
+            - name: TZ
+              value: "America/New_York"
+          volumeMounts:
+            - name: bazarr-config
+              mountPath: /config
+            - name: bazarr-media
+              mountPath: /media
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "50m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"

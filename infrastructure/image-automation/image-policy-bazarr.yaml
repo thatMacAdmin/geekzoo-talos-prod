@@ -1,0 +1,14 @@
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: bazarr-image-policy
+  namespace: flux-system
+spec:
+  imageRepositoryRef:
+    name: bazarr
+  filterTags:
+    pattern: '^release-[0-9a-f]+-(?P<build>[0-9]+)-linux-amd64$'
+    extract: '$build'
+  policy:
+    numerical:
+      order: asc

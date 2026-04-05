@@ -1,0 +1,16 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: bazarr-ingressroute
+  namespace: media
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`subtitles.macbytes.io`)
+      kind: Rule
+      services:
+        - name: bazarr-svc
+          port: 6767
+  tls:
+    secretName: bazarr-tls-certificate

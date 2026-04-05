@@ -3,6 +3,7 @@ kind: Kustomization
 
 resources:
   - image-repository-gluetun.yaml
+  - image-repository-bazarr.yaml
   - image-repository-qbittorrent.yaml
   - image-repository-prowlarr.yaml
   - image-repository-radarr.yaml
@@ -10,6 +11,7 @@ resources:
   - image-repository-mousehole.yaml
   - image-repository-sabnzbd.yaml
   - image-policy-gluetun.yaml
+  - image-policy-bazarr.yaml
   - image-policy-qbittorrent.yaml
   - image-policy-prowlarr.yaml
   - image-policy-radarr.yaml

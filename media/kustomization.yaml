@@ -6,6 +6,7 @@ resources:
   - jellyfin
   - sonarr
   - radarr
+  - bazarr
   - prowlarr
   - qbittorrent
   - sabnzbd
