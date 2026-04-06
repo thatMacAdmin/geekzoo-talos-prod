@@ -1,0 +1,11 @@
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: vaultwarden-image-policy
+  namespace: flux-system
+spec:
+  imageRepositoryRef:
+    name: vaultwarden
+  policy:
+    semver:
+      range: ">=1.0.0 <2.0.0"

@@ -1,0 +1,27 @@
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageUpdateAutomation
+metadata:
+  name: apps-image-updates
+  namespace: flux-system
+spec:
+  interval: 30m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  git:
+    checkout:
+      ref:
+        branch: main
+    commit:
+      author:
+        email: flux-image-automation@macbytes.io
+        name: flux-image-automation
+      messageTemplate: 'chore(images): update app container images'
+    push:
+      # Push image updates directly to the main branch.
+      # The configured Git credentials must have write access to this repo and branch.
+      branch: main
+  update:
+    path: ./apps
+    strategy: Setters

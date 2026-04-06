@@ -1,0 +1,8 @@
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: vaultwarden
+  namespace: flux-system
+spec:
+  image: vaultwarden/server
+  interval: 1h
