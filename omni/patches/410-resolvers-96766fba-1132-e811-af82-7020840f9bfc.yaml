@@ -1,0 +1,14 @@
+metadata:
+    namespace: default
+    type: ConfigPatches.omni.sidero.dev
+    id: 410-resolvers-96766fba-1132-e811-af82-7020840f9bfc
+    labels:
+        omni.sidero.dev/cluster: geekzoo-prod
+        omni.sidero.dev/cluster-machine: 96766fba-1132-e811-af82-7020840f9bfc
+spec:
+    data: |
+        apiVersion: v1alpha1
+        kind: ResolverConfig
+        nameservers:
+            - address: 2606:4700:4700::1111
+            - address: 2606:4700:4700::1001
