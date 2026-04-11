@@ -30,7 +30,7 @@ spec:
             claimName: pvc-media-nfs
       containers:
         - name: bazarr-server
-          image: ghcr.io/hotio/bazarr:release-398d8d2-1066-linux-amd64 # {"$imagepolicy": "flux-system:bazarr-image-policy"}
+          image: ghcr.io/hotio/bazarr:release-1.5.6 # {"$imagepolicy": "flux-system:bazarr-image-policy"}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 6767
