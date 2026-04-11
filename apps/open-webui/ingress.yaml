@@ -1,0 +1,16 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: open-webui-ingressroute
+  namespace: apps
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`chat.macbytes.io`)
+      kind: Rule
+      services:
+        - name: open-webui-svc
+          port: 8080
+  tls:
+    secretName: open-webui-tls-certificate

@@ -6,3 +6,4 @@ resources:
   - vaultwarden
   - blocky
   - authentik
+  - open-webui
