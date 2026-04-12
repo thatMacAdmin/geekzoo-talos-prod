@@ -31,7 +31,19 @@ spec:
               value: "http://192.168.2.4:1234/v1"
             - name: WEBUI_URL
               value: "https://chat.macbytes.io"
+            - name: CORS_ALLOW_ORIGIN
+              value: "https://chat.macbytes.io"
+            - name: ENABLE_OLLAMA_API
+              value: "false"
+            - name: ENABLE_LOGIN_FORM
+              value: "false"
+            - name: ENABLE_PERSISTENT_CONFIG
+              value: "false"
+            - name: ENABLE_OAUTH_PERSISTENT_CONFIG
+              value: "false"
             - name: ENABLE_OAUTH_SIGNUP
+              value: "true"
+            - name: OAUTH_MERGE_ACCOUNTS_BY_EMAIL
               value: "true"
             - name: OAUTH_CLIENT_ID
               valueFrom:
