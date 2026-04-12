@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
         - name: open-webui
-          image: ghcr.io/open-webui/open-webui:main
+          image: ghcr.io/open-webui/open-webui:dev@sha256:be5c6b3836da4b26b11b4ec0b2edd4d1de3430da5afbab2ebd5e66e37074d01b
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
@@ -31,6 +31,43 @@ spec:
               value: "http://192.168.2.4:1234/v1"
             - name: WEBUI_URL
               value: "https://chat.macbytes.io"
+            - name: ENABLE_OAUTH_SIGNUP
+              value: "true"
+            - name: OAUTH_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: open-webui-oidc-config
+                  key: OAUTH_CLIENT_ID
+            - name: OAUTH_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: open-webui-oidc-config
+                  key: OAUTH_CLIENT_SECRET
+            - name: OPENID_PROVIDER_URL
+              valueFrom:
+                secretKeyRef:
+                  name: open-webui-oidc-config
+                  key: OPENID_PROVIDER_URL
+            - name: OPENID_END_SESSION_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: open-webui-oidc-config
+                  key: OPENID_END_SESSION_ENDPOINT
+            - name: OPENID_REDIRECT_URI
+              valueFrom:
+                secretKeyRef:
+                  name: open-webui-oidc-config
+                  key: OPENID_REDIRECT_URI
+            - name: OAUTH_PROVIDER_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: open-webui-oidc-config
+                  key: OAUTH_PROVIDER_NAME
+            - name: OAUTH_SCOPES
+              valueFrom:
+                secretKeyRef:
+                  name: open-webui-oidc-config
+                  key: OAUTH_SCOPES
           volumeMounts:
             - name: open-webui-data
               mountPath: /app/backend/data
