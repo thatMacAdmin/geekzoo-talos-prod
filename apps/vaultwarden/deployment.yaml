@@ -34,7 +34,7 @@ spec:
             claimName: vaultwarden-logs-pvc
       containers:
         - name: vaultwarden-server
-          image: vaultwarden/server:1.35.4 # {"$imagepolicy": "flux-system:vaultwarden-image-policy"}
+          image: vaultwarden/server:1.35.5 # {"$imagepolicy": "flux-system:vaultwarden-image-policy"}
           imagePullPolicy: IfNotPresent
           securityContext:
             allowPrivilegeEscalation: false
