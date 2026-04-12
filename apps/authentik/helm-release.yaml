@@ -9,15 +9,12 @@ spec:
   chart:
     spec:
       chart: authentik
-      version: "2025.10.1"
+      version: "2026.2.2"
       sourceRef:
         kind: HelmRepository
         name: authentik
         namespace: identity
   values:
-    authentik:
-      redis:
-        host: redis-master.database
     global:
       env:
         - name: AUTHENTIK_SECRET_KEY
@@ -44,11 +41,6 @@ spec:
           valueFrom:
             secretKeyRef:
               name: authentik-database-config
-              key: password
-        - name: AUTHENTIK_REDIS__PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: authentik-redis-config
               key: password
     server:
       enabled: true
