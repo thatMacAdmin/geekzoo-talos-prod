@@ -4,7 +4,7 @@ Last verified baseline in this repo:
 `apps/authentik/helm-release.yaml` -> chart `2025.10.1`
 
 Current manifest target after this change:
-`apps/authentik/helm-release.yaml` -> chart `2026.2.2`
+`apps/authentik/helm-release.yaml` -> chart `2025.12.2`
 
 **Why staged:** Authentik requires sequential minor upgrades.
 
