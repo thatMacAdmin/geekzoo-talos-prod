@@ -11,7 +11,10 @@ spec:
       app: blocky
   replicas: 3
   strategy:
-    type: Recreate
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 0
   template:
     metadata:
       labels:
@@ -20,6 +23,11 @@ spec:
       initContainers:
         - name: ensure-querylog-schema
           image: postgres:17
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
           env:
             - name: DATABASE_URL
               valueFrom:
