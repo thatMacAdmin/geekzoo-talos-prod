@@ -68,7 +68,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: blocky
-          image: spx01/blocky:latest
+          image: spx01/blocky:v0.29.0 # {"$imagepolicy": "flux-system:blocky-image-policy"}
           imagePullPolicy: IfNotPresent
           securityContext:
             allowPrivilegeEscalation: false

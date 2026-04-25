@@ -2,6 +2,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
+  - image-repository-blocky.yaml
   - image-repository-gluetun.yaml
   - image-repository-bazarr.yaml
   - image-repository-jellyfin.yaml
@@ -12,6 +13,7 @@ resources:
   - image-repository-mousehole.yaml
   - image-repository-sabnzbd.yaml
   - image-repository-vaultwarden.yaml
+  - image-policy-blocky.yaml
   - image-policy-gluetun.yaml
   - image-policy-bazarr.yaml
   - image-policy-jellyfin.yaml
