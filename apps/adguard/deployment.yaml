@@ -40,6 +40,9 @@ spec:
               mountPath: /opt/adguardhome/conf
             - name: adguard-data
               mountPath: /opt/adguardhome/work
+            - name: adguard-tls
+              mountPath: /opt/adguardhome/tls
+              readOnly: true
           resources:
             requests:
               memory: "512Mi"
@@ -51,3 +54,6 @@ spec:
         - name: adguard-data
           persistentVolumeClaim:
             claimName: adguard-pvc
+        - name: adguard-tls
+          secret:
+            secretName: adguard-tls-certificate
