@@ -21,6 +21,9 @@ spec:
       labels:
         app: adguard
     spec:
+      securityContext:
+        runAsUser: 0
+        runAsGroup: 0
       containers:
         - name: adguard
           image: adguard/adguardhome:v0.107.74 # {"$imagepolicy": "flux-system:adguardhome-image-policy"}
