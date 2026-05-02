@@ -10,7 +10,7 @@ spec:
   selector:
     matchLabels:
       app: adguard
-  replicas: 2
+  replicas: 1
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -34,9 +34,7 @@ spec:
               protocol: TCP
           volumeMounts:
             - name: adguard-data
-              mountPath: /opt/adguardhome/conf
-            - name: adguard-data
-              mountPath: /opt/adguardhome/work
+              mountPath: /opt/adguardhome
           resources:
             requests:
               memory: "512Mi"
