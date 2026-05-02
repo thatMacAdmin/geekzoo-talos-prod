@@ -4,6 +4,7 @@ kind: Kustomization
 resources:
   - cloudflare
   - vaultwarden
+  - adguard
   - blocky
   - authentik
   - open-webui

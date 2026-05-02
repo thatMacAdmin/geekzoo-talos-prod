@@ -1,0 +1,8 @@
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: adguardhome
+  namespace: flux-system
+spec:
+  image: adguard/adguardhome
+  interval: 1h

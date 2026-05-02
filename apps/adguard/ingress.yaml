@@ -1,0 +1,16 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: adguard-ingressroute
+  namespace: apps
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`adguard.macbytes.io`)
+      kind: Rule
+      services:
+        - name: adguard-svc
+          port: 3000
+  tls:
+    secretName: adguard-tls-certificate
