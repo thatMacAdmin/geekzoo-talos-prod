@@ -50,6 +50,9 @@ spec:
     worker:
       enabled: true
       replicas: 1
+    blueprints:
+      configMaps:
+        - authentik-macbytes-login-flow-blueprint
     postgresql:
       enabled: false
     redis:

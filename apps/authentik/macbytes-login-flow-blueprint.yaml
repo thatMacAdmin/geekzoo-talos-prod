@@ -1,0 +1,158 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: authentik-macbytes-login-flow-blueprint
+  namespace: identity
+data:
+  macbytes-login-flow.yaml: |
+    version: 1
+    metadata:
+      name: Macbytes - Passkey-first authentication flow
+    entries:
+      - model: authentik_blueprints.metaapplyblueprint
+        attrs:
+          identifiers:
+            name: Default - Password change flow
+          required: false
+      - model: authentik_blueprints.metaapplyblueprint
+        attrs:
+          identifiers:
+            name: Default - WebAuthn MFA setup flow
+          required: false
+
+      - model: authentik_flows.flow
+        id: macbytes-authentication-flow
+        identifiers:
+          slug: macbytes-authentication-flow
+        attrs:
+          designation: authentication
+          name: Macbytes Login
+          title: Macbytes Login
+          authentication: none
+
+      - model: authentik_stages_password.passwordstage
+        id: macbytes-password
+        identifiers:
+          name: macbytes-authentication-password
+        attrs:
+          backends:
+            - authentik.core.auth.InbuiltBackend
+            - authentik.sources.kerberos.auth.KerberosBackend
+            - authentik.sources.ldap.auth.LDAPBackend
+            - authentik.core.auth.TokenBackend
+          configure_flow: !Find [authentik_flows.flow, [slug, default-password-change]]
+
+      - model: authentik_stages_authenticator_webauthn.authenticatorwebauthnstage
+        id: macbytes-passkey-setup
+        identifiers:
+          name: macbytes-authentication-passkey-setup
+        attrs:
+          configure_flow: !Find [authentik_flows.flow, [slug, default-authenticator-webauthn-setup]]
+          friendly_name: Macbytes passkey
+          resident_key_requirement: required
+          user_verification: preferred
+
+      - model: authentik_stages_authenticator_validate.authenticatorvalidatestage
+        id: macbytes-passkey-validation
+        identifiers:
+          name: macbytes-authentication-passkey-validation
+        attrs:
+          device_classes:
+            - webauthn
+          not_configured_action: configure
+          configuration_stages:
+            - !KeyOf macbytes-passkey-setup
+          webauthn_user_verification: preferred
+
+      - model: authentik_stages_identification.identificationstage
+        id: macbytes-identification
+        identifiers:
+          name: macbytes-authentication-identification
+        attrs:
+          user_fields:
+            - email
+            - username
+          webauthn_stage: !KeyOf macbytes-passkey-validation
+          enable_remember_me: true
+          pretend_user_exists: true
+
+      - model: authentik_stages_user_login.userloginstage
+        id: macbytes-login
+        identifiers:
+          name: macbytes-authentication-login
+
+      - model: authentik_flows.flowstagebinding
+        identifiers:
+          order: 10
+          stage: !KeyOf macbytes-identification
+          target: !KeyOf macbytes-authentication-flow
+
+      - model: authentik_flows.flowstagebinding
+        id: macbytes-password-binding
+        identifiers:
+          order: 20
+          stage: !KeyOf macbytes-password
+          target: !KeyOf macbytes-authentication-flow
+        attrs:
+          re_evaluate_policies: true
+
+      - model: authentik_flows.flowstagebinding
+        id: macbytes-passkey-validation-binding
+        identifiers:
+          order: 30
+          stage: !KeyOf macbytes-passkey-validation
+          target: !KeyOf macbytes-authentication-flow
+        attrs:
+          re_evaluate_policies: true
+
+      - model: authentik_flows.flowstagebinding
+        identifiers:
+          order: 100
+          stage: !KeyOf macbytes-login
+          target: !KeyOf macbytes-authentication-flow
+
+      - model: authentik_policies_expression.expressionpolicy
+        id: macbytes-password-optional
+        identifiers:
+          name: macbytes-authentication-password-stage
+        attrs:
+          expression: |
+            flow_plan = request.context.get("flow_plan")
+            if not flow_plan:
+                return True
+            return not hasattr(flow_plan.context.get("pending_user"), "backend")
+
+      - model: authentik_policies_expression.expressionpolicy
+        id: macbytes-passkey-validation-optional
+        identifiers:
+          name: macbytes-authentication-passkey-validation-stage
+        attrs:
+          expression: |
+            flow_plan = request.context.get("flow_plan")
+            if not flow_plan:
+                return True
+            return not (flow_plan.context.get("auth_method") == "auth_webauthn_pwl")
+
+      - model: authentik_policies.policybinding
+        identifiers:
+          order: 10
+          target: !KeyOf macbytes-password-binding
+          policy: !KeyOf macbytes-password-optional
+        attrs:
+          failure_result: true
+
+      - model: authentik_policies.policybinding
+        identifiers:
+          order: 10
+          target: !KeyOf macbytes-passkey-validation-binding
+          policy: !KeyOf macbytes-passkey-validation-optional
+        attrs:
+          failure_result: true
+
+      - model: authentik_brands.brand
+        identifiers:
+          domain: authentik-default
+          default: true
+        attrs:
+          branding_title: Macbytes
+          flow_authentication: !KeyOf macbytes-authentication-flow
