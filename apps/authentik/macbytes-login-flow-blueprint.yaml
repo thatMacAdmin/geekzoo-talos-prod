@@ -201,4 +201,255 @@ data:
           default: true
         attrs:
           branding_title: Macbytes
+          branding_custom_css: |
+            :root {
+              color-scheme: dark;
+
+              --macbytes-bg: #2d2a2e;
+              --macbytes-bg-elevated: #3a363d;
+              --macbytes-panel: rgba(45, 42, 46, 0.84);
+              --macbytes-panel-strong: rgba(45, 42, 46, 0.94);
+              --macbytes-border: rgba(255, 216, 102, 0.22);
+              --macbytes-text: #fcfcfa;
+              --macbytes-muted: #c5c2c8;
+              --macbytes-yellow: #ffd866;
+              --macbytes-orange: #fc9867;
+              --macbytes-green: #a9dc76;
+              --macbytes-cyan: #78dce8;
+              --macbytes-purple: #ab9df2;
+              --macbytes-pink: #ff6188;
+
+              --pf-global--primary-color--100: var(--macbytes-yellow);
+              --pf-global--primary-color--200: #e6bd4f;
+              --pf-global--link--Color: var(--macbytes-cyan);
+              --pf-global--link--Color--hover: var(--macbytes-yellow);
+              --pf-global--BackgroundColor--100: var(--macbytes-bg);
+              --pf-global--BackgroundColor--200: #343137;
+              --pf-global--Color--100: var(--macbytes-text);
+              --pf-global--Color--200: var(--macbytes-muted);
+              --pf-global--BorderColor--100: rgba(252, 252, 250, 0.14);
+              --pf-global--BorderRadius--sm: 8px;
+              --pf-global--BorderRadius--lg: 12px;
+
+              --pf-v5-global--primary-color--100: var(--macbytes-yellow);
+              --pf-v5-global--primary-color--200: #e6bd4f;
+              --pf-v5-global--link--Color: var(--macbytes-cyan);
+              --pf-v5-global--link--Color--hover: var(--macbytes-yellow);
+              --pf-v5-global--BackgroundColor--100: var(--macbytes-bg);
+              --pf-v5-global--BackgroundColor--200: #343137;
+              --pf-v5-global--Color--100: var(--macbytes-text);
+              --pf-v5-global--Color--200: var(--macbytes-muted);
+              --pf-v5-global--BorderColor--100: rgba(252, 252, 250, 0.14);
+              --pf-v5-global--BorderRadius--sm: 8px;
+              --pf-v5-global--BorderRadius--lg: 12px;
+            }
+
+            html,
+            body {
+              min-height: 100%;
+              background:
+                radial-gradient(circle at 18% 12%, rgba(255, 216, 102, 0.16), transparent 26rem),
+                radial-gradient(circle at 84% 20%, rgba(120, 220, 232, 0.13), transparent 24rem),
+                radial-gradient(circle at 75% 86%, rgba(255, 97, 136, 0.10), transparent 28rem),
+                linear-gradient(145deg, #211f22 0%, var(--macbytes-bg) 42%, #40353b 100%) !important;
+              color: var(--macbytes-text);
+            }
+
+            body::before {
+              content: "";
+              position: fixed;
+              inset: 0;
+              pointer-events: none;
+              background-image:
+                linear-gradient(rgba(252, 252, 250, 0.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(252, 252, 250, 0.025) 1px, transparent 1px);
+              background-size: 44px 44px;
+              mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.85), transparent 76%);
+            }
+
+            body::after {
+              content: "";
+              position: fixed;
+              inset: 0;
+              pointer-events: none;
+              background:
+                linear-gradient(90deg, transparent, rgba(255, 216, 102, 0.08), transparent)
+                0 0 / 100% 1px no-repeat;
+              opacity: 0.9;
+            }
+
+            a {
+              color: var(--macbytes-cyan);
+              text-decoration-color: rgba(120, 220, 232, 0.44);
+              text-underline-offset: 0.18em;
+            }
+
+            a:hover {
+              color: var(--macbytes-yellow);
+              text-decoration-color: rgba(255, 216, 102, 0.66);
+            }
+
+            .pf-c-login,
+            .pf-v5-c-login {
+              background: transparent !important;
+            }
+
+            .pf-c-login__container,
+            .pf-v5-c-login__container {
+              min-height: 100vh;
+            }
+
+            .pf-c-login__main,
+            .pf-v5-c-login__main {
+              position: relative;
+              overflow: hidden;
+              border: 1px solid var(--macbytes-border);
+              border-radius: 14px;
+              background:
+                linear-gradient(180deg, rgba(252, 252, 250, 0.08), rgba(252, 252, 250, 0.02)),
+                var(--macbytes-panel) !important;
+              box-shadow:
+                0 24px 80px rgba(0, 0, 0, 0.42),
+                0 0 0 1px rgba(252, 252, 250, 0.04) inset;
+              backdrop-filter: blur(18px) saturate(1.08);
+            }
+
+            .pf-c-login__main::before,
+            .pf-v5-c-login__main::before {
+              content: "";
+              position: absolute;
+              inset: 0 0 auto 0;
+              height: 3px;
+              background: linear-gradient(
+                90deg,
+                var(--macbytes-pink),
+                var(--macbytes-orange),
+                var(--macbytes-yellow),
+                var(--macbytes-green),
+                var(--macbytes-cyan),
+                var(--macbytes-purple)
+              );
+            }
+
+            .pf-c-login__main-header,
+            .pf-v5-c-login__main-header,
+            .pf-c-login__main-body,
+            .pf-v5-c-login__main-body,
+            .pf-c-login__main-footer,
+            .pf-v5-c-login__main-footer {
+              background: transparent !important;
+            }
+
+            .pf-c-title,
+            .pf-v5-c-title,
+            h1,
+            h2 {
+              color: var(--macbytes-text);
+              letter-spacing: 0;
+            }
+
+            .pf-c-login__main-header-desc,
+            .pf-v5-c-login__main-header-desc,
+            .pf-c-form__helper-text,
+            .pf-v5-c-form__helper-text {
+              color: var(--macbytes-muted);
+            }
+
+            .pf-c-form-control,
+            .pf-v5-c-form-control,
+            input,
+            select,
+            textarea {
+              color: var(--macbytes-text) !important;
+              border-color: rgba(252, 252, 250, 0.16) !important;
+              border-radius: 8px !important;
+              background-color: rgba(33, 31, 34, 0.78) !important;
+              box-shadow: 0 1px 0 rgba(255, 216, 102, 0.08) inset;
+            }
+
+            .pf-c-form-control:focus,
+            .pf-v5-c-form-control:focus,
+            input:focus,
+            select:focus,
+            textarea:focus {
+              border-color: var(--macbytes-yellow) !important;
+              box-shadow:
+                0 0 0 1px var(--macbytes-yellow),
+                0 0 0 4px rgba(255, 216, 102, 0.16) !important;
+            }
+
+            .pf-c-button.pf-m-primary,
+            .pf-v5-c-button.pf-m-primary,
+            button[type="submit"] {
+              color: #211f22 !important;
+              border: 0 !important;
+              border-radius: 8px !important;
+              background:
+                linear-gradient(135deg, var(--macbytes-yellow), var(--macbytes-orange)) !important;
+              box-shadow:
+                0 12px 30px rgba(252, 152, 103, 0.22),
+                0 1px 0 rgba(252, 252, 250, 0.42) inset;
+              font-weight: 650;
+            }
+
+            .pf-c-button.pf-m-primary:hover,
+            .pf-v5-c-button.pf-m-primary:hover,
+            button[type="submit"]:hover {
+              filter: brightness(1.04) saturate(1.04);
+              transform: translateY(-1px);
+            }
+
+            .pf-c-button.pf-m-secondary,
+            .pf-v5-c-button.pf-m-secondary {
+              color: var(--macbytes-text) !important;
+              border-color: rgba(120, 220, 232, 0.28) !important;
+              border-radius: 8px !important;
+              background: rgba(120, 220, 232, 0.08) !important;
+            }
+
+            .pf-c-alert,
+            .pf-v5-c-alert,
+            .pf-c-card,
+            .pf-v5-c-card {
+              border-color: rgba(252, 252, 250, 0.12) !important;
+              border-radius: 10px !important;
+              background: var(--macbytes-panel-strong) !important;
+              color: var(--macbytes-text);
+            }
+
+            .pf-c-divider,
+            .pf-v5-c-divider {
+              border-color: rgba(252, 252, 250, 0.10) !important;
+            }
+
+            ak-stage-identification,
+            ak-stage-authenticator-validate,
+            ak-stage-authenticator-webauthn,
+            ak-stage-password {
+              --pf-global--primary-color--100: var(--macbytes-yellow);
+              --pf-v5-global--primary-color--100: var(--macbytes-yellow);
+            }
+
+            @media (max-width: 768px) {
+              .pf-c-login__main,
+              .pf-v5-c-login__main {
+                border-radius: 0;
+                border-inline: 0;
+                box-shadow: 0 18px 50px rgba(0, 0, 0, 0.38);
+              }
+            }
+
+            @media (prefers-reduced-motion: reduce) {
+              *,
+              *::before,
+              *::after {
+                transition: none !important;
+                animation: none !important;
+                transform: none !important;
+              }
+            }
+          attributes:
+            settings:
+              theme:
+                base: dark
           flow_authentication: !KeyOf macbytes-authentication-flow
