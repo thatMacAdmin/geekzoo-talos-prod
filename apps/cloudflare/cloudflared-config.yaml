@@ -153,6 +153,12 @@ ingress:
       noTLSVerify: true
       originServerName: ceph.macbytes.io
       httpHostHeader: ceph.macbytes.io
+  - hostname: s3.macbytes.io
+    service: https://traefik.traefik.svc.cluster.local:443
+    originRequest:
+      noTLSVerify: true
+      originServerName: s3.macbytes.io
+      httpHostHeader: s3.macbytes.io
   - hostname: watch.macbytes.io
     service: https://traefik.traefik.svc.cluster.local:443
     originRequest:

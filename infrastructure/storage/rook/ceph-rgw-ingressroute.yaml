@@ -1,0 +1,16 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: ceph-rgw-ingressroute
+  namespace: rook-ceph
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`s3.macbytes.io`)
+      kind: Rule
+      services:
+        - name: rook-ceph-rgw-ceph-objectstore
+          port: 80
+  tls:
+    secretName: ceph-rgw-tls-certificate

@@ -6,6 +6,11 @@ resources:
   - helm_repo.yaml
   - operator/helm_release.yaml
   - cluster/helm_release.yaml
+  - ceph-dashboard-certificate.yaml
+  - ceph-dashboard-ingressroute.yaml
+  - ceph-dashboard-serverstransport.yaml
+  - ceph-rgw-certificate.yaml
+  - ceph-rgw-ingressroute.yaml
 
 configMapGenerator:
   - name: rook-ceph-cluster-values
