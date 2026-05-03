@@ -23,10 +23,10 @@ data:
       - model: authentik_flows.flow
         id: macbytes-authentication-flow
         identifiers:
-          slug: macbytes-authentication-flow
+          slug: macbytes-passkey-first-authentication-flow
         attrs:
           designation: authentication
-          name: Macbytes Login
+          name: Macbytes Passkey Login
           title: Macbytes Login
           authentication: none
 
@@ -53,9 +53,19 @@ data:
           user_verification: preferred
 
       - model: authentik_stages_authenticator_validate.authenticatorvalidatestage
-        id: macbytes-passkey-validation
+        id: macbytes-passkey-first-validation
         identifiers:
-          name: macbytes-authentication-passkey-validation
+          name: macbytes-authentication-passkey-first-validation
+        attrs:
+          device_classes:
+            - webauthn
+          not_configured_action: skip
+          webauthn_user_verification: preferred
+
+      - model: authentik_stages_authenticator_validate.authenticatorvalidatestage
+        id: macbytes-passkey-enrollment-validation
+        identifiers:
+          name: macbytes-authentication-passkey-enrollment-validation
         attrs:
           device_classes:
             - webauthn
@@ -72,7 +82,7 @@ data:
           user_fields:
             - email
             - username
-          webauthn_stage: !KeyOf macbytes-passkey-validation
+          webauthn_stage: !KeyOf macbytes-passkey-first-validation
           enable_remember_me: true
           pretend_user_exists: true
 
@@ -88,19 +98,28 @@ data:
           target: !KeyOf macbytes-authentication-flow
 
       - model: authentik_flows.flowstagebinding
-        id: macbytes-password-binding
+        id: macbytes-passkey-first-validation-binding
         identifiers:
           order: 20
+          stage: !KeyOf macbytes-passkey-first-validation
+          target: !KeyOf macbytes-authentication-flow
+        attrs:
+          re_evaluate_policies: true
+
+      - model: authentik_flows.flowstagebinding
+        id: macbytes-password-binding
+        identifiers:
+          order: 30
           stage: !KeyOf macbytes-password
           target: !KeyOf macbytes-authentication-flow
         attrs:
           re_evaluate_policies: true
 
       - model: authentik_flows.flowstagebinding
-        id: macbytes-passkey-validation-binding
+        id: macbytes-passkey-enrollment-validation-binding
         identifiers:
-          order: 30
-          stage: !KeyOf macbytes-passkey-validation
+          order: 40
+          stage: !KeyOf macbytes-passkey-enrollment-validation
           target: !KeyOf macbytes-authentication-flow
         attrs:
           re_evaluate_policies: true
@@ -120,18 +139,37 @@ data:
             flow_plan = request.context.get("flow_plan")
             if not flow_plan:
                 return True
-            return not hasattr(flow_plan.context.get("pending_user"), "backend")
+            if hasattr(flow_plan.context.get("pending_user"), "backend"):
+                return False
+            return flow_plan.context.get("auth_method") != "auth_mfa"
 
       - model: authentik_policies_expression.expressionpolicy
-        id: macbytes-passkey-validation-optional
+        id: macbytes-passkey-first-validation-optional
         identifiers:
-          name: macbytes-authentication-passkey-validation-stage
+          name: macbytes-authentication-passkey-first-validation-stage
         attrs:
           expression: |
             flow_plan = request.context.get("flow_plan")
             if not flow_plan:
                 return True
             return not (flow_plan.context.get("auth_method") == "auth_webauthn_pwl")
+
+      - model: authentik_policies_expression.expressionpolicy
+        id: macbytes-passkey-enrollment-required
+        identifiers:
+          name: macbytes-authentication-passkey-enrollment-stage
+        attrs:
+          expression: |
+            flow_plan = request.context.get("flow_plan")
+            if not flow_plan:
+                return True
+            if flow_plan.context.get("auth_method") in ["auth_webauthn_pwl", "auth_mfa"]:
+                return False
+            user = flow_plan.context.get("pending_user")
+            if not user or not getattr(user, "pk", None):
+                return False
+            from authentik.stages.authenticator_webauthn.models import WebAuthnDevice
+            return not WebAuthnDevice.objects.filter(user=user, confirmed=True).exists()
 
       - model: authentik_policies.policybinding
         identifiers:
@@ -144,8 +182,16 @@ data:
       - model: authentik_policies.policybinding
         identifiers:
           order: 10
-          target: !KeyOf macbytes-passkey-validation-binding
-          policy: !KeyOf macbytes-passkey-validation-optional
+          target: !KeyOf macbytes-passkey-first-validation-binding
+          policy: !KeyOf macbytes-passkey-first-validation-optional
+        attrs:
+          failure_result: true
+
+      - model: authentik_policies.policybinding
+        identifiers:
+          order: 10
+          target: !KeyOf macbytes-passkey-enrollment-validation-binding
+          policy: !KeyOf macbytes-passkey-enrollment-required
         attrs:
           failure_result: true
 
