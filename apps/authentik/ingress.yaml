@@ -9,9 +9,6 @@ spec:
   routes:
     - match: Host(`authentik.macbytes.io`)
       kind: Rule
-      middlewares:
-        - name: crowdsec-bouncer
-          namespace: traefik
       services:
         - name: ak-outpost-authentik-embedded-outpost
           port: 9000

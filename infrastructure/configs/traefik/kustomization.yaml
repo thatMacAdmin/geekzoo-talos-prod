@@ -5,6 +5,5 @@ resources:
   - certificate.yaml
   - dashboard-ingressroute.yaml
   - dashboard-redirect-middleware.yaml
-  - crowdsec-bouncer-middleware.yaml
   - flux-operator-certificate.yaml
   - flux-operator-ingressroute.yaml

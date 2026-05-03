@@ -13,9 +13,6 @@ spec:
   routes:
   - match: Host(`traefik.macbytes.io`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))
     kind: Rule
-    middlewares:
-      - name: crowdsec-bouncer
-        namespace: traefik
     services:
       - kind: TraefikService
         name: api@internal

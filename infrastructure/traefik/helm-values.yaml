@@ -68,25 +68,11 @@ metrics:
         monitoring: "true"
     entryPoint: metrics
 
-# Security plugins configuration
-experimental:
-  plugins:
-    crowdsec-bouncer-traefik-plugin:
-      moduleName: "github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin"
-      version: "v1.4.6"
-
-# Volume mounts for security plugins (optional so Traefik starts without the secret)
-volumes:
-  - name: crowdsec-bouncer-api
-    mountPath: "/etc/crowdsec-bouncer"
-    type: secret
-
 # Logs configuration
 logs:
   general:
     level: INFO
 
-# Access logs for CrowdSec to parse
   access:
     enabled: true
     format: json

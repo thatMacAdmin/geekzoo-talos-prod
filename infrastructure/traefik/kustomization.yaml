@@ -6,4 +6,3 @@ resources:
   - certificate.yaml
   - dashboard-ingressroute.yaml
   - dashboard-redirect-middleware.yaml
-  # - crowdsec-bouncer-middleware.yaml
