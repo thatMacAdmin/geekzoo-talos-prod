@@ -6,3 +6,4 @@ resources:
   - endpoints.yaml
   - ingress.yaml
   - certificate.yaml
+  - redirect-middleware.yaml

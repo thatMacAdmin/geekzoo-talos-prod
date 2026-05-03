@@ -1,0 +1,9 @@
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: home-assistant-https-redirect
+  namespace: apps
+spec:
+  redirectScheme:
+    scheme: https
+    permanent: true
