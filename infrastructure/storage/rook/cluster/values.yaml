@@ -1,21 +1,22 @@
 operatorNamespace: rook-ceph
 cephClusterSpec:
+  removeOSDsIfOutAndSafeToRemove: true
   storage:
     useAllNodes: false
     useAllDevices: false
     nodes:
     - name: "talos-node-01"
       devices:
-        - name: "nvme0n1"
-        - name: "nvme1n1"
+        - name: "/dev/disk/by-id/nvme-SAMSUNG_MZ1LB1T9HALS-00007_S436NC0R677721"
+        - name: "/dev/disk/by-id/nvme-SAMSUNG_MZ1LB1T9HALS-00007_S436NC0R677722"
     - name: "talos-node-02"
       devices:
-        - name: "nvme0n1"
-        - name: "nvme2n1"
+        - name: "/dev/disk/by-id/nvme-SAMSUNG_MZ1LB1T9HALS-00007_S436NC0R677206"
+        - name: "/dev/disk/by-id/nvme-SAMSUNG_MZ1LB1T9HALS-00007_S436NC0R677713"
     - name: "talos-node-03"
       devices:
-        - name: "nvme0n1"
-        - name: "nvme2n1"
+        - name: "/dev/disk/by-id/nvme-SAMSUNG_MZ1LB1T9HALS-00007_S436NC0R677283"
+        - name: "/dev/disk/by-id/nvme-SAMSUNG_MZ1LB1T9HALS-00007_S436NC0R677465"
 ingress:
   dashboard:
     enabled: true
