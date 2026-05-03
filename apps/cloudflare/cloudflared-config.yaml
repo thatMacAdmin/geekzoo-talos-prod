@@ -166,7 +166,11 @@ ingress:
       originServerName: invites.macbytes.io
       httpHostHeader: invites.macbytes.io
   - hostname: smarthome.macbytes.io
-    service: http://192.168.2.13:8123
+    service: https://traefik.traefik.svc.cluster.local:443
+    originRequest:
+      noTLSVerify: true
+      originServerName: smarthome.macbytes.io
+      httpHostHeader: smarthome.macbytes.io
   - hostname: chat.macbytes.io
     service: https://traefik.traefik.svc.cluster.local:443
     originRequest:
