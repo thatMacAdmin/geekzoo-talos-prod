@@ -66,14 +66,14 @@ spec:
       enabled: true
       replicas: 1
       podAnnotations:
-        macbytes.io/authentik-blueprint-revision: "2026-05-03-friendly-brand-v1"
+        macbytes.io/authentik-blueprint-revision: "2026-05-03-friendly-brand-v2"
       service:
         type: ClusterIP
     worker:
       enabled: true
       replicas: 1
       podAnnotations:
-        macbytes.io/authentik-blueprint-revision: "2026-05-03-friendly-brand-v1"
+        macbytes.io/authentik-blueprint-revision: "2026-05-03-friendly-brand-v2"
     blueprints:
       configMaps:
         - authentik-macbytes-login-flow-blueprint

@@ -352,17 +352,6 @@ data:
               background: transparent !important;
             }
 
-            .pf-c-login__main-header::after,
-            .pf-v5-c-login__main-header::after {
-              content: "Use your passkey for the quickest sign-in, or continue with your password.";
-              display: block;
-              max-width: 34rem;
-              margin-block-start: 0.55rem;
-              color: var(--macbytes-muted);
-              font-size: 0.96rem;
-              line-height: 1.45;
-            }
-
             .pf-c-title,
             .pf-v5-c-title,
             h1,
@@ -372,11 +361,53 @@ data:
               font-weight: 750;
             }
 
+            .pf-c-login__main img,
+            .pf-v5-c-login__main img {
+              display: block;
+              width: min(100%, 22rem) !important;
+              max-height: 18rem !important;
+              object-fit: contain;
+              margin-inline: auto;
+              margin-block-end: 2rem;
+            }
+
+            .pf-c-login__main h1,
+            .pf-v5-c-login__main h1 {
+              font-size: 0 !important;
+              line-height: 0 !important;
+            }
+
+            .pf-c-login__main h1::before,
+            .pf-v5-c-login__main h1::before {
+              content: "Welcome back to Macbytes";
+              display: block;
+              color: var(--macbytes-text);
+              font-size: clamp(2.25rem, 4vw, 3.35rem);
+              line-height: 1.08;
+            }
+
             .pf-c-login__main-header-desc,
             .pf-v5-c-login__main-header-desc,
             .pf-c-form__helper-text,
             .pf-v5-c-form__helper-text {
               color: var(--macbytes-muted);
+            }
+
+            .pf-c-login__main-header-desc,
+            .pf-v5-c-login__main-header-desc {
+              font-size: 0 !important;
+              line-height: 0 !important;
+              margin-block-start: 1rem;
+            }
+
+            .pf-c-login__main-header-desc::before,
+            .pf-v5-c-login__main-header-desc::before {
+              content: "Use your passkey for the quickest sign-in, or continue with your password.";
+              display: block;
+              max-width: 38rem;
+              color: var(--macbytes-muted);
+              font-size: clamp(1.05rem, 1.45vw, 1.35rem);
+              line-height: 1.45;
             }
 
             .pf-c-form-control,
