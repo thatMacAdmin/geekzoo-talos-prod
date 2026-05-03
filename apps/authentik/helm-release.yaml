@@ -45,11 +45,15 @@ spec:
     server:
       enabled: true
       replicas: 1
+      podAnnotations:
+        macbytes.io/authentik-blueprint-revision: "2026-05-03-monokai-v1"
       service:
         type: ClusterIP
     worker:
       enabled: true
       replicas: 1
+      podAnnotations:
+        macbytes.io/authentik-blueprint-revision: "2026-05-03-monokai-v1"
     blueprints:
       configMaps:
         - authentik-macbytes-login-flow-blueprint
