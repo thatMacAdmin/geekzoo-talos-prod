@@ -3,6 +3,6 @@ kind: Kustomization
 
 resources:
   - service.yaml
-  - endpointslice.yaml
+  - endpoints.yaml
   - ingress.yaml
   - certificate.yaml
