@@ -7,7 +7,7 @@ data:
   macbytes-login-flow.yaml: |
     version: 1
     metadata:
-      name: Macbytes - Passkey-first authentication flow
+      name: Macbytes - Friendly passkey-first authentication flow
     entries:
       - model: authentik_blueprints.metaapplyblueprint
         attrs:
@@ -26,8 +26,8 @@ data:
           slug: macbytes-passkey-first-authentication-flow
         attrs:
           designation: authentication
-          name: Macbytes Passkey Login
-          title: Macbytes Login
+          name: Macbytes Friendly Login
+          title: Welcome back to Macbytes
           authentication: none
 
       - model: authentik_stages_password.passwordstage
@@ -48,7 +48,7 @@ data:
           name: macbytes-authentication-passkey-setup
         attrs:
           configure_flow: !Find [authentik_flows.flow, [slug, default-authenticator-webauthn-setup]]
-          friendly_name: Macbytes passkey
+          friendly_name: Macbytes Passkey
           resident_key_requirement: required
           user_verification: preferred
 
@@ -205,6 +205,8 @@ data:
             :root {
               color-scheme: dark;
 
+              --macbytes-font-family: ui-rounded, "SF Pro Rounded", "Nunito Sans", "Avenir Next", "Segoe UI", sans-serif;
+
               --macbytes-bg: #2d2a2e;
               --macbytes-bg-elevated: #3a363d;
               --macbytes-panel: rgba(45, 42, 46, 0.84);
@@ -228,6 +230,7 @@ data:
               --pf-global--Color--100: var(--macbytes-text);
               --pf-global--Color--200: var(--macbytes-muted);
               --pf-global--BorderColor--100: rgba(252, 252, 250, 0.14);
+              --pf-global--FontFamily--sans-serif: var(--macbytes-font-family);
               --pf-global--BorderRadius--sm: 8px;
               --pf-global--BorderRadius--lg: 12px;
 
@@ -240,6 +243,7 @@ data:
               --pf-v5-global--Color--100: var(--macbytes-text);
               --pf-v5-global--Color--200: var(--macbytes-muted);
               --pf-v5-global--BorderColor--100: rgba(252, 252, 250, 0.14);
+              --pf-v5-global--FontFamily--sans-serif: var(--macbytes-font-family);
               --pf-v5-global--BorderRadius--sm: 8px;
               --pf-v5-global--BorderRadius--lg: 12px;
             }
@@ -253,6 +257,14 @@ data:
                 radial-gradient(circle at 75% 86%, rgba(255, 97, 136, 0.10), transparent 28rem),
                 linear-gradient(145deg, #211f22 0%, var(--macbytes-bg) 42%, #40353b 100%) !important;
               color: var(--macbytes-text);
+              font-family: var(--macbytes-font-family);
+            }
+
+            button,
+            input,
+            select,
+            textarea {
+              font-family: inherit;
             }
 
             body::before {
@@ -340,12 +352,24 @@ data:
               background: transparent !important;
             }
 
+            .pf-c-login__main-header::after,
+            .pf-v5-c-login__main-header::after {
+              content: "Use your passkey for the quickest sign-in, or continue with your password.";
+              display: block;
+              max-width: 34rem;
+              margin-block-start: 0.55rem;
+              color: var(--macbytes-muted);
+              font-size: 0.96rem;
+              line-height: 1.45;
+            }
+
             .pf-c-title,
             .pf-v5-c-title,
             h1,
             h2 {
               color: var(--macbytes-text);
               letter-spacing: 0;
+              font-weight: 750;
             }
 
             .pf-c-login__main-header-desc,
