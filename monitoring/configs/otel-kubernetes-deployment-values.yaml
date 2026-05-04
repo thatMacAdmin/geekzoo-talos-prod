@@ -61,6 +61,12 @@ config:
         authorization: ${env:HYPERDX_API_KEY}
   receivers:
     jaeger: null
+    otlp:
+      protocols:
+        grpc:
+          endpoint: ${env:MY_POD_IP}:4317
+        http:
+          endpoint: ${env:MY_POD_IP}:4318
     prometheus: null
     zipkin: null
   service:
