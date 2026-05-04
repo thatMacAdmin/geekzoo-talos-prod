@@ -67,7 +67,14 @@ config:
           endpoint: ${env:MY_POD_IP}:4317
         http:
           endpoint: ${env:MY_POD_IP}:4318
-    prometheus: null
+    prometheus:
+      config:
+        scrape_configs:
+          - job_name: opentelemetry-collector
+            scrape_interval: 10s
+            static_configs:
+              - targets:
+                  - ${env:MY_POD_IP}:8888
     zipkin: null
   service:
     pipelines:
