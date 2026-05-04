@@ -3,7 +3,6 @@ kind: Kustomization
 
 resources:
   - authentik-pg
-  - blocky-pg
   - seerr-pg
   - vaultwarden-pg
   - redis

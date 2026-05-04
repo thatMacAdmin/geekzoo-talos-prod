@@ -1,8 +1,0 @@
-apiVersion: image.toolkit.fluxcd.io/v1
-kind: ImageRepository
-metadata:
-  name: blocky
-  namespace: flux-system
-spec:
-  image: spx01/blocky
-  interval: 1h
