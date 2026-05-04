@@ -1,0 +1,13 @@
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: unpackerr-image-policy
+  namespace: flux-system
+spec:
+  imageRepositoryRef:
+    name: unpackerr
+  filterTags:
+    pattern: '^([0-9]+\.[0-9]+\.[0-9]+)$'
+  policy:
+    semver:
+      range: ">=0.15.0"

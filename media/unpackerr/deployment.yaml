@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: unpackerr
+  namespace: media
+  labels:
+    app: unpackerr
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: unpackerr
+  template:
+    metadata:
+      labels:
+        app: unpackerr
+      annotations:
+        backup.velero.io/backup-volumes-excludes: unpackerr-media
+    spec:
+      securityContext:
+        fsGroup: 65533
+        seccompProfile:
+          type: RuntimeDefault
+      volumes:
+        - name: unpackerr-config
+          persistentVolumeClaim:
+            claimName: unpackerr-config-pvc
+        - name: unpackerr-secret-config
+          secret:
+            secretName: unpackerr-config
+        - name: unpackerr-media
+          persistentVolumeClaim:
+            claimName: pvc-media-nfs
+      containers:
+        - name: unpackerr
+          image: golift/unpackerr:0.15.2 # {"$imagepolicy": "flux-system:unpackerr-image-policy"}
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: TZ
+              value: "America/New_York"
+          volumeMounts:
+            - name: unpackerr-config
+              mountPath: /config
+            - name: unpackerr-secret-config
+              mountPath: /config/unpackerr.conf
+              subPath: unpackerr.conf
+              readOnly: true
+            - name: unpackerr-media
+              mountPath: /media
+          securityContext:
+            runAsUser: 65534
+            runAsGroup: 65533
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "50m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"

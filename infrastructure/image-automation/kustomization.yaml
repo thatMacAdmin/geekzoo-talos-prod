@@ -13,6 +13,7 @@ resources:
   - image-repository-sonarr.yaml
   - image-repository-mousehole.yaml
   - image-repository-sabnzbd.yaml
+  - image-repository-unpackerr.yaml
   - image-repository-vaultwarden.yaml
   - image-policy-blocky.yaml
   - image-policy-gluetun.yaml
@@ -25,6 +26,7 @@ resources:
   - image-policy-sonarr.yaml
   - image-policy-mousehole.yaml
   - image-policy-sabnzbd.yaml
+  - image-policy-unpackerr.yaml
   - image-policy-vaultwarden.yaml
   - image-update-automation.yaml
   - image-update-automation-apps.yaml
