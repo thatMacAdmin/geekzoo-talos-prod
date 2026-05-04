@@ -76,5 +76,3 @@ config:
 
 serviceMonitor:
   enabled: true
-  extraLabels:
-    app.kubernetes.io/part-of: clickstack
