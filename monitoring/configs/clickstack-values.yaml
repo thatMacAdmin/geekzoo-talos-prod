@@ -61,6 +61,14 @@ clickhouse:
     spec:
       replicas: 1
       shards: 1
+      containerTemplate:
+        resources:
+          requests:
+            cpu: "1"
+            memory: 1Gi
+          limits:
+            cpu: "4"
+            memory: 4Gi
       dataVolumeClaimSpec:
         accessModes:
           - ReadWriteOnce
