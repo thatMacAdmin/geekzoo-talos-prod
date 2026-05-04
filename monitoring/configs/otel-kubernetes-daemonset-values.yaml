@@ -86,6 +86,8 @@ config:
             static_configs:
               - targets:
                   - ${env:MY_POD_IP}:8888
+    kubeletstats:
+      insecure_skip_verify: true
     zipkin: null
   service:
     pipelines:
