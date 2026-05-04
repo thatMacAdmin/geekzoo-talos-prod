@@ -90,9 +90,16 @@ config:
   service:
     pipelines:
       logs:
+        receivers:
+          - otlp
+          - filelog
         exporters:
           - otlphttp
       metrics:
+        receivers:
+          - otlp
+          - hostmetrics
+          - kubeletstats
         exporters:
           - otlphttp
       traces: null
