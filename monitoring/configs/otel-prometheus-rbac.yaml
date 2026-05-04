@@ -19,10 +19,20 @@ rules:
       - ""
     resources:
       - endpoints
+      - configmaps
       - namespaces
       - nodes
+      - nodes/metrics
       - pods
       - services
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - networking.k8s.io
+    resources:
+      - ingresses
     verbs:
       - get
       - list
@@ -44,10 +54,12 @@ rules:
       - scrapeconfigs
       - servicemonitors
     verbs:
-      - get
-      - list
-      - watch
+      - "*"
   - nonResourceURLs:
+      - /api
+      - /api/*
+      - /apis
+      - /apis/*
       - /metrics
     verbs:
       - get

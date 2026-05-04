@@ -72,7 +72,6 @@ config:
         authorization: ${env:HYPERDX_API_KEY}
   receivers:
     jaeger: null
-    otlp: null
     prometheus: null
     zipkin: null
   service:
