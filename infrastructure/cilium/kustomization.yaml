@@ -3,3 +3,5 @@ kind: Kustomization
 
 resources:
   - cilium.yaml
+  - hubble-ui-certificate.yaml
+  - hubble-ui-ingressroute.yaml
