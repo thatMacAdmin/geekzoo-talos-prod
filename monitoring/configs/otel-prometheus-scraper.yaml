@@ -1,0 +1,76 @@
+apiVersion: opentelemetry.io/v1beta1
+kind: OpenTelemetryCollector
+metadata:
+  name: prometheus-scraper
+  namespace: monitoring
+spec:
+  mode: statefulset
+  replicas: 1
+  serviceAccount: otel-prometheus-scraper
+  image: ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s:0.123.0
+  targetAllocator:
+    enabled: true
+    serviceAccount: otel-targetallocator
+    prometheusCR:
+      enabled: true
+      scrapeInterval: 30s
+      serviceMonitorSelector: {}
+      serviceMonitorNamespaceSelector: {}
+      podMonitorSelector: {}
+      podMonitorNamespaceSelector: {}
+  env:
+    - name: HYPERDX_API_KEY
+      valueFrom:
+        secretKeyRef:
+          name: clickstack-secret-values
+          key: HYPERDX_API_KEY
+    - name: CLICKSTACK_OTLP_ENDPOINT
+      value: http://clickstack-otel-collector:4318
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 768Mi
+  config:
+    extensions:
+      health_check:
+        endpoint: 0.0.0.0:13133
+
+    receivers:
+      prometheus:
+        config:
+          scrape_configs:
+            - job_name: service-monitor-discovery
+              scrape_interval: 30s
+              static_configs:
+                - targets:
+                    - 127.0.0.1:8888
+
+    processors:
+      memory_limiter:
+        check_interval: 5s
+        limit_percentage: 80
+        spike_limit_percentage: 25
+      batch: {}
+
+    exporters:
+      otlphttp:
+        endpoint: ${env:CLICKSTACK_OTLP_ENDPOINT}
+        compression: gzip
+        headers:
+          authorization: ${env:HYPERDX_API_KEY}
+
+    service:
+      extensions:
+        - health_check
+      pipelines:
+        metrics:
+          receivers:
+            - prometheus
+          processors:
+            - memory_limiter
+            - batch
+          exporters:
+            - otlphttp

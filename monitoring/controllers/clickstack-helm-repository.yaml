@@ -1,0 +1,8 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: clickstack
+  namespace: monitoring
+spec:
+  url: https://clickhouse.github.io/ClickStack-helm-charts
+  interval: 24h

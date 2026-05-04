@@ -1,0 +1,91 @@
+mode: daemonset
+
+image:
+  repository: ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s
+  tag: "0.123.0"
+
+command:
+  name: otelcol-k8s
+
+presets:
+  logsCollection:
+    enabled: true
+  hostMetrics:
+    enabled: true
+  kubernetesAttributes:
+    enabled: true
+    extractAllPodLabels: true
+    extractAllPodAnnotations: true
+  kubeletMetrics:
+    enabled: true
+
+clusterRole:
+  create: true
+  rules:
+    - apiGroups:
+        - ""
+      resources:
+        - nodes/proxy
+      verbs:
+        - get
+
+extraEnvs:
+  - name: HYPERDX_API_KEY
+    valueFrom:
+      secretKeyRef:
+        name: clickstack-secret-values
+        key: HYPERDX_API_KEY
+  - name: CLICKSTACK_OTLP_ENDPOINT
+    value: http://clickstack-otel-collector:4318
+
+ports:
+  otlp:
+    enabled: false
+  otlp-http:
+    enabled: false
+  jaeger-compact:
+    enabled: false
+  jaeger-thrift:
+    enabled: false
+  jaeger-grpc:
+    enabled: false
+  zipkin:
+    enabled: false
+  metrics:
+    enabled: true
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 768Mi
+
+config:
+  exporters:
+    debug: null
+    otlphttp:
+      endpoint: ${env:CLICKSTACK_OTLP_ENDPOINT}
+      compression: gzip
+      headers:
+        authorization: ${env:HYPERDX_API_KEY}
+  receivers:
+    jaeger: null
+    otlp: null
+    prometheus: null
+    zipkin: null
+  service:
+    pipelines:
+      logs:
+        exporters:
+          - otlphttp
+      metrics:
+        exporters:
+          - otlphttp
+      traces: null
+
+serviceMonitor:
+  enabled: true
+  extraLabels:
+    app.kubernetes.io/part-of: clickstack
