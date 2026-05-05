@@ -86,6 +86,10 @@ spec:
                 .level = "info"
               }
             }
+
+            if .namespace == "rook-ceph" && .level == "debug" {
+              .level = "info"
+            }
       sinks:
         victoria_logs:
           type: http
