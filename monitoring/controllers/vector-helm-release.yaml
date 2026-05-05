@@ -20,11 +20,6 @@ spec:
       enabled: false
     serviceHeadless:
       enabled: false
-    env:
-      - name: VECTOR_SELF_NODE_NAME
-        valueFrom:
-          fieldRef:
-            fieldPath: spec.nodeName
     customConfig:
       data_dir: /vector-data-dir
       api:
