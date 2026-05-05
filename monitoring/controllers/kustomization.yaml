@@ -7,8 +7,6 @@ resources:
   - prometheus-community-helm-repository.yaml
   - kube-state-metrics-helm-release.yaml
   - node-exporter-helm-release.yaml
-  - opentelemetry-helm-repository.yaml
-  - opentelemetry-operator-helm-release.yaml
   - vector-helm-repository.yaml
   - vector-helm-release.yaml
   - victoria-logs-helm-release.yaml
