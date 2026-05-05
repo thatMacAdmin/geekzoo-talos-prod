@@ -23,3 +23,39 @@ data:
         url: http://victoria-logs-vlogs-server.monitoring.svc.cluster.local:9428
         jsonData:
           maxLines: 1000
+          logLevelRules:
+            - field: level
+              value: critical
+              level: critical
+              operator: equals
+              enabled: true
+            - field: level
+              value: error
+              level: error
+              operator: equals
+              enabled: true
+            - field: level
+              value: warning
+              level: warning
+              operator: equals
+              enabled: true
+            - field: level
+              value: warn
+              level: warning
+              operator: equals
+              enabled: true
+            - field: level
+              value: info
+              level: info
+              operator: equals
+              enabled: true
+            - field: level
+              value: debug
+              level: debug
+              operator: equals
+              enabled: true
+            - field: level
+              value: trace
+              level: trace
+              operator: equals
+              enabled: true

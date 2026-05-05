@@ -36,17 +36,62 @@ spec:
             container_image_id: ""
             pod_annotations: ""
             pod_ips: ""
-            pod_labels: ""
-            pod_owner: ""
             pod_uid: ""
           node_annotation_fields:
             node_labels: ""
+      transforms:
+        normalize_kubernetes_logs:
+          type: remap
+          inputs:
+            - kubernetes_logs
+          source: |-
+            .namespace = .kubernetes.pod_namespace
+            .pod = .kubernetes.pod_name
+            .container = .kubernetes.container_name
+            .node = .kubernetes.pod_node_name
+            .owner = .kubernetes.pod_owner
+            .workload = .kubernetes.pod_owner
+
+            if exists(.kubernetes.pod_labels."app.kubernetes.io/name") {
+              .app = .kubernetes.pod_labels."app.kubernetes.io/name"
+            } else if exists(.kubernetes.pod_labels.app) {
+              .app = .kubernetes.pod_labels.app
+            }
+            del(.kubernetes.pod_labels)
+
+            parsed = parse_json(.message) ?? {}
+            if is_object(parsed) {
+              if exists(parsed.level) {
+                .level = downcase(to_string!(parsed.level))
+              } else if exists(parsed.severity) {
+                .level = downcase(to_string!(parsed.severity))
+              } else if exists(parsed.log_level) {
+                .level = downcase(to_string!(parsed.log_level))
+              }
+            }
+
+            if !exists(.level) {
+              message = downcase(to_string(.message) ?? "")
+              if contains(message, "critical") || contains(message, "fatal") || contains(message, "panic") {
+                .level = "critical"
+              } else if contains(message, "error") || contains(message, "exception") || contains(message, "traceback") {
+                .level = "error"
+              } else if contains(message, "warning") || contains(message, "warn") {
+                .level = "warning"
+              } else if contains(message, "debug") {
+                .level = "debug"
+              } else if contains(message, "trace") {
+                .level = "trace"
+              } else {
+                .level = "info"
+              }
+            }
       sinks:
         victoria_logs:
           type: http
           inputs:
-            - kubernetes_logs
-          uri: http://victoria-logs-vlogs-server.monitoring.svc.cluster.local:9428/insert/jsonline?_stream_fields=kubernetes.pod_namespace,kubernetes.pod_name,kubernetes.container_name,kubernetes.pod_node_name&_msg_field=message&_time_field=timestamp
+            - normalize_kubernetes_logs
+          uri: http://victoria-logs-vlogs-server.monitoring.svc.cluster.local:9428/insert/jsonline?_stream_fields=namespace,pod,container,node,app,workload,level&_msg_field=message&_time_field=timestamp
           compression: gzip
           encoding:
             codec: json
