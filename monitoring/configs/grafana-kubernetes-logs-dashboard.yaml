@@ -98,7 +98,7 @@ data:
           "targets": [
             {
               "refId": "A",
-              "expr": "namespace:$namespace workload:$workload pod:$pod container:$container level:$level $text | stats by (level) count()",
+              "expr": "namespace:$namespace workload:$workload pod:$pod container:$container level:* level:$level $text | stats by (level) count()",
               "queryType": "statsRange",
               "legendFormat": "{{level}}"
             }
