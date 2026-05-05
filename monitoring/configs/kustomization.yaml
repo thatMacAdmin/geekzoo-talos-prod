@@ -3,6 +3,7 @@ kind: Kustomization
 
 resources:
   - vmsingle.yaml
+  - vmagent-rbac.yaml
   - vmagent-scrape-config.yaml
   - vmagent.yaml
   - grafana-datasources.yaml
