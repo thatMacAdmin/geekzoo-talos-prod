@@ -3,6 +3,7 @@ kind: Kustomization
 
 resources:
   - clickstack-helm-release.yaml
+  - clickstack-clickhouse-servicemonitor.yaml
   - clickstack-certificate.yaml
   - clickstack-ingressroute.yaml
   - otel-kubernetes-daemonset-helm-release.yaml

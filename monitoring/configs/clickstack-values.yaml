@@ -78,6 +78,8 @@ clickhouse:
             storage: 250Gi
       settings:
         extraConfig:
+          logger:
+            level: information
           max_connections: 4096
           keep_alive_timeout: 64
           max_concurrent_queries: 100
