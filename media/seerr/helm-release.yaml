@@ -38,3 +38,5 @@ spec:
         value: "false"
       - name: DB_USE_SSL
         value: "false"
+      - name: LOG_LEVEL
+        value: info

@@ -1,4 +1,11 @@
 operatorNamespace: rook-ceph
+configOverride: |
+  [global]
+  debug_default = 0/5
+  debug_mon = 0/5
+  debug_mgr = 0/5
+  debug_osd = 0/5
+  debug_rgw = 0/5
 cephClusterSpec:
   removeOSDsIfOutAndSafeToRemove: true
   storage:
