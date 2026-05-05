@@ -6,5 +6,6 @@ resources:
   - grafana-helm-release.yaml
   - opentelemetry-helm-repository.yaml
   - opentelemetry-operator-helm-release.yaml
+  - victoria-logs-helm-release.yaml
   - victoria-metrics-helm-repository.yaml
   - victoria-metrics-operator-helm-release.yaml
