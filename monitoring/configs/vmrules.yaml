@@ -24,3 +24,62 @@ spec:
           annotations:
             summary: VictoriaMetrics is not ingesting samples
             description: VMSingle has not inserted samples for more than 10 minutes.
+    - name: ceph-storage
+      interval: 30s
+      rules:
+        - alert: CephHealthNotOk
+          expr: ceph_health_status > 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: Ceph health is not OK
+            description: Ceph health status is {{ $value }}. Expected 0 for HEALTH_OK.
+        - alert: CephHealthCheckActive
+          expr: ceph_health_detail > 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: Ceph health check {{ $labels.name }} is active
+            description: Ceph reports {{ $labels.name }} at severity {{ $labels.severity }}.
+        - alert: CephOsdDown
+          expr: ceph_osd_up == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: Ceph OSD {{ $labels.ceph_daemon }} is down
+            description: Ceph OSD {{ $labels.ceph_daemon }} has reported down for more than 5 minutes.
+        - alert: CephOsdOut
+          expr: ceph_osd_in == 0
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: Ceph OSD {{ $labels.ceph_daemon }} is out
+            description: Ceph OSD {{ $labels.ceph_daemon }} has reported out for more than 10 minutes.
+        - alert: CephRawCapacityHigh
+          expr: ceph_cluster_total_used_bytes / ceph_cluster_total_bytes > 0.80
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: Ceph raw capacity usage is high
+            description: Ceph raw capacity usage is {{ $value | humanizePercentage }}.
+        - alert: CephPoolNearFull
+          expr: ceph_pool_percent_used * on(pool_id) group_left(name) ceph_pool_metadata > 0.80
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: Ceph pool {{ $labels.name }} is filling
+            description: Ceph pool {{ $labels.name }} is {{ $value | humanizePercentage }} used.
+        - alert: CephPlacementGroupsUnhealthy
+          expr: sum(ceph_pg_degraded + ceph_pg_inconsistent + ceph_pg_incomplete + ceph_pg_stale + ceph_pg_down) > 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: Ceph has unhealthy placement groups
+            description: Ceph reports {{ $value }} unhealthy placement groups.

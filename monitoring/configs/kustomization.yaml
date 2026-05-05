@@ -8,6 +8,7 @@ resources:
   - vmagent.yaml
   - grafana-datasources.yaml
   - grafana-kubernetes-logs-dashboard.yaml
+  - grafana-storage-dashboards.yaml
   - grafana-certificate.yaml
   - grafana-ingressroute.yaml
   - vmalertmanager.yaml

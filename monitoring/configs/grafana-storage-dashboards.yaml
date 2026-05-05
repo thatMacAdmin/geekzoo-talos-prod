@@ -1,0 +1,234 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-storage-dashboards
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+  annotations:
+    grafana_folder: Storage
+data:
+  storage-overview.json: |
+    {
+      "uid": "storage-overview",
+      "title": "Storage / Overview",
+      "tags": ["storage", "ceph", "rook", "pvc"],
+      "timezone": "browser",
+      "schemaVersion": 41,
+      "version": 1,
+      "refresh": "30s",
+      "time": {"from": "now-6h", "to": "now"},
+      "panels": [
+        {
+          "id": 1,
+          "title": "Ceph Health",
+          "type": "stat",
+          "datasource": {"type": "prometheus", "uid": "P4169E866C3094E38"},
+          "gridPos": {"h": 4, "w": 4, "x": 0, "y": 0},
+          "targets": [{"refId": "A", "expr": "max(ceph_health_status)", "legendFormat": "health"}],
+          "fieldConfig": {
+            "defaults": {
+              "mappings": [
+                {"type": "value", "options": {"0": {"text": "OK", "color": "green"}, "1": {"text": "WARN", "color": "orange"}, "2": {"text": "ERR", "color": "red"}}}
+              ],
+              "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 1}, {"color": "red", "value": 2}]}
+            },
+            "overrides": []
+          }
+        },
+        {
+          "id": 2,
+          "title": "Raw Used",
+          "type": "stat",
+          "datasource": {"type": "prometheus", "uid": "P4169E866C3094E38"},
+          "gridPos": {"h": 4, "w": 4, "x": 4, "y": 0},
+          "targets": [{"refId": "A", "expr": "ceph_cluster_total_used_bytes", "legendFormat": "used"}],
+          "fieldConfig": {"defaults": {"unit": "bytes"}, "overrides": []}
+        },
+        {
+          "id": 3,
+          "title": "Raw Capacity Used",
+          "type": "gauge",
+          "datasource": {"type": "prometheus", "uid": "P4169E866C3094E38"},
+          "gridPos": {"h": 4, "w": 4, "x": 8, "y": 0},
+          "targets": [{"refId": "A", "expr": "ceph_cluster_total_used_bytes / ceph_cluster_total_bytes", "legendFormat": "used"}],
+          "fieldConfig": {"defaults": {"unit": "percentunit", "min": 0, "max": 1, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 0.75}, {"color": "red", "value": 0.9}]}}, "overrides": []}
+        },
+        {
+          "id": 4,
+          "title": "OSDs Up / In",
+          "type": "stat",
+          "datasource": {"type": "prometheus", "uid": "P4169E866C3094E38"},
+          "gridPos": {"h": 4, "w": 4, "x": 12, "y": 0},
+          "targets": [
+            {"refId": "A", "expr": "sum(ceph_osd_up)", "legendFormat": "up"},
+            {"refId": "B", "expr": "sum(ceph_osd_in)", "legendFormat": "in"}
+          ],
+          "fieldConfig": {"defaults": {"decimals": 0}, "overrides": []}
+        },
+        {
+          "id": 5,
+          "title": "PVCs",
+          "type": "stat",
+          "datasource": {"type": "prometheus", "uid": "P4169E866C3094E38"},
+          "gridPos": {"h": 4, "w": 4, "x": 16, "y": 0},
+          "targets": [{"refId": "A", "expr": "count(kubelet_volume_stats_capacity_bytes{job=\"kubelet\"})", "legendFormat": "PVCs"}],
+          "fieldConfig": {"defaults": {"decimals": 0}, "overrides": []}
+        },
+        {
+          "id": 6,
+          "title": "Active Health Checks",
+          "type": "stat",
+          "datasource": {"type": "prometheus", "uid": "P4169E866C3094E38"},
+          "gridPos": {"h": 4, "w": 4, "x": 20, "y": 0},
+          "targets": [{"refId": "A", "expr": "sum(ceph_health_detail)", "legendFormat": "active"}],
+          "fieldConfig": {"defaults": {"decimals": 0, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 1}]}}, "overrides": []}
+        },
+        {
+          "id": 7,
+          "title": "Ceph Raw Capacity",
+          "type": "timeseries",
+          "datasource": {"type": "prometheus", "uid": "P4169E866C3094E38"},
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 4},
+          "targets": [
+            {"refId": "A", "expr": "ceph_cluster_total_used_bytes", "legendFormat": "used"},
+            {"refId": "B", "expr": "ceph_cluster_total_bytes - ceph_cluster_total_used_bytes", "legendFormat": "free"}
+          ],
+          "fieldConfig": {"defaults": {"unit": "bytes", "custom": {"fillOpacity": 20, "showPoints": "never", "spanNulls": true}}, "overrides": []},
+          "options": {"legend": {"displayMode": "table", "placement": "right", "showLegend": true}, "tooltip": {"mode": "multi"}}
+        },
+        {
+          "id": 8,
+          "title": "Top PVCs By Percent Used",
+          "type": "bargauge",
+          "datasource": {"type": "prometheus", "uid": "P4169E866C3094E38"},
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 4},
+          "targets": [{"refId": "A", "expr": "topk(15, 1 - (kubelet_volume_stats_available_bytes{job=\"kubelet\"} / kubelet_volume_stats_capacity_bytes{job=\"kubelet\"}))", "legendFormat": "{{namespace}}/{{persistentvolumeclaim}}"}],
+          "fieldConfig": {"defaults": {"unit": "percentunit", "min": 0, "max": 1, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 0.75}, {"color": "red", "value": 0.9}]}}, "overrides": []},
+          "options": {"displayMode": "gradient", "orientation": "horizontal", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}}
+        },
+        {
+          "id": 9,
+          "title": "Pool Usage",
+          "type": "bargauge",
+          "datasource": {"type": "prometheus", "uid": "P4169E866C3094E38"},
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 12},
+          "targets": [{"refId": "A", "expr": "ceph_pool_percent_used * on(pool_id) group_left(name) ceph_pool_metadata", "legendFormat": "{{name}}"}],
+          "fieldConfig": {"defaults": {"unit": "percentunit", "min": 0, "max": 1, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 0.75}, {"color": "red", "value": 0.9}]}}, "overrides": []},
+          "options": {"displayMode": "gradient", "orientation": "horizontal", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}}
+        },
+        {
+          "id": 10,
+          "title": "OSD Used Bytes",
+          "type": "bargauge",
+          "datasource": {"type": "prometheus", "uid": "P4169E866C3094E38"},
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 12},
+          "targets": [{"refId": "A", "expr": "ceph_osd_stat_bytes_used", "legendFormat": "{{ceph_daemon}}"}],
+          "fieldConfig": {"defaults": {"unit": "bytes"}, "overrides": []},
+          "options": {"displayMode": "gradient", "orientation": "horizontal", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}}
+        }
+      ]
+    }
+  ceph-cluster.json: |
+    {
+      "uid": "ceph-cluster",
+      "title": "Ceph / Cluster",
+      "tags": ["ceph", "rook", "storage"],
+      "timezone": "browser",
+      "schemaVersion": 41,
+      "version": 1,
+      "refresh": "30s",
+      "time": {"from": "now-6h", "to": "now"},
+      "panels": [
+        {
+          "id": 1,
+          "title": "Health Details",
+          "type": "table",
+          "datasource": {"type": "prometheus", "uid": "P4169E866C3094E38"},
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+          "targets": [{"refId": "A", "expr": "ceph_health_detail", "legendFormat": "{{severity}} {{name}}", "format": "table", "instant": true}],
+          "fieldConfig": {"defaults": {"thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 1}]}}, "overrides": []}
+        },
+        {
+          "id": 2,
+          "title": "OSD Up",
+          "type": "bargauge",
+          "datasource": {"type": "prometheus", "uid": "P4169E866C3094E38"},
+          "gridPos": {"h": 8, "w": 6, "x": 12, "y": 0},
+          "targets": [{"refId": "A", "expr": "ceph_osd_up", "legendFormat": "{{ceph_daemon}}"}],
+          "fieldConfig": {"defaults": {"min": 0, "max": 1, "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "green", "value": 1}]}}, "overrides": []}
+        },
+        {
+          "id": 3,
+          "title": "OSD In",
+          "type": "bargauge",
+          "datasource": {"type": "prometheus", "uid": "P4169E866C3094E38"},
+          "gridPos": {"h": 8, "w": 6, "x": 18, "y": 0},
+          "targets": [{"refId": "A", "expr": "ceph_osd_in", "legendFormat": "{{ceph_daemon}}"}],
+          "fieldConfig": {"defaults": {"min": 0, "max": 1, "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "green", "value": 1}]}}, "overrides": []}
+        },
+        {
+          "id": 4,
+          "title": "OSD Latency",
+          "type": "timeseries",
+          "datasource": {"type": "prometheus", "uid": "P4169E866C3094E38"},
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+          "targets": [
+            {"refId": "A", "expr": "ceph_osd_apply_latency_ms", "legendFormat": "apply {{ceph_daemon}}"},
+            {"refId": "B", "expr": "ceph_osd_commit_latency_ms", "legendFormat": "commit {{ceph_daemon}}"}
+          ],
+          "fieldConfig": {"defaults": {"unit": "ms", "custom": {"showPoints": "never", "spanNulls": true}}, "overrides": []},
+          "options": {"legend": {"displayMode": "table", "placement": "right", "showLegend": true}, "tooltip": {"mode": "multi"}}
+        },
+        {
+          "id": 5,
+          "title": "PG State Counts",
+          "type": "timeseries",
+          "datasource": {"type": "prometheus", "uid": "P4169E866C3094E38"},
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+          "targets": [
+            {"refId": "A", "expr": "sum(ceph_pg_total)", "legendFormat": "total"},
+            {"refId": "B", "expr": "sum(ceph_pg_clean)", "legendFormat": "clean"},
+            {"refId": "C", "expr": "sum(ceph_pg_degraded)", "legendFormat": "degraded"},
+            {"refId": "D", "expr": "sum(ceph_pg_inconsistent)", "legendFormat": "inconsistent"},
+            {"refId": "E", "expr": "sum(ceph_pg_recovering)", "legendFormat": "recovering"}
+          ],
+          "fieldConfig": {"defaults": {"decimals": 0, "custom": {"showPoints": "never", "spanNulls": true}}, "overrides": []},
+          "options": {"legend": {"displayMode": "table", "placement": "right", "showLegend": true}, "tooltip": {"mode": "multi"}}
+        }
+      ]
+    }
+  pvc-usage.json: |
+    {
+      "uid": "pvc-usage",
+      "title": "Storage / PVC Usage",
+      "tags": ["storage", "pvc", "kubernetes"],
+      "timezone": "browser",
+      "schemaVersion": 41,
+      "version": 1,
+      "refresh": "30s",
+      "time": {"from": "now-24h", "to": "now"},
+      "templating": {"list": [{"name": "namespace", "label": "Namespace", "type": "query", "datasource": {"type": "prometheus", "uid": "P4169E866C3094E38"}, "query": "label_values(kubelet_volume_stats_capacity_bytes{job=\"kubelet\"}, namespace)", "refresh": 2, "sort": 1, "multi": true, "includeAll": true, "allValue": ".*"}]},
+      "panels": [
+        {
+          "id": 1,
+          "title": "PVC Used Percent",
+          "type": "bargauge",
+          "datasource": {"type": "prometheus", "uid": "P4169E866C3094E38"},
+          "gridPos": {"h": 12, "w": 24, "x": 0, "y": 0},
+          "targets": [{"refId": "A", "expr": "1 - (kubelet_volume_stats_available_bytes{job=\"kubelet\",namespace=~\"$namespace\"} / kubelet_volume_stats_capacity_bytes{job=\"kubelet\",namespace=~\"$namespace\"})", "legendFormat": "{{namespace}}/{{persistentvolumeclaim}}"}],
+          "fieldConfig": {"defaults": {"unit": "percentunit", "min": 0, "max": 1, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 0.75}, {"color": "red", "value": 0.9}]}}, "overrides": []},
+          "options": {"displayMode": "gradient", "orientation": "horizontal", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}}
+        },
+        {
+          "id": 2,
+          "title": "PVC Used Bytes",
+          "type": "timeseries",
+          "datasource": {"type": "prometheus", "uid": "P4169E866C3094E38"},
+          "gridPos": {"h": 10, "w": 24, "x": 0, "y": 12},
+          "targets": [{"refId": "A", "expr": "kubelet_volume_stats_used_bytes{job=\"kubelet\",namespace=~\"$namespace\"}", "legendFormat": "{{namespace}}/{{persistentvolumeclaim}}"}],
+          "fieldConfig": {"defaults": {"unit": "bytes", "custom": {"showPoints": "never", "spanNulls": true}}, "overrides": []},
+          "options": {"legend": {"displayMode": "table", "placement": "right", "showLegend": true}, "tooltip": {"mode": "multi"}}
+        }
+      ]
+    }

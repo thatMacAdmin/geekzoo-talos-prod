@@ -108,4 +108,14 @@ stringData:
           source_labels:
             - __meta_kubernetes_endpoint_node_name
           target_label: node
+
+    - job_name: rook-ceph-mgr
+      static_configs:
+        - targets:
+            - rook-ceph-mgr.rook-ceph.svc.cluster.local:9283
+
+    - job_name: rook-ceph-exporter
+      static_configs:
+        - targets:
+            - rook-ceph-exporter.rook-ceph.svc.cluster.local:9926
 type: Opaque
