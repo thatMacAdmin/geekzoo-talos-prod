@@ -21,7 +21,7 @@ spec:
     serviceHeadless:
       enabled: false
     customConfig:
-      data_dir: /vector-data-dir
+      data_dir: /vector-data-dir/current
       api:
         enabled: true
         address: 0.0.0.0:8686
@@ -29,6 +29,18 @@ spec:
         kubernetes_logs:
           type: kubernetes_logs
           self_node_name: ${VECTOR_SELF_NODE_NAME}
+          read_from: end
+          ignore_older_secs: 600
+          insert_namespace_fields: false
+          pod_annotation_fields:
+            container_image_id: ""
+            pod_annotations: ""
+            pod_ips: ""
+            pod_labels: ""
+            pod_owner: ""
+            pod_uid: ""
+          node_annotation_fields:
+            node_labels: ""
       sinks:
         victoria_logs:
           type: http
@@ -45,6 +57,6 @@ spec:
     resources:
       requests:
         cpu: 100m
-        memory: 128Mi
+        memory: 256Mi
       limits:
-        memory: 512Mi
+        memory: 1Gi
