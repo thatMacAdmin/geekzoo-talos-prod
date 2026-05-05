@@ -18,7 +18,7 @@ data:
           httpMethod: POST
           timeInterval: 30s
       - name: VictoriaLogs
-        type: victorialogs-datasource
+        type: victoriametrics-logs-datasource
         access: proxy
         url: http://victoria-logs-vlogs-server.monitoring.svc.cluster.local:9428
         jsonData:
