@@ -16,6 +16,8 @@ spec:
         namespace: monitoring
   values:
     fullnameOverride: node-exporter
+    extraArgs:
+      - --no-collector.kernel_hung
     resources:
       requests:
         cpu: 25m
