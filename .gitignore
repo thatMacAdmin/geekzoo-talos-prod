@@ -15,3 +15,6 @@ omni/**/*.yaml
 
 # AI tooling
 .claude/
+
+# Jsonnet dependencies
+monitoring/mixins/vendor/

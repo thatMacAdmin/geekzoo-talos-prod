@@ -1,0 +1,27 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: node-exporter
+  namespace: monitoring
+spec:
+  interval: 30m
+  releaseName: node-exporter
+  chart:
+    spec:
+      chart: prometheus-node-exporter
+      version: "4.53.0"
+      sourceRef:
+        kind: HelmRepository
+        name: prometheus-community
+        namespace: monitoring
+  values:
+    fullnameOverride: node-exporter
+    resources:
+      requests:
+        cpu: 25m
+        memory: 64Mi
+      limits:
+        memory: 128Mi
+    prometheus:
+      monitor:
+        enabled: false

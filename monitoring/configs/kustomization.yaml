@@ -12,3 +12,5 @@ resources:
   - vmalertmanager.yaml
   - vmalert.yaml
   - vmrules.yaml
+  - generated/kubernetes-mixin-dashboards.yaml
+  - generated/kubernetes-mixin-rules.yaml

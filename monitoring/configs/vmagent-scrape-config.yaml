@@ -5,7 +5,7 @@ metadata:
   namespace: monitoring
 stringData:
   prometheus-additional.yaml: |
-    - job_name: kubernetes-apiservers
+    - job_name: kube-apiserver
       kubernetes_sd_configs:
         - role: endpoints
       scheme: https
@@ -20,7 +20,7 @@ stringData:
             - __meta_kubernetes_endpoint_port_name
           regex: default;kubernetes;https
 
-    - job_name: kubernetes-nodes
+    - job_name: kubelet
       kubernetes_sd_configs:
         - role: node
       scheme: https
@@ -37,7 +37,7 @@ stringData:
           target_label: __metrics_path__
           replacement: /api/v1/nodes/${1}/proxy/metrics
 
-    - job_name: kubernetes-nodes-cadvisor
+    - job_name: cadvisor
       kubernetes_sd_configs:
         - role: node
       scheme: https
@@ -92,4 +92,24 @@ stringData:
           source_labels:
             - __meta_kubernetes_pod_container_name
           target_label: container
+
+    - job_name: kube-state-metrics
+      static_configs:
+        - targets:
+            - kube-state-metrics.monitoring.svc.cluster.local:8080
+
+    - job_name: node-exporter
+      kubernetes_sd_configs:
+        - role: endpoints
+      relabel_configs:
+        - action: keep
+          source_labels:
+            - __meta_kubernetes_namespace
+            - __meta_kubernetes_service_name
+            - __meta_kubernetes_endpoint_port_name
+          regex: monitoring;node-exporter;metrics
+        - action: replace
+          source_labels:
+            - __meta_kubernetes_endpoint_node_name
+          target_label: node
 type: Opaque
