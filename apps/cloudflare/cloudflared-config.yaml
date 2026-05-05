@@ -177,6 +177,12 @@ ingress:
       noTLSVerify: true
       originServerName: chat.macbytes.io
       httpHostHeader: chat.macbytes.io
+  - hostname: grafana.macbytes.io
+    service: https://traefik.traefik.svc.cluster.local:443
+    originRequest:
+      noTLSVerify: true
+      originServerName: grafana.macbytes.io
+      httpHostHeader: grafana.macbytes.io
   - hostname: hubble.macbytes.io
     service: https://traefik.traefik.svc.cluster.local:443
     originRequest:
