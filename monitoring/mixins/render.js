@@ -8,6 +8,14 @@ const dashboards = JSON.parse(fs.readFileSync('/tmp/kubernetes-mixin-dashboards.
 const alerts = JSON.parse(fs.readFileSync('/tmp/kubernetes-mixin-alerts.json', 'utf8'));
 const rules = JSON.parse(fs.readFileSync('/tmp/kubernetes-mixin-rules.json', 'utf8'));
 
+for (const group of rules.groups ?? []) {
+  for (const rule of group.rules ?? []) {
+    if (rule.record === 'apiserver_request:availability30d') {
+      rule.expr = `clamp_max(clamp_min((\n${rule.expr.trim()}\n), 0), 1)\n`;
+    }
+  }
+}
+
 function sanitizeName(name) {
   return name
     .replace(/\.json$/, '')

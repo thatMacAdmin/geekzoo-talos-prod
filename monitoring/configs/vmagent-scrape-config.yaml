@@ -6,19 +6,15 @@ metadata:
 stringData:
   prometheus-additional.yaml: |
     - job_name: kube-apiserver
-      kubernetes_sd_configs:
-        - role: endpoints
+      static_configs:
+        - targets:
+            - 192.168.140.4:6443
+            - 192.168.135.197:6443
+            - 192.168.125.77:6443
       scheme: https
       bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
       tls_config:
         ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
-      relabel_configs:
-        - action: keep
-          source_labels:
-            - __meta_kubernetes_namespace
-            - __meta_kubernetes_service_name
-            - __meta_kubernetes_endpoint_port_name
-          regex: default;kubernetes;https
 
     - job_name: kubelet
       kubernetes_sd_configs:
