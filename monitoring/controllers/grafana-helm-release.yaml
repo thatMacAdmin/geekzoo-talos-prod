@@ -21,6 +21,9 @@ spec:
       port: 80
     persistence:
       enabled: false
+    plugins:
+      - victoriametrics-logs-datasource
+    envFromSecret: grafana-oidc-config
     grafana.ini:
       analytics:
         check_for_updates: false
@@ -30,6 +33,10 @@ spec:
         oauth_auto_login: false
       auth.anonymous:
         enabled: false
+      auth.generic_oauth:
+        enabled: true
+        name: Authentik
+        allow_sign_up: true
       server:
         domain: grafana.macbytes.io
         root_url: https://grafana.macbytes.io

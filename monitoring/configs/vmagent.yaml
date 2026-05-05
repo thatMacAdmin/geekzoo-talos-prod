@@ -1,0 +1,22 @@
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMAgent
+metadata:
+  name: metrics
+  namespace: monitoring
+spec:
+  replicaCount: 1
+  scrapeInterval: 30s
+  scrapeTimeout: 10s
+  externalLabels:
+    cluster: geekzoo-prod
+  additionalScrapeConfigs:
+    name: vmagent-additional-scrape-configs
+    key: prometheus-additional.yaml
+  remoteWrite:
+    - url: http://vmsingle-metrics.monitoring.svc.cluster.local:8428/api/v1/write
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      memory: 512Mi
