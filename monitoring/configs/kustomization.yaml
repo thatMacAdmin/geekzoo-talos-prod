@@ -1,29 +1,4 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-resources:
-  - clickstack-helm-release.yaml
-  - clickstack-clickhouse-servicemonitor.yaml
-  - clickstack-certificate.yaml
-  - clickstack-ingressroute.yaml
-  - otel-kubernetes-daemonset-helm-release.yaml
-  - otel-kubernetes-deployment-helm-release.yaml
-  - otel-prometheus-rbac.yaml
-  - otel-prometheus-scraper.yaml
-
-configMapGenerator:
-  - name: clickstack-values
-    namespace: monitoring
-    files:
-      - values.yaml=clickstack-values.yaml
-  - name: otel-kubernetes-daemonset-values
-    namespace: monitoring
-    files:
-      - values.yaml=otel-kubernetes-daemonset-values.yaml
-  - name: otel-kubernetes-deployment-values
-    namespace: monitoring
-    files:
-      - values.yaml=otel-kubernetes-deployment-values.yaml
-
-generatorOptions:
-  disableNameSuffixHash: true
+resources: []
