@@ -6,6 +6,7 @@ configOverride: |
   debug_mgr = 0/5
   debug_osd = 0/5
   debug_rgw = 0/5
+  mon_cluster_log_level = info
 cephClusterSpec:
   removeOSDsIfOutAndSafeToRemove: true
   storage:
