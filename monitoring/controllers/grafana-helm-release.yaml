@@ -50,7 +50,7 @@ spec:
         provider:
           allowUiUpdates: false
           disableDelete: true
-          foldersFromFilesStructure: false
+          foldersFromFilesStructure: true
       datasources:
         enabled: true
         label: grafana_datasource
