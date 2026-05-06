@@ -1,0 +1,8 @@
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: open-webui
+  namespace: flux-system
+spec:
+  image: ghcr.io/open-webui/open-webui
+  interval: 1h
