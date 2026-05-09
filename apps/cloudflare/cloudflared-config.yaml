@@ -127,9 +127,11 @@ ingress:
     originRequest:
       noTLSVerify: true
   - hostname: truenas.macbytes.io
-    service: https://192.168.2.10
+    service: https://traefik.traefik.svc.cluster.local:443
     originRequest:
       noTLSVerify: true
+      originServerName: truenas.macbytes.io
+      httpHostHeader: truenas.macbytes.io
   - hostname: unifi.macbytes.io
     service: https://192.168.0.1
     originRequest:

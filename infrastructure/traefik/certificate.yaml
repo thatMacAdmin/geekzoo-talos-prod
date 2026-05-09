@@ -10,3 +10,4 @@ spec:
     kind: ClusterIssuer
   dnsNames:
     - traefik.macbytes.io
+    - truenas.macbytes.io

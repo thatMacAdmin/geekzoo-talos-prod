@@ -1,0 +1,19 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: truenas-ingressroute
+  namespace: traefik
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`truenas.macbytes.io`)
+      kind: Rule
+      services:
+        - name: truenas-lb-backend
+          namespace: traefik
+          port: 443
+          scheme: https
+          serversTransport: truenas-backend-transport
+  tls:
+    secretName: traefik-tls-certificate

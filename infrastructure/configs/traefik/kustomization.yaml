@@ -3,6 +3,9 @@ kind: Kustomization
 
 resources:
   - certificate.yaml
+  - truenas-external-service.yaml
+  - truenas-serverstransport.yaml
+  - truenas-ingressroute.yaml
   - dashboard-ingressroute.yaml
   - dashboard-redirect-middleware.yaml
   - flux-operator-certificate.yaml

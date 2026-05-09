@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: truenas-lb-backend
+  namespace: traefik
+spec:
+  type: ExternalName
+  externalName: 192.168.2.10
+  ports:
+    - name: https
+      port: 443
+      targetPort: 443
