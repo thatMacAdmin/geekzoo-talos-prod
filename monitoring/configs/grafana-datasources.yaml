@@ -17,6 +17,13 @@ data:
         jsonData:
           httpMethod: POST
           timeInterval: 30s
+      - name: Alertmanager
+        type: alertmanager
+        access: proxy
+        url: http://vmalertmanager-alertmanager.monitoring.svc.cluster.local:9093
+        jsonData:
+          implementation: prometheus
+          handleGrafanaManagedAlerts: false
       - name: VictoriaLogs
         type: victoriametrics-logs-datasource
         access: proxy
