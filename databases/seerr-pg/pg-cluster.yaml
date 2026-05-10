@@ -7,6 +7,12 @@ spec:
   imageName: ghcr.io/cloudnative-pg/postgresql:17.6-system-trixie
   instances: 3
   enableSuperuserAccess: true
+  plugins:
+    - name: barman-cloud.cloudnative-pg.io
+      isWALArchiver: true
+      parameters:
+        barmanObjectName: wasabi-object-store
+        serverName: seerr-pg-cluster-geekzoo-prod-20260510
   bootstrap:
     initdb:
       database: seerr
