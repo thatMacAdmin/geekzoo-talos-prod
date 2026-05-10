@@ -36,6 +36,17 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
+  name: gpu-operator
+  labels:
+    name: gpu-operator
+    pod-security.kubernetes.io/enforce: privileged
+    pod-security.kubernetes.io/audit: privileged
+    pod-security.kubernetes.io/warn: privileged
+    pod-security.kubernetes.io/enforce-version: latest
+---
+apiVersion: v1
+kind: Namespace
+metadata:
   name: groundcover
   labels:
     name: groundcover
