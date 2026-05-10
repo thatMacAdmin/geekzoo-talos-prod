@@ -16,6 +16,28 @@ stringData:
       tls_config:
         ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
 
+    - job_name: kube-scheduler
+      static_configs:
+        - targets:
+            - 192.168.140.4:10259
+            - 192.168.135.197:10259
+            - 192.168.125.77:10259
+      scheme: https
+      bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+      tls_config:
+        insecure_skip_verify: true
+
+    - job_name: kube-controller-manager
+      static_configs:
+        - targets:
+            - 192.168.140.4:10257
+            - 192.168.135.197:10257
+            - 192.168.125.77:10257
+      scheme: https
+      bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+      tls_config:
+        insecure_skip_verify: true
+
     - job_name: kubelet
       kubernetes_sd_configs:
         - role: node
@@ -24,8 +46,10 @@ stringData:
       tls_config:
         insecure_skip_verify: true
       relabel_configs:
-        - action: labelmap
-          regex: __meta_kubernetes_node_label_(.+)
+        - action: replace
+          source_labels:
+            - __meta_kubernetes_node_name
+          target_label: node
         - target_label: __address__
           replacement: kubernetes.default.svc:443
         - source_labels:
@@ -41,8 +65,10 @@ stringData:
       tls_config:
         insecure_skip_verify: true
       relabel_configs:
-        - action: labelmap
-          regex: __meta_kubernetes_node_label_(.+)
+        - action: replace
+          source_labels:
+            - __meta_kubernetes_node_name
+          target_label: node
         - target_label: __address__
           replacement: kubernetes.default.svc:443
         - source_labels:

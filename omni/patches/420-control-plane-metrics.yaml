@@ -1,0 +1,15 @@
+metadata:
+    namespace: default
+    type: ConfigPatches.omni.sidero.dev
+    id: 420-control-plane-metrics
+    labels:
+        omni.sidero.dev/cluster: geekzoo-prod
+spec:
+    data: |
+        cluster:
+          controllerManager:
+            extraArgs:
+              bind-address: 0.0.0.0
+          scheduler:
+            extraArgs:
+              bind-address: 0.0.0.0

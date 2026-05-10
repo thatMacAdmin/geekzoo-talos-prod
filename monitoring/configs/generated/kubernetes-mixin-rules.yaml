@@ -1379,37 +1379,6 @@
             }
           }
         ]
-      },
-      {
-        "name": "kubernetes-system-kube-proxy",
-        "rules": [
-          {
-            "alert": "KubeProxyDown",
-            "annotations": {
-              "description": "KubeProxy has disappeared from Prometheus target discovery.",
-              "runbook_url": "https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeproxydown",
-              "summary": "Target disappeared from Prometheus target discovery."
-            },
-            "expr": "absent(up{job=\"kube-proxy\"})\n",
-            "for": "15m",
-            "labels": {
-              "severity": "critical"
-            }
-          },
-          {
-            "alert": "KubeProxyInstanceUnreachable",
-            "annotations": {
-              "description": "A KubeProxy instance has been unreachable for more than 15 minutes.",
-              "runbook_url": "https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeproxyinstanceunreachable",
-              "summary": "KubeProxy instance is unreachable."
-            },
-            "expr": "up{job=\"kube-proxy\"} == 0\n",
-            "for": "15m",
-            "labels": {
-              "severity": "warning"
-            }
-          }
-        ]
       }
     ]
   }
