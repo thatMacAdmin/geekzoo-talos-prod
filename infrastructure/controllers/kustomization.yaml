@@ -6,5 +6,4 @@ resources:
   - cert-manager
   - cnpg-operator
   - metrics-server
-  - nvidia-device-plugin
   - traefik
