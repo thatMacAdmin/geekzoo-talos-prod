@@ -9,7 +9,7 @@ spec:
       interval: 30s
       rules:
         - alert: ObservabilityTargetDown
-          expr: up == 0
+          expr: up{job!~"kube-scheduler|kube-controller-manager"} == 0
           for: 5m
           labels:
             severity: warning
