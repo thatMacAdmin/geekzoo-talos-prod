@@ -32,7 +32,7 @@ spec:
             claimName: pvc-media-nfs
       containers:
         - name: sabnzbd
-          image: linuxserver/sabnzbd:5.0.1 # {"$imagepolicy": "flux-system:sabnzbd-image-policy"}
+          image: linuxserver/sabnzbd:5.0.2 # {"$imagepolicy": "flux-system:sabnzbd-image-policy"}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
