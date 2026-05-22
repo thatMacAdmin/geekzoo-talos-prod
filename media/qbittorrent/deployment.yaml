@@ -76,8 +76,8 @@ spec:
               value: "America/New_York"
             - name: FIREWALL_INPUT_PORTS
               value: "8080"
-            - name: FIREWALL
-              value: "off"
+            - name: FIREWALL_OUTBOUND_SUBNETS
+              value: "10.96.0.10/32,fd10:96::a/128"
             - name: BLOCK_MALICIOUS
               value: "off"
             - name: BLOCK_ADS
