@@ -7,7 +7,8 @@ spec:
   imageRepositoryRef:
     name: prowlarr
   filterTags:
-    pattern: '^release-[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$'
+    pattern: '^release-(?P<major>[0-9]+)\.(?P<minor>[0-9]+)\.(?P<patch>[0-9]+)\.(?P<build>[0-9]+)$'
+    extract: '$major.$minor.$patch-$build'
   policy:
-    alphabetical:
-      order: desc
+    semver:
+      range: ">=1.10.5-0"
