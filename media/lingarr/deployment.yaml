@@ -59,7 +59,7 @@ spec:
             - name: DB_CONNECTION
               value: sqlite
             - name: SQLITE_DB_PATH
-              value: /app/config/local.db
+              value: local.db
             - name: DB_HANGFIRE_SQLITE_PATH
               value: /app/config/Hangfire.db
             - name: MAX_CONCURRENT_JOBS
