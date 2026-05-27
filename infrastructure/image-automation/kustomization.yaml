@@ -5,6 +5,7 @@ resources:
   - image-repository-gluetun.yaml
   - image-repository-adguardhome.yaml
   - image-repository-bazarr.yaml
+  - image-repository-lingarr.yaml
   - image-repository-jellyfin.yaml
   - image-repository-qbittorrent.yaml
   - image-repository-prowlarr.yaml
@@ -18,6 +19,7 @@ resources:
   - image-policy-gluetun.yaml
   - image-policy-adguardhome.yaml
   - image-policy-bazarr.yaml
+  - image-policy-lingarr.yaml
   - image-policy-jellyfin.yaml
   - image-policy-qbittorrent.yaml
   - image-policy-prowlarr.yaml

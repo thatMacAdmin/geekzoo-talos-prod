@@ -6,6 +6,7 @@ resources:
   - sonarr
   - radarr
   - bazarr
+  - lingarr
   - prowlarr
   - qbittorrent
   - sabnzbd

@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: lingarr-svc
+  namespace: media
+spec:
+  selector:
+    app: lingarr
+  ports:
+    - name: http
+      port: 9876
+      targetPort: 9876

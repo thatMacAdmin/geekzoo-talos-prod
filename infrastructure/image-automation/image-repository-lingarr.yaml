@@ -1,0 +1,8 @@
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: lingarr
+  namespace: flux-system
+spec:
+  image: lingarr/lingarr
+  interval: 1h

@@ -66,6 +66,12 @@ ingress:
       noTLSVerify: true
       originServerName: subtitles.macbytes.io
       httpHostHeader: subtitles.macbytes.io
+  - hostname: lingarr.macbytes.io
+    service: https://traefik.traefik.svc.cluster.local:443
+    originRequest:
+      noTLSVerify: true
+      originServerName: lingarr.macbytes.io
+      httpHostHeader: lingarr.macbytes.io
   - hostname: requests.macbytes.io
     service: https://traefik.traefik.svc.cluster.local:443
     originRequest:

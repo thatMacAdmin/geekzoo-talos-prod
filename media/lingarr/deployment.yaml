@@ -1,0 +1,88 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lingarr
+  namespace: media
+spec:
+  selector:
+    matchLabels:
+      app: lingarr
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: lingarr
+      annotations:
+        backup.velero.io/backup-volumes-excludes: lingarr-media
+    spec:
+      securityContext:
+        fsGroup: 65533
+        seccompProfile:
+          type: RuntimeDefault
+      volumes:
+        - name: lingarr-config
+          persistentVolumeClaim:
+            claimName: lingarr-config-pvc
+        - name: lingarr-media
+          persistentVolumeClaim:
+            claimName: pvc-media-nfs
+      containers:
+        - name: lingarr-server
+          image: lingarr/lingarr:1.2.4 # {"$imagepolicy": "flux-system:lingarr-image-policy"}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 9876
+          startupProbe:
+            httpGet:
+              path: /
+              port: 9876
+            failureThreshold: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 9876
+            periodSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 9876
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            failureThreshold: 3
+          env:
+            - name: ASPNETCORE_URLS
+              value: "http://+:9876"
+            - name: DB_CONNECTION
+              value: sqlite
+            - name: SQLITE_DB_PATH
+              value: /app/config/local.db
+            - name: DB_HANGFIRE_SQLITE_PATH
+              value: /app/config/Hangfire.db
+            - name: MAX_CONCURRENT_JOBS
+              value: "1"
+            - name: TZ
+              value: "America/New_York"
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65534
+            runAsGroup: 65533
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: lingarr-config
+              mountPath: /app/config
+            - name: lingarr-media
+              mountPath: /media
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "50m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"

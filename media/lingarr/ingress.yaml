@@ -1,0 +1,16 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: lingarr-ingressroute
+  namespace: media
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`lingarr.macbytes.io`)
+      kind: Rule
+      services:
+        - name: lingarr-svc
+          port: 9876
+  tls:
+    secretName: lingarr-tls-certificate
