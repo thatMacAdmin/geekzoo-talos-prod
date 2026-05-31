@@ -1,0 +1,133 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-active-alerts-dashboard
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+  annotations:
+    grafana_folder: Observability
+data:
+  active-alerts.json: |
+    {
+      "uid": "geekzoo-active-alerts",
+      "title": "Active Alerts",
+      "tags": ["alerts", "alertmanager", "victoriametrics"],
+      "timezone": "browser",
+      "schemaVersion": 41,
+      "version": 1,
+      "refresh": "30s",
+      "time": {"from": "now-6h", "to": "now"},
+      "templating": {
+        "list": [
+          {
+            "name": "state",
+            "label": "State",
+            "type": "custom",
+            "query": "firing,pending",
+            "multi": true,
+            "includeAll": true,
+            "allValue": "firing|pending",
+            "current": {"selected": true, "text": "All", "value": "$__all"}
+          },
+          {
+            "name": "severity",
+            "label": "Severity",
+            "type": "custom",
+            "query": "critical,warning,info",
+            "multi": true,
+            "includeAll": true,
+            "allValue": "critical|warning|info",
+            "current": {"selected": true, "text": "All", "value": "$__all"}
+          },
+          {
+            "name": "namespace",
+            "label": "Namespace",
+            "type": "query",
+            "datasource": {"type": "prometheus", "uid": "P4169E866C3094E38"},
+            "query": "label_values(ALERTS, namespace)",
+            "refresh": 2,
+            "sort": 1,
+            "multi": true,
+            "includeAll": true,
+            "allValue": ".*",
+            "current": {"selected": true, "text": "All", "value": "$__all"}
+          }
+        ]
+      },
+      "panels": [
+        {
+          "id": 1,
+          "title": "Firing Alerts",
+          "type": "stat",
+          "datasource": {"type": "prometheus", "uid": "P4169E866C3094E38"},
+          "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+          "targets": [{"refId": "A", "expr": "sum(ALERTS{alertstate=\"firing\", severity=~\"$severity\", namespace=~\"$namespace\"}) or vector(0)", "legendFormat": "firing"}],
+          "fieldConfig": {"defaults": {"decimals": 0, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "red", "value": 1}]}}, "overrides": []},
+          "options": {"colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto"}
+        },
+        {
+          "id": 2,
+          "title": "Pending Alerts",
+          "type": "stat",
+          "datasource": {"type": "prometheus", "uid": "P4169E866C3094E38"},
+          "gridPos": {"h": 4, "w": 6, "x": 6, "y": 0},
+          "targets": [{"refId": "A", "expr": "sum(ALERTS{alertstate=\"pending\", severity=~\"$severity\", namespace=~\"$namespace\"}) or vector(0)", "legendFormat": "pending"}],
+          "fieldConfig": {"defaults": {"decimals": 0, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 1}]}}, "overrides": []},
+          "options": {"colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto"}
+        },
+        {
+          "id": 3,
+          "title": "Firing By Severity",
+          "type": "bargauge",
+          "datasource": {"type": "prometheus", "uid": "P4169E866C3094E38"},
+          "gridPos": {"h": 4, "w": 6, "x": 12, "y": 0},
+          "targets": [{"refId": "A", "expr": "sum by (severity) (ALERTS{alertstate=\"firing\", severity=~\"$severity\", namespace=~\"$namespace\"})", "legendFormat": "{{severity}}"}],
+          "fieldConfig": {"defaults": {"decimals": 0, "min": 0}, "overrides": []},
+          "options": {"displayMode": "basic", "orientation": "horizontal", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "showUnfilled": true}
+        },
+        {
+          "id": 4,
+          "title": "Recently Active",
+          "type": "stat",
+          "datasource": {"type": "prometheus", "uid": "P4169E866C3094E38"},
+          "gridPos": {"h": 4, "w": 6, "x": 18, "y": 0},
+          "targets": [{"refId": "A", "expr": "count(count by (alertname, alertstate, namespace, pod, container) (max_over_time(ALERTS{alertstate=~\"$state\", severity=~\"$severity\", namespace=~\"$namespace\"}[6h]))) or vector(0)", "legendFormat": "recent"}],
+          "fieldConfig": {"defaults": {"decimals": 0, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 1}]}}, "overrides": []},
+          "options": {"colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto"}
+        },
+        {
+          "id": 5,
+          "title": "Current Alert Instances",
+          "type": "table",
+          "datasource": {"type": "prometheus", "uid": "P4169E866C3094E38"},
+          "gridPos": {"h": 12, "w": 24, "x": 0, "y": 4},
+          "targets": [{"refId": "A", "expr": "ALERTS{alertstate=~\"$state\", severity=~\"$severity\", namespace=~\"$namespace\"}", "format": "table", "instant": true}],
+          "fieldConfig": {
+            "defaults": {"custom": {"align": "auto", "cellOptions": {"type": "auto"}, "inspect": false}},
+            "overrides": [
+              {"matcher": {"id": "byName", "options": "Time"}, "properties": [{"id": "custom.hidden", "value": true}]},
+              {"matcher": {"id": "byName", "options": "Value"}, "properties": [{"id": "custom.hidden", "value": true}]},
+              {"matcher": {"id": "byName", "options": "__name__"}, "properties": [{"id": "custom.hidden", "value": true}]},
+              {"matcher": {"id": "byName", "options": "prometheus"}, "properties": [{"id": "custom.hidden", "value": true}]},
+              {"matcher": {"id": "byName", "options": "job"}, "properties": [{"id": "custom.hidden", "value": true}]},
+              {"matcher": {"id": "byName", "options": "instance"}, "properties": [{"id": "custom.width", "value": 180}]},
+              {"matcher": {"id": "byName", "options": "alertname"}, "properties": [{"id": "custom.width", "value": 220}]},
+              {"matcher": {"id": "byName", "options": "namespace"}, "properties": [{"id": "custom.width", "value": 130}]},
+              {"matcher": {"id": "byName", "options": "pod"}, "properties": [{"id": "custom.width", "value": 260}]}
+            ]
+          },
+          "options": {"cellHeight": "sm", "footer": {"countRows": false, "fields": "", "reducer": ["sum"], "show": false}, "showHeader": true}
+        },
+        {
+          "id": 6,
+          "title": "Alert State History",
+          "type": "state-timeline",
+          "datasource": {"type": "prometheus", "uid": "P4169E866C3094E38"},
+          "gridPos": {"h": 10, "w": 24, "x": 0, "y": 16},
+          "targets": [{"refId": "A", "expr": "ALERTS{alertstate=~\"$state\", severity=~\"$severity\", namespace=~\"$namespace\"}", "legendFormat": "{{alertstate}} {{severity}} {{namespace}}/{{alertname}} {{pod}}"}],
+          "fieldConfig": {"defaults": {"custom": {"fillOpacity": 70, "lineWidth": 0, "spanNulls": false}, "mappings": [{"type": "value", "options": {"1": {"text": "active", "color": "red"}}}], "thresholds": {"mode": "absolute", "steps": [{"color": "transparent", "value": null}, {"color": "red", "value": 1}]}}, "overrides": []},
+          "options": {"alignValue": "left", "legend": {"displayMode": "table", "placement": "bottom", "showLegend": true}, "mergeValues": true, "rowHeight": 0.9, "showValue": "always", "tooltip": {"mode": "single"}}
+        }
+      ]
+    }

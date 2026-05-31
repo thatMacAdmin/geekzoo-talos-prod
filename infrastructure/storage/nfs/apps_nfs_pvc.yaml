@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-apps-nfs
+  namespace: apps
+spec:
+  selector:
+    matchLabels:
+      app: apps-nfs
+  storageClassName: nfs
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 203Ti

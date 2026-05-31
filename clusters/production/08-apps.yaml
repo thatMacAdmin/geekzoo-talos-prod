@@ -5,6 +5,7 @@ metadata:
   namespace: flux-system
 spec:
   dependsOn:
+    - name: storage
     - name: infra-configs
     - name: secrets
     - name: databases

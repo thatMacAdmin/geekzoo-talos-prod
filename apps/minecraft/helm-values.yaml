@@ -1,0 +1,194 @@
+nameOverride: "geekzoo-minecraft"
+fullnameOverride: "geekzoo-minecraft"
+
+resources:
+  limits:
+    memory: 8192Mi
+    cpu: 6000m
+  requests:
+    memory: 4096Mi
+    cpu: 2000m
+
+strategyType: Recreate
+revisionHistoryLimit: 5
+
+podSecurityContext:
+  runAsUser: 1000
+  runAsGroup: 3000
+  runAsNonRoot: true
+  fsGroup: 2000
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: true
+  allowPrivilegeEscalation: false
+
+livenessProbe:
+  command:
+    - mc-health
+  initialDelaySeconds: 30
+  periodSeconds: 5
+  failureThreshold: 20
+  successThreshold: 1
+  timeoutSeconds: 1
+readinessProbe:
+  command:
+    - mc-health
+  initialDelaySeconds: 30
+  periodSeconds: 5
+  failureThreshold: 20
+  successThreshold: 1
+  timeoutSeconds: 1
+startupProbe:
+  command:
+    - mc-health
+  enabled: false
+  failureThreshold: 30
+  periodSeconds: 10
+
+minecraftServer:
+  eula: "TRUE"
+  version: "1.21.1"
+  type: "NEOFORGE"
+  neoforgeVersion: "21.1.217"
+  difficulty: normal
+  whitelist:
+  ops: Ludeth
+  maxPlayers: 3
+  maxWorldSize: default
+  allowNether: default
+  announcePlayerAchievements: default
+  enableCommandBlock: default
+  forcegameMode: default
+  generateStructures: default
+  hardcore: default
+  maxBuildHeight: default
+  maxTickTime: default
+  spawnAnimals: default
+  spawnMonsters: default
+  spawnNPCs: default
+  spawnProtection: default
+  viewDistance: default
+  levelSeed:
+  gameMode: survival
+  motd: "GeekZoo Minecraft"
+  pvp: default
+  levelType: DEFAULT
+  generatorSettings:
+  worldSaveName: geekzoo-world
+  forceReDownload: false
+  downloadModpackUrl:
+  removeOldMods: false
+  vanillaTweaksShareCodes: []
+  resourcePackUrl:
+  resourcePackSha:
+  resourcePackEnforce: false
+  onlineMode: default
+  enforceSecureProfile: default
+  memory: 1024M
+  jvmOpts: ""
+  jvmXXOpts: "-XX:+EnableDynamicAgentLoading"
+  overrideServerProperties: default
+  serviceAnnotations:
+    io.cilium/lb-ipam-ips: "192.168.3.3"
+  serviceType: LoadBalancer
+  servicePort: 25565
+  clusterIP:
+  loadBalancerClass:
+  loadBalancerIP:
+  externalIPs:
+
+  modrinth:
+    projects:
+      - "appleskin:3.0.7+mc1.21"
+      - "corpse:neoforge-1.21.1-1.1.13"
+      - "jade:15.10.3+neoforge"
+      - "jei:19.27.0.335"
+      - "journeymap:1.21.1-6.0.0-beta.53+neoforge"
+      - "lithium:mc1.21.1-0.15.1-neoforge"
+      - "mekanism:10.7.17.83"
+      - "mekanism-generators:10.7.17.83"
+      - "mekanism-tools:10.7.17.83"
+      - "mekanism-additions:10.7.17.83"
+      - "refined-storage:2.0.0"
+      - "sodium:mc1.21.1-0.6.13-neoforge"
+      - "storagedrawers:1.21.1-13.11.4"
+      - "travelersbackpack:1.21.1-10.1.29"
+    downloadDependencies: required
+    allowedVersionType: beta
+    pageUrl: ""
+    slug: ""
+    fileId: ""
+    filenameMatcher: ""
+    excludeMods: []
+    includeMods: []
+    excludeIncludeFile: null
+    forceSynchronize: false
+    setLevelFrom: ""
+    parallelDownloads: 4
+    overridesSkipExisting: false
+
+  rcon:
+    enabled: true
+    withGeneratedPassword: false
+    port: 25575
+    existingSecret: minecraft-rcon-password
+    passwordFromSecret:
+      key: rcon-password
+
+  tty: true
+  query:
+    enabled: false
+    port: 25565
+
+podAnnotations:
+  backup.velero.io/backup-volumes-excludes: backupdir
+
+persistence:
+  labels: {}
+  annotations: {}
+  storageClass: "ceph-block"
+  dataDir:
+    enabled: true
+    Size: 1Gi
+    accessModes:
+      - ReadWriteOnce
+
+mcbackup:
+  enabled: true
+  initialDelay: 2m
+  backupName: geekzoo-world
+  backupInterval: 12h
+  pauseIfNoPlayers: "false"
+  pruneBackupsDays: 7
+  rconRetries: 5
+  rconRetryInterval: 10s
+  excludes: "*.jar,cache,logs"
+  backupMethod: tar
+  destDir: /backups
+  linkLatest: "false"
+  compressMethod: "gzip"
+  zstdParameters: "-3 --long=25 --single-thread"
+  rcloneRemote:
+  rcloneDestDir:
+  rcloneCompressMethod: gzip
+
+  rcloneConfig:
+
+  resources:
+    limits:
+      memory: 1024Mi
+      cpu: 1000m
+    requests:
+      memory: 512Mi
+      cpu: 500m
+
+  persistence:
+    annotations: {}
+    backupDir:
+      enabled: true
+      existingClaim: pvc-apps-nfs
