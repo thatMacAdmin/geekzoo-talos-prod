@@ -1,0 +1,53 @@
+apiVersion: coroot.com/v1
+kind: Coroot
+metadata:
+  name: coroot
+  namespace: coroot
+spec:
+  metricsRefreshInterval: 15s
+  cacheTTL: 2d
+  logsTTL: 2d
+  tracesTTL: 2d
+  profilesTTL: 2d
+  disableBuiltinAlerts: true
+  storage:
+    size: 10Gi
+    className: ceph-block
+    reclaimPolicy: Delete
+  service:
+    type: ClusterIP
+    port: 8080
+    grpcPort: 4317
+  nodeAgent:
+    tolerations:
+      - operator: Exists
+    resources:
+      requests:
+        cpu: 100m
+        memory: 200Mi
+      limits:
+        cpu: 500m
+        memory: 1Gi
+  prometheus:
+    retention: 2d
+    storage:
+      size: 10Gi
+      className: ceph-block
+      reclaimPolicy: Delete
+    resources:
+      requests:
+        cpu: 100m
+        memory: 512Mi
+      limits:
+        memory: 2Gi
+  clickhouse:
+    storage:
+      size: 10Gi
+      className: ceph-block
+      reclaimPolicy: Delete
+    resources:
+      requests:
+        cpu: 250m
+        memory: 1Gi
+      limits:
+        memory: 3Gi
