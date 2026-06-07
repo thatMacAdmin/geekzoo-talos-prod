@@ -1,0 +1,89 @@
+env: "production"
+
+groundcover:
+  extraObjects:
+    namespace-podsecurity-serviceaccount:
+      apiVersion: v1
+      kind: ServiceAccount
+      metadata:
+        name: groundcover-namespace-podsecurity
+        namespace: '{{ .Release.Namespace }}'
+        annotations:
+          helm.sh/hook: pre-install,pre-upgrade
+          helm.sh/hook-weight: "-20"
+          helm.sh/hook-delete-policy: before-hook-creation
+    namespace-podsecurity-role:
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: ClusterRole
+      metadata:
+        name: '{{ .Release.Name }}-namespace-podsecurity'
+        annotations:
+          helm.sh/hook: pre-install,pre-upgrade
+          helm.sh/hook-weight: "-20"
+          helm.sh/hook-delete-policy: before-hook-creation
+      rules:
+        - apiGroups:
+            - ""
+          resources:
+            - namespaces
+          verbs:
+            - get
+            - patch
+    namespace-podsecurity-binding:
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: ClusterRoleBinding
+      metadata:
+        name: '{{ .Release.Name }}-namespace-podsecurity'
+        annotations:
+          helm.sh/hook: pre-install,pre-upgrade
+          helm.sh/hook-weight: "-20"
+          helm.sh/hook-delete-policy: before-hook-creation
+      roleRef:
+        apiGroup: rbac.authorization.k8s.io
+        kind: ClusterRole
+        name: '{{ .Release.Name }}-namespace-podsecurity'
+      subjects:
+        - kind: ServiceAccount
+          name: groundcover-namespace-podsecurity
+          namespace: '{{ .Release.Namespace }}'
+    namespace-podsecurity-job:
+      apiVersion: batch/v1
+      kind: Job
+      metadata:
+        name: groundcover-namespace-podsecurity
+        namespace: '{{ .Release.Namespace }}'
+        annotations:
+          helm.sh/hook: pre-install,pre-upgrade
+          helm.sh/hook-weight: "-10"
+          helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+      spec:
+        backoffLimit: 3
+        template:
+          spec:
+            restartPolicy: OnFailure
+            serviceAccountName: groundcover-namespace-podsecurity
+            containers:
+              - name: patch-namespace
+                image: '{{ .Values.global.origin.registry }}/tools:20260601'
+                imagePullPolicy: IfNotPresent
+                command:
+                  - /bin/sh
+                  - -c
+                args:
+                  - |
+                    set -eu
+
+                    token="$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)"
+                    ca="/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
+                    namespace="{{ .Release.Namespace }}"
+                    api="https://kubernetes.default.svc/api/v1/namespaces/${namespace}"
+
+                    patch='{"metadata":{"labels":{"pod-security.kubernetes.io/enforce":"privileged","pod-security.kubernetes.io/audit":"privileged","pod-security.kubernetes.io/warn":"privileged","pod-security.kubernetes.io/enforce-version":"latest"}}}'
+
+                    curl --fail --show-error --silent \
+                      --cacert "${ca}" \
+                      -H "Authorization: Bearer ${token}" \
+                      -H "Content-Type: application/merge-patch+json" \
+                      -X PATCH \
+                      --data "${patch}" \
+                      "${api}"
