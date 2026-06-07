@@ -3,6 +3,15 @@ kind: Deployment
 metadata:
   name: cloudflared
   namespace: system
+  labels:
+    app: cloudflared
+    app.kubernetes.io/name: cloudflared
+    app.kubernetes.io/instance: cloudflared
+    app.kubernetes.io/component: tunnel
+    app.kubernetes.io/part-of: system
+    app.kubernetes.io/managed-by: kustomize
+    groundcover.com/service: cloudflared
+    groundcover.com/team: homelab
 spec:
   selector:
     matchLabels:
@@ -12,6 +21,13 @@ spec:
     metadata:
       labels:
         app: cloudflared
+        app.kubernetes.io/name: cloudflared
+        app.kubernetes.io/instance: cloudflared
+        app.kubernetes.io/component: tunnel
+        app.kubernetes.io/part-of: system
+        app.kubernetes.io/managed-by: kustomize
+        groundcover.com/service: cloudflared
+        groundcover.com/team: homelab
     spec:
       securityContext:
         runAsNonRoot: true

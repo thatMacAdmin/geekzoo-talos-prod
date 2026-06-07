@@ -3,6 +3,15 @@ kind: Deployment
 metadata:
   name: sonarr
   namespace: media
+  labels:
+    app: sonarr
+    app.kubernetes.io/name: sonarr
+    app.kubernetes.io/instance: sonarr
+    app.kubernetes.io/component: tv
+    app.kubernetes.io/part-of: media
+    app.kubernetes.io/managed-by: kustomize
+    groundcover.com/service: sonarr
+    groundcover.com/team: homelab
 spec:
   selector:
     matchLabels:
@@ -14,6 +23,13 @@ spec:
     metadata:
       labels:
         app: sonarr
+        app.kubernetes.io/name: sonarr
+        app.kubernetes.io/instance: sonarr
+        app.kubernetes.io/component: tv
+        app.kubernetes.io/part-of: media
+        app.kubernetes.io/managed-by: kustomize
+        groundcover.com/service: sonarr
+        groundcover.com/team: homelab
       annotations:
         backup.velero.io/backup-volumes-excludes: sonarr-media
     spec:

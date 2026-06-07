@@ -3,6 +3,15 @@ kind: Deployment
 metadata:
   name: jellyfin
   namespace: media
+  labels:
+    app: jellyfin
+    app.kubernetes.io/name: jellyfin
+    app.kubernetes.io/instance: jellyfin
+    app.kubernetes.io/component: media-server
+    app.kubernetes.io/part-of: media
+    app.kubernetes.io/managed-by: kustomize
+    groundcover.com/service: jellyfin
+    groundcover.com/team: homelab
 spec:
   selector:
     matchLabels:
@@ -14,6 +23,13 @@ spec:
     metadata:
       labels:
         app: jellyfin
+        app.kubernetes.io/name: jellyfin
+        app.kubernetes.io/instance: jellyfin
+        app.kubernetes.io/component: media-server
+        app.kubernetes.io/part-of: media
+        app.kubernetes.io/managed-by: kustomize
+        groundcover.com/service: jellyfin
+        groundcover.com/team: homelab
       annotations:
         backup.velero.io/backup-volumes-excludes: jellyfin-media
     spec:

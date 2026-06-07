@@ -1,4 +1,97 @@
-env: "production"
+clusterId: geekzoo-geekzoo-prod
+env: production
+
+global:
+  groundcoverPredefinedTokenSecret:
+    secretName: api-key
+    secretKey: API_KEY
+  labelEnrichment:
+    staticLabels: {}
+    identifiersMapping:
+      team:
+        - groundcover.com/team
+        - groundcover-team
+        - tags.datadoghq.com/team
+      service:
+        - groundcover.com/service
+        - groundcover-service
+        - tags.datadoghq.com/service
+    pods:
+      labels:
+        collectAll: false
+        metrics:
+          - groundcover.com/service
+          - groundcover.com/team
+          - app.kubernetes.io/name
+          - app.kubernetes.io/instance
+          - app.kubernetes.io/version
+          - app.kubernetes.io/component
+          - app.kubernetes.io/part-of
+          - app.kubernetes.io/managed-by
+        logs:
+          - groundcover.com/service
+          - groundcover.com/team
+          - app.kubernetes.io/name
+          - app.kubernetes.io/instance
+          - app.kubernetes.io/component
+        traces:
+          - groundcover.com/service
+          - groundcover.com/team
+          - app.kubernetes.io/name
+          - app.kubernetes.io/instance
+          - app.kubernetes.io/component
+        events:
+          - groundcover.com/service
+          - groundcover.com/team
+          - app.kubernetes.io/name
+          - app.kubernetes.io/instance
+          - app.kubernetes.io/component
+      annotations:
+        collectAll: false
+        metrics: []
+        logs: []
+        traces: []
+        events: []
+    nodes:
+      labels: []
+
+agent:
+  sensor:
+    resources:
+      limits:
+        memory: 1Gi
+      requests:
+        memory: 1Gi
+  tolerations: []
+
+backend:
+  postgresql:
+    primary:
+      resources:
+        limits:
+          memory: 256Mi
+        requests:
+          cpu: 20m
+          memory: 80Mi
+
+clickhouse:
+  resources:
+    limits:
+      memory: 6000Mi
+    requests:
+      cpu: 600m
+      memory: 4096Mi
+
+custom-metrics:
+  extraArgs:
+    remoteWrite.maxDailySeries: "10000000"
+    remoteWrite.maxHourlySeries: "1000000"
+  resources:
+    limits:
+      memory: 1Gi
+    requests:
+      cpu: 500m
+      memory: 512Mi
 
 groundcover:
   extraObjects:
@@ -87,3 +180,64 @@ groundcover:
                       -X PATCH \
                       --data "${patch}" \
                       "${api}"
+
+k8sWatcher:
+  resources:
+    limits:
+      cpu: 500m
+      memory: 1024Mi
+    requests:
+      cpu: 50m
+      memory: 300Mi
+
+metrics-ingester:
+  resources:
+    limits:
+      cpu: 750m
+      memory: 512Mi
+    requests:
+      memory: 256Mi
+
+monitors-manager:
+  resources:
+    limits:
+      memory: 512Mi
+    requests:
+      cpu: 40m
+      memory: 160Mi
+
+opentelemetry-collector:
+  replicaCount: 2
+  resources:
+    limits:
+      memory: 2048Mi
+    requests:
+      cpu: 500m
+      memory: 1024Mi
+
+portal:
+  resources:
+    limits:
+      memory: 256Mi
+    requests:
+      cpu: 50m
+      memory: 100Mi
+
+storeIssuesLogsOnly: false
+
+victoria-metrics-agent:
+  resources:
+    limits:
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+victoria-metrics-single:
+  server:
+    resources:
+      limits:
+        memory: 5000Mi
+      requests:
+        cpu: 1000m
+        memory: 5000Mi

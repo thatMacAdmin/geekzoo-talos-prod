@@ -15,6 +15,9 @@ spec:
         name: bitnami
         namespace: database
   values:
+    commonLabels:
+      app.kubernetes.io/part-of: database
+      groundcover.com/team: homelab
     auth:
       enabled: true
       existingSecret: redis-password
@@ -24,11 +27,23 @@ spec:
       enabled: false
     master:
       count: 1
+      podLabels:
+        app.kubernetes.io/name: redis
+        app.kubernetes.io/instance: redis
+        app.kubernetes.io/component: master
+        groundcover.com/service: redis-master
+        groundcover.com/team: homelab
       resourcesPreset: "medium"
       persistence:
         enabled: false
     replica:
       replicaCount: 3
+      podLabels:
+        app.kubernetes.io/name: redis
+        app.kubernetes.io/instance: redis
+        app.kubernetes.io/component: replica
+        groundcover.com/service: redis-replicas
+        groundcover.com/team: homelab
       resourcesPreset: "medium"
       persistence:
         enabled: true

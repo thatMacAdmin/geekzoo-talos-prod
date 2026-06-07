@@ -65,6 +65,13 @@ spec:
     server:
       enabled: true
       replicas: 1
+      podLabels:
+        app.kubernetes.io/name: authentik
+        app.kubernetes.io/instance: authentik
+        app.kubernetes.io/component: server
+        app.kubernetes.io/part-of: identity
+        groundcover.com/service: authentik-server
+        groundcover.com/team: homelab
       podAnnotations:
         macbytes.io/authentik-blueprint-revision: "2026-05-03-friendly-brand-v2"
       service:
@@ -72,6 +79,13 @@ spec:
     worker:
       enabled: true
       replicas: 1
+      podLabels:
+        app.kubernetes.io/name: authentik
+        app.kubernetes.io/instance: authentik
+        app.kubernetes.io/component: worker
+        app.kubernetes.io/part-of: identity
+        groundcover.com/service: authentik-worker
+        groundcover.com/team: homelab
       podAnnotations:
         macbytes.io/authentik-blueprint-revision: "2026-05-03-friendly-brand-v2"
     blueprints:

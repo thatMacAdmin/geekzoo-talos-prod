@@ -3,6 +3,15 @@ kind: Deployment
 metadata:
   name: radarr
   namespace: media
+  labels:
+    app: radarr
+    app.kubernetes.io/name: radarr
+    app.kubernetes.io/instance: radarr
+    app.kubernetes.io/component: movies
+    app.kubernetes.io/part-of: media
+    app.kubernetes.io/managed-by: kustomize
+    groundcover.com/service: radarr
+    groundcover.com/team: homelab
 spec:
   selector:
     matchLabels:
@@ -14,6 +23,13 @@ spec:
     metadata:
       labels:
         app: radarr
+        app.kubernetes.io/name: radarr
+        app.kubernetes.io/instance: radarr
+        app.kubernetes.io/component: movies
+        app.kubernetes.io/part-of: media
+        app.kubernetes.io/managed-by: kustomize
+        groundcover.com/service: radarr
+        groundcover.com/team: homelab
       annotations:
         backup.velero.io/backup-volumes-excludes: radarr-media
     spec:

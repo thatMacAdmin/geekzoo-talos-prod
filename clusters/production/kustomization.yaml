@@ -14,3 +14,4 @@ resources:
   - 09-media.yaml
   - 10-databases.yaml
   - 11-image-automation.yaml
+  - 12-groundcover.yaml

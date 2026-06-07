@@ -5,7 +5,13 @@ metadata:
   namespace: apps
   labels:
     app: vaultwarden
+    app.kubernetes.io/name: vaultwarden
     app.kubernetes.io/instance: vaultwarden
+    app.kubernetes.io/component: web
+    app.kubernetes.io/part-of: apps
+    app.kubernetes.io/managed-by: kustomize
+    groundcover.com/service: vaultwarden
+    groundcover.com/team: homelab
 spec:
   selector:
     matchLabels:
@@ -17,6 +23,13 @@ spec:
     metadata:
       labels:
         app: vaultwarden
+        app.kubernetes.io/name: vaultwarden
+        app.kubernetes.io/instance: vaultwarden
+        app.kubernetes.io/component: web
+        app.kubernetes.io/part-of: apps
+        app.kubernetes.io/managed-by: kustomize
+        groundcover.com/service: vaultwarden
+        groundcover.com/team: homelab
     spec:
       securityContext:
         runAsNonRoot: true

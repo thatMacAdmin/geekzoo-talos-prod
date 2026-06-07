@@ -5,7 +5,13 @@ metadata:
   namespace: apps
   labels:
     app: adguard
+    app.kubernetes.io/name: adguard
     app.kubernetes.io/instance: adguard
+    app.kubernetes.io/component: dns
+    app.kubernetes.io/part-of: apps
+    app.kubernetes.io/managed-by: kustomize
+    groundcover.com/service: adguard
+    groundcover.com/team: homelab
 spec:
   selector:
     matchLabels:
@@ -20,6 +26,13 @@ spec:
     metadata:
       labels:
         app: adguard
+        app.kubernetes.io/name: adguard
+        app.kubernetes.io/instance: adguard
+        app.kubernetes.io/component: dns
+        app.kubernetes.io/part-of: apps
+        app.kubernetes.io/managed-by: kustomize
+        groundcover.com/service: adguard
+        groundcover.com/team: homelab
     spec:
       securityContext:
         runAsUser: 0

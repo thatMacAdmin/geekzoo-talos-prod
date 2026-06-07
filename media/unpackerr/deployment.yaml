@@ -5,6 +5,13 @@ metadata:
   namespace: media
   labels:
     app: unpackerr
+    app.kubernetes.io/name: unpackerr
+    app.kubernetes.io/instance: unpackerr
+    app.kubernetes.io/component: extractor
+    app.kubernetes.io/part-of: media
+    app.kubernetes.io/managed-by: kustomize
+    groundcover.com/service: unpackerr
+    groundcover.com/team: homelab
 spec:
   replicas: 1
   strategy:
@@ -16,6 +23,13 @@ spec:
     metadata:
       labels:
         app: unpackerr
+        app.kubernetes.io/name: unpackerr
+        app.kubernetes.io/instance: unpackerr
+        app.kubernetes.io/component: extractor
+        app.kubernetes.io/part-of: media
+        app.kubernetes.io/managed-by: kustomize
+        groundcover.com/service: unpackerr
+        groundcover.com/team: homelab
       annotations:
         backup.velero.io/backup-volumes-excludes: unpackerr-media
     spec:

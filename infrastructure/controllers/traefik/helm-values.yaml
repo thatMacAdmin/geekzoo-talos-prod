@@ -90,6 +90,13 @@ logs:
 # Deploy as DaemonSet to run on all nodes for externalTrafficPolicy: Local
 deployment:
   kind: DaemonSet
+  podLabels:
+    app.kubernetes.io/name: traefik
+    app.kubernetes.io/instance: traefik
+    app.kubernetes.io/component: ingress
+    app.kubernetes.io/part-of: system
+    groundcover.com/service: traefik
+    groundcover.com/team: homelab
 
 # Accept forwarded headers from cluster/LAN ranges (working config)
 additionalArguments:

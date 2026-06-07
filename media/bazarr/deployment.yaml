@@ -3,6 +3,15 @@ kind: Deployment
 metadata:
   name: bazarr
   namespace: media
+  labels:
+    app: bazarr
+    app.kubernetes.io/name: bazarr
+    app.kubernetes.io/instance: bazarr
+    app.kubernetes.io/component: subtitles
+    app.kubernetes.io/part-of: media
+    app.kubernetes.io/managed-by: kustomize
+    groundcover.com/service: bazarr
+    groundcover.com/team: homelab
 spec:
   selector:
     matchLabels:
@@ -14,6 +23,13 @@ spec:
     metadata:
       labels:
         app: bazarr
+        app.kubernetes.io/name: bazarr
+        app.kubernetes.io/instance: bazarr
+        app.kubernetes.io/component: subtitles
+        app.kubernetes.io/part-of: media
+        app.kubernetes.io/managed-by: kustomize
+        groundcover.com/service: bazarr
+        groundcover.com/team: homelab
       annotations:
         backup.velero.io/backup-volumes-excludes: bazarr-media
     spec:

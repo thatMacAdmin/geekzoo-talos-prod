@@ -3,6 +3,15 @@ kind: Deployment
 metadata:
   name: prowlarr
   namespace: media
+  labels:
+    app: prowlarr
+    app.kubernetes.io/name: prowlarr
+    app.kubernetes.io/instance: prowlarr
+    app.kubernetes.io/component: indexer
+    app.kubernetes.io/part-of: media
+    app.kubernetes.io/managed-by: kustomize
+    groundcover.com/service: prowlarr
+    groundcover.com/team: homelab
 spec:
   selector:
     matchLabels:
@@ -14,6 +23,13 @@ spec:
     metadata:
       labels:
         app: prowlarr
+        app.kubernetes.io/name: prowlarr
+        app.kubernetes.io/instance: prowlarr
+        app.kubernetes.io/component: indexer
+        app.kubernetes.io/part-of: media
+        app.kubernetes.io/managed-by: kustomize
+        groundcover.com/service: prowlarr
+        groundcover.com/team: homelab
       annotations:
         backup.velero.io/backup-volumes-excludes: prowlarr-media
     spec:

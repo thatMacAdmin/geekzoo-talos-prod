@@ -5,6 +5,13 @@ metadata:
   namespace: media
   labels:
     app: sabnzbd
+    app.kubernetes.io/name: sabnzbd
+    app.kubernetes.io/instance: sabnzbd
+    app.kubernetes.io/component: downloader
+    app.kubernetes.io/part-of: media
+    app.kubernetes.io/managed-by: kustomize
+    groundcover.com/service: sabnzbd
+    groundcover.com/team: homelab
 spec:
   replicas: 1
   strategy:
@@ -16,6 +23,13 @@ spec:
     metadata:
       labels:
         app: sabnzbd
+        app.kubernetes.io/name: sabnzbd
+        app.kubernetes.io/instance: sabnzbd
+        app.kubernetes.io/component: downloader
+        app.kubernetes.io/part-of: media
+        app.kubernetes.io/managed-by: kustomize
+        groundcover.com/service: sabnzbd
+        groundcover.com/team: homelab
       annotations:
         backup.velero.io/backup-volumes-excludes: sabnzbd-media
     spec:
