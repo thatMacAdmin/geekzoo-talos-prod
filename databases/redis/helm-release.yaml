@@ -28,8 +28,6 @@ spec:
     master:
       count: 1
       podLabels:
-        app.kubernetes.io/name: redis
-        app.kubernetes.io/instance: redis
         groundcover.com/service: redis-master
         groundcover.com/team: homelab
       resourcesPreset: "medium"
@@ -38,8 +36,6 @@ spec:
     replica:
       replicaCount: 3
       podLabels:
-        app.kubernetes.io/name: redis
-        app.kubernetes.io/instance: redis
         groundcover.com/service: redis-replicas
         groundcover.com/team: homelab
       resourcesPreset: "medium"

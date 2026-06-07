@@ -66,10 +66,6 @@ spec:
       enabled: true
       replicas: 1
       podLabels:
-        app.kubernetes.io/name: authentik
-        app.kubernetes.io/instance: authentik
-        app.kubernetes.io/component: server
-        app.kubernetes.io/part-of: identity
         groundcover.com/service: authentik-server
         groundcover.com/team: homelab
       podAnnotations:
@@ -80,10 +76,6 @@ spec:
       enabled: true
       replicas: 1
       podLabels:
-        app.kubernetes.io/name: authentik
-        app.kubernetes.io/instance: authentik
-        app.kubernetes.io/component: worker
-        app.kubernetes.io/part-of: identity
         groundcover.com/service: authentik-worker
         groundcover.com/team: homelab
       podAnnotations:
