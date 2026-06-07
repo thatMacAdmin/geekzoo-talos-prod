@@ -9,7 +9,77 @@ spec:
   logsTTL: 2d
   tracesTTL: 2d
   profilesTTL: 2d
-  disableBuiltinAlerts: true
+  disableBuiltinAlerts: false
+  projects:
+    - name: default
+      apiKeys:
+        - key: "00000000000000000000000000000000"
+          description: Default project access
+      notificationIntegrations:
+        baseURL: https://coroot.macbytes.io
+        webhook:
+          url: http://vmalertmanager-alertmanager.monitoring.svc.cluster.local:9093/api/v2/alerts
+          customHeaders:
+            - key: Content-Type
+              value: application/json
+          alerts: true
+          incidents: false
+          deployments: false
+          alertTemplate: |
+            [
+              {
+                "labels": {
+                  "alertname": "Coroot {{ if eq .Status `OK` }}resolved {{ end }}{{ .RuleName }}",
+                  "severity": "{{ if eq .Status `OK` }}info{{ else }}{{ .Severity }}{{ end }}",
+                  "source": "coroot",
+                  "project": "{{ .ProjectName }}",
+                  "namespace": "{{ .Application.Namespace }}",
+                  "kind": "{{ .Application.Kind }}",
+                  "app": "{{ .Application.Name }}"
+                },
+                "annotations": {
+                  "summary": {{ json .Summary }},
+                  "description": "Coroot {{ .RuleName }} for {{ .Application.Kind }}/{{ .Application.Name }} in namespace {{ .Application.Namespace }}.",
+                  "url": {{ json .URL }}
+                }
+              }
+            ]
+      applicationCategories:
+        - name: application
+          notificationSettings:
+            alerts:
+              enabled: true
+              webhook:
+                enabled: true
+        - name: control-plane
+          notificationSettings:
+            alerts:
+              enabled: true
+              webhook:
+                enabled: true
+        - name: monitoring
+          notificationSettings:
+            alerts:
+              enabled: true
+              webhook:
+                enabled: true
+      alertingRules:
+        - id: storage-space
+          enabled: true
+        - id: memory-oom
+          enabled: true
+        - id: instance-availability
+          enabled: true
+        - id: instance-restarts
+          enabled: true
+        - id: kubernetes-events
+          enabled: true
+          source:
+            type: kubernetes_events
+            kubernetesEvents:
+              minCount: 3
+              maxAlertsPerApp: 10
+              evaluateWithAi: false
   storage:
     size: 10Gi
     className: ceph-block
