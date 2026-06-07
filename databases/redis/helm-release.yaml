@@ -30,7 +30,6 @@ spec:
       podLabels:
         app.kubernetes.io/name: redis
         app.kubernetes.io/instance: redis
-        app.kubernetes.io/component: master
         groundcover.com/service: redis-master
         groundcover.com/team: homelab
       resourcesPreset: "medium"
@@ -41,7 +40,6 @@ spec:
       podLabels:
         app.kubernetes.io/name: redis
         app.kubernetes.io/instance: redis
-        app.kubernetes.io/component: replica
         groundcover.com/service: redis-replicas
         groundcover.com/team: homelab
       resourcesPreset: "medium"
