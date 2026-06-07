@@ -5,11 +5,15 @@ REQUESTS="${REQUESTS:-60}"
 WAIT_SECONDS="${WAIT_SECONDS:-75}"
 PROBE_NAMESPACE="${PROBE_NAMESPACE:-default}"
 PROBE_IMAGE="${PROBE_IMAGE:-curlimages/curl:8.15.0}"
+CONTROL_NAMESPACE="${CONTROL_NAMESPACE:-default}"
+CONTROL_APP="${CONTROL_APP:-groundcover-http-echo}"
+CONTROL_IMAGE="${CONTROL_IMAGE:-hashicorp/http-echo:1.0}"
 LOCAL_METRICS_PORT="${LOCAL_METRICS_PORT:-18428}"
 POD_NAME="groundcover-workload-probe-$$"
 PORT_FORWARD_LOG="/tmp/${POD_NAME}-port-forward.log"
 
 services=(
+  "groundcover-http-echo|http://${CONTROL_APP}.${CONTROL_NAMESPACE}.svc.cluster.local:8080/"
   "adguard|http://adguard-svc.apps.svc.cluster.local:3000/"
   "authentik-server|http://authentik-server.identity.svc.cluster.local/"
   "bazarr|http://bazarr-svc.media.svc.cluster.local:6767/"
@@ -30,8 +34,70 @@ cleanup() {
     kill "${PORT_FORWARD_PID}" >/dev/null 2>&1 || true
   fi
   kubectl -n "${PROBE_NAMESPACE}" delete pod "${POD_NAME}" --ignore-not-found >/dev/null 2>&1 || true
+  kubectl -n "${CONTROL_NAMESPACE}" delete service "${CONTROL_APP}" --ignore-not-found >/dev/null 2>&1 || true
+  kubectl -n "${CONTROL_NAMESPACE}" delete deployment "${CONTROL_APP}" --ignore-not-found >/dev/null 2>&1 || true
 }
 trap cleanup EXIT
+
+echo "Creating raw HTTP control workload ${CONTROL_NAMESPACE}/${CONTROL_APP}..."
+kubectl -n "${CONTROL_NAMESPACE}" apply -f - <<EOF
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ${CONTROL_APP}
+  labels:
+    app.kubernetes.io/name: ${CONTROL_APP}
+    app.kubernetes.io/instance: ${CONTROL_APP}
+    app.kubernetes.io/component: http-control
+    app.kubernetes.io/part-of: observability-validation
+    groundcover.com/service: ${CONTROL_APP}
+    groundcover.com/team: homelab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ${CONTROL_APP}
+      app.kubernetes.io/instance: ${CONTROL_APP}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: ${CONTROL_APP}
+        app.kubernetes.io/instance: ${CONTROL_APP}
+        app.kubernetes.io/component: http-control
+        app.kubernetes.io/part-of: observability-validation
+        groundcover.com/service: ${CONTROL_APP}
+        groundcover.com/team: homelab
+    spec:
+      containers:
+        - name: http-echo
+          image: ${CONTROL_IMAGE}
+          args:
+            - -listen=:8080
+            - -text=groundcover-http-ok
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            periodSeconds: 2
+            failureThreshold: 15
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ${CONTROL_APP}
+spec:
+  selector:
+    app.kubernetes.io/name: ${CONTROL_APP}
+    app.kubernetes.io/instance: ${CONTROL_APP}
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+EOF
+
+kubectl -n "${CONTROL_NAMESPACE}" rollout status deployment/"${CONTROL_APP}" --timeout=90s
 
 probe_script='
 set -eu
@@ -107,7 +173,7 @@ vm_query() {
   fi
 }
 
-workload_match="adguard|authentik-server|bazarr|jellyfin|lingarr|open-webui|prowlarr|qbittorrent|radarr|sabnzbd|seerr|sonarr|vaultwarden"
+workload_match="groundcover-http-echo|adguard|authentik-server|bazarr|jellyfin|lingarr|open-webui|prowlarr|qbittorrent|radarr|sabnzbd|seerr|sonarr|vaultwarden"
 
 vm_query "Workload request increases, grouped by role and type" \
   "sum by (namespace, workload, workload_name, role, type, status_code, return_code) (increase(groundcover_workload_total_counter{workload=~\"${workload_match}\"}[30m]))"
