@@ -56,6 +56,14 @@ global:
       labels: []
 
 agent:
+  flb:
+    resources:
+      limits:
+        cpu: 500m
+        memory: 64Mi
+      requests:
+        cpu: 100m
+        memory: 64Mi
   sensor:
     resources:
       limits:
