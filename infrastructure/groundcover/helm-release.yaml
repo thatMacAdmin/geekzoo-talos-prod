@@ -9,7 +9,7 @@ spec:
   chart:
     spec:
       chart: groundcover
-      version: "1.11.963"
+      version: "1.11.968"
       sourceRef:
         kind: HelmRepository
         name: groundcover

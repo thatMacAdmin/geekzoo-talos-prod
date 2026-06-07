@@ -2,6 +2,7 @@
 set -euo pipefail
 
 REQUESTS="${REQUESTS:-60}"
+PROBE_SLEEP_SECONDS="${PROBE_SLEEP_SECONDS:-0}"
 WAIT_SECONDS="${WAIT_SECONDS:-75}"
 PROBE_NAMESPACE="${PROBE_NAMESPACE:-default}"
 PROBE_IMAGE="${PROBE_IMAGE:-curlimages/curl:8.15.0}"
@@ -13,7 +14,6 @@ POD_NAME="groundcover-workload-probe-$$"
 PORT_FORWARD_LOG="/tmp/${POD_NAME}-port-forward.log"
 
 services=(
-  "groundcover-http-echo|http://${CONTROL_APP}.${CONTROL_NAMESPACE}.svc.cluster.local:8080/"
   "adguard|http://adguard-svc.apps.svc.cluster.local:3000/"
   "authentik-server|http://authentik-server.identity.svc.cluster.local/"
   "bazarr|http://bazarr-svc.media.svc.cluster.local:6767/"
@@ -109,9 +109,22 @@ EOF
 
 kubectl -n "${CONTROL_NAMESPACE}" rollout status deployment/"${CONTROL_APP}" --timeout=90s
 
+CONTROL_POD_IP="$(
+  kubectl -n "${CONTROL_NAMESPACE}" get pod \
+    -l "app.kubernetes.io/name=${CONTROL_APP},app.kubernetes.io/instance=${CONTROL_APP}" \
+    -o jsonpath='{.items[0].status.podIP}'
+)"
+
+services=(
+  "groundcover-http-echo-clusterip|http://${CONTROL_APP}.${CONTROL_NAMESPACE}.svc.cluster.local:8080/"
+  "groundcover-http-echo-podip|http://${CONTROL_POD_IP}:8080/"
+  "${services[@]}"
+)
+
 probe_script='
 set -eu
 request_count="${REQUESTS:-60}"
+probe_sleep_seconds="${PROBE_SLEEP_SECONDS:-0}"
 
 probe() {
   name="$1"
@@ -124,6 +137,9 @@ probe() {
       ok=$((ok + 1))
     else
       fail=$((fail + 1))
+    fi
+    if [ "$probe_sleep_seconds" != "0" ]; then
+      sleep "$probe_sleep_seconds"
     fi
     i=$((i + 1))
   done
@@ -139,6 +155,9 @@ probe '${name}' '${url}'"
 done
 
 echo "Generating ${REQUESTS} requests per service from ${PROBE_NAMESPACE}/${POD_NAME}..."
+if [[ "${PROBE_SLEEP_SECONDS}" != "0" ]]; then
+  echo "Sleeping ${PROBE_SLEEP_SECONDS}s between requests inside each service probe."
+fi
 kubectl -n "${PROBE_NAMESPACE}" apply -f - <<EOF
 apiVersion: v1
 kind: Pod
@@ -160,6 +179,8 @@ spec:
       env:
         - name: REQUESTS
           value: "${REQUESTS}"
+        - name: PROBE_SLEEP_SECONDS
+          value: "${PROBE_SLEEP_SECONDS}"
       command:
         - sh
         - -ceu
@@ -218,6 +239,12 @@ vm_query() {
 
 workload_match="groundcover-http-echo|adguard|authentik-server|bazarr|jellyfin|lingarr|open-webui|prowlarr|qbittorrent|radarr|sabnzbd|seerr|sonarr|vaultwarden"
 
+echo
+echo "Control datapath comparison:"
+echo "  ClusterIP: http://${CONTROL_APP}.${CONTROL_NAMESPACE}.svc.cluster.local:8080/"
+echo "  Pod IP:    http://${CONTROL_POD_IP}:8080/"
+echo "If Pod IP produces a role=server row but ClusterIP does not, Cilium socket-LB attribution is the likely culprit."
+
 vm_query "Workload request increases, grouped by role and type" \
   "sum by (namespace, workload, workload_name, role, type, status_code, return_code) (increase(groundcover_workload_total_counter{workload=~\"${workload_match}\"}[30m]))"
 
@@ -229,3 +256,12 @@ vm_query "Observed workload latency series" \
 
 vm_query "Sensor parser/drop warning summary" \
   "topk(40, sum by (__name__, instance, consumer, warning, error) ({__name__=~\"flora_chunk_streamer_error|flora_http.*|flora_http2.*|flora_.*parser.*|groundcover_.*parser.*|groundcover_.*backlog.*|flora_connection_manager_warnings_total|flora_uprober_error_total|flora_uprober_warning_total\"}))"
+
+vm_query "Drop rate by consumer and warning" \
+  "sum by (__name__, consumer, warning) (rate({__name__=~\"flora_chunk_streamer_error|flora_protocol_parser_dropped_chunks_total|flora_protocol_parser_request_response_backlog_dropped\"}[5m]))"
+
+vm_query "Current backlog and persistent chunks by consumer" \
+  "max by (__name__, consumer, instance) ({__name__=~\"flora_chunk_streamer_backlog_total_chunks|flora_chunk_streamer_backlog_total_bytes|flora_chunk_streamer_persistent_chunks_inuse\"})"
+
+vm_query "Server repository warnings" \
+  "sum by (__name__, instance, warning) (rate({__name__=~\"flora_server_repository_warnings|sensor_k8smetadata_.*_repository_warnings\"}[5m]))"
