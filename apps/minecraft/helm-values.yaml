@@ -149,10 +149,6 @@ podAnnotations:
   backup.velero.io/backup-volumes-excludes: backupdir
 
 podLabels:
-  app.kubernetes.io/name: geekzoo-minecraft
-  app.kubernetes.io/instance: geekzoo
-  app.kubernetes.io/component: game-server
-  app.kubernetes.io/part-of: apps
   groundcover.com/service: geekzoo-minecraft
   groundcover.com/team: homelab
 
