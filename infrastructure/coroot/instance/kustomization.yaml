@@ -3,3 +3,5 @@ kind: Kustomization
 
 resources:
   - coroot.yaml
+  - certificate.yaml
+  - ingressroute.yaml

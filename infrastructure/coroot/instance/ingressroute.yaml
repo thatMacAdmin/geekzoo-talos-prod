@@ -1,0 +1,16 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: coroot-ingressroute
+  namespace: coroot
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`coroot.macbytes.io`)
+      kind: Rule
+      services:
+        - name: coroot-coroot
+          port: 8080
+  tls:
+    secretName: coroot-tls-certificate
