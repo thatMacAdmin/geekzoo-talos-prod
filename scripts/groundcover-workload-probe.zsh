@@ -24,7 +24,7 @@ services=(
   "qbittorrent|http://qbittorrent-svc.media.svc.cluster.local:8080/"
   "radarr|http://radarr-svc.media.svc.cluster.local:7878/"
   "sabnzbd|http://sabnzbd-svc.media.svc.cluster.local:8080/"
-  "seerr|http://seerr.media.svc.cluster.local:5055/"
+  "seerr|http://seerr.media.svc.cluster.local/"
   "sonarr|http://sonarr-svc.media.svc.cluster.local:8989/"
   "vaultwarden|http://vaultwarden-svc.apps.svc.cluster.local/"
 )
@@ -68,6 +68,9 @@ spec:
         groundcover.com/service: ${CONTROL_APP}
         groundcover.com/team: homelab
     spec:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: http-echo
           image: ${CONTROL_IMAGE}
@@ -76,6 +79,13 @@ spec:
             - -text=groundcover-http-ok
           ports:
             - containerPort: 8080
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            runAsUser: 65534
           readinessProbe:
             httpGet:
               path: /
@@ -129,11 +139,44 @@ probe '${name}' '${url}'"
 done
 
 echo "Generating ${REQUESTS} requests per service from ${PROBE_NAMESPACE}/${POD_NAME}..."
-kubectl -n "${PROBE_NAMESPACE}" run "${POD_NAME}" \
-  --image="${PROBE_IMAGE}" \
-  --restart=Never \
-  --env="REQUESTS=${REQUESTS}" \
-  --command -- sh -ceu "${probe_script}"
+kubectl -n "${PROBE_NAMESPACE}" apply -f - <<EOF
+apiVersion: v1
+kind: Pod
+metadata:
+  name: ${POD_NAME}
+  labels:
+    app.kubernetes.io/name: groundcover-workload-probe
+    app.kubernetes.io/instance: ${POD_NAME}
+    app.kubernetes.io/component: traffic-generator
+    app.kubernetes.io/part-of: observability-validation
+spec:
+  restartPolicy: Never
+  securityContext:
+    seccompProfile:
+      type: RuntimeDefault
+  containers:
+    - name: curl
+      image: ${PROBE_IMAGE}
+      env:
+        - name: REQUESTS
+          value: "${REQUESTS}"
+      command:
+        - sh
+        - -ceu
+        - |
+$(printf '%s\n' "${probe_script}" | sed 's/^/          /')
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - ALL
+        runAsNonRoot: true
+        runAsUser: 65534
+EOF
+
+kubectl -n "${PROBE_NAMESPACE}" wait --for=condition=Ready pod/"${POD_NAME}" --timeout=90s || true
+kubectl -n "${PROBE_NAMESPACE}" logs -f pod/"${POD_NAME}"
+kubectl -n "${PROBE_NAMESPACE}" wait --for=condition=Ready=false pod/"${POD_NAME}" --timeout=5s >/dev/null 2>&1 || true
 
 echo "Waiting ${WAIT_SECONDS}s for Groundcover to flush workload metrics..."
 sleep "${WAIT_SECONDS}"
@@ -184,5 +227,5 @@ vm_query "Workload error increases" \
 vm_query "Observed workload latency series" \
   "max by (namespace, workload, workload_name, role, type, status_code, return_code) (max_over_time(groundcover_workload_latency_seconds{workload=~\"${workload_match}\"}[30m]))"
 
-vm_query "Sensor HTTP parser backlog/unpaired indicators" \
-  "{__name__=~\"flora_.*|groundcover_.*parser.*|groundcover_.*backlog.*\"}"
+vm_query "Sensor parser/drop warning summary" \
+  "topk(40, sum by (__name__, instance, consumer, warning, error) ({__name__=~\"flora_chunk_streamer_error|flora_http.*|flora_http2.*|flora_.*parser.*|groundcover_.*parser.*|groundcover_.*backlog.*|flora_connection_manager_warnings_total|flora_uprober_error_total|flora_uprober_warning_total\"}))"
