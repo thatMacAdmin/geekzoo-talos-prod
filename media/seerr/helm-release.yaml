@@ -16,10 +16,6 @@ spec:
   values:
     fullnameOverride: seerr
     podLabels:
-      app.kubernetes.io/name: seerr
-      app.kubernetes.io/instance: seerr
-      app.kubernetes.io/component: requests
-      app.kubernetes.io/part-of: media
       groundcover.com/service: seerr
       groundcover.com/team: homelab
     extraEnv:
