@@ -10,8 +10,6 @@ metadata:
     app.kubernetes.io/component: downloader
     app.kubernetes.io/part-of: media
     app.kubernetes.io/managed-by: kustomize
-    groundcover.com/service: sabnzbd
-    groundcover.com/team: homelab
 spec:
   replicas: 1
   strategy:
@@ -28,8 +26,6 @@ spec:
         app.kubernetes.io/component: downloader
         app.kubernetes.io/part-of: media
         app.kubernetes.io/managed-by: kustomize
-        groundcover.com/service: sabnzbd
-        groundcover.com/team: homelab
       annotations:
         backup.velero.io/backup-volumes-excludes: sabnzbd-media
     spec:

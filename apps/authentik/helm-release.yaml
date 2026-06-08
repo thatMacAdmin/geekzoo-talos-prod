@@ -65,9 +65,6 @@ spec:
     server:
       enabled: true
       replicas: 1
-      podLabels:
-        groundcover.com/service: authentik-server
-        groundcover.com/team: homelab
       podAnnotations:
         macbytes.io/authentik-blueprint-revision: "2026-05-03-friendly-brand-v2"
       service:
@@ -75,9 +72,6 @@ spec:
     worker:
       enabled: true
       replicas: 1
-      podLabels:
-        groundcover.com/service: authentik-worker
-        groundcover.com/team: homelab
       podAnnotations:
         macbytes.io/authentik-blueprint-revision: "2026-05-03-friendly-brand-v2"
     blueprints:

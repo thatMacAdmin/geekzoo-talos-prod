@@ -15,9 +15,6 @@ spec:
         namespace: media
   values:
     fullnameOverride: seerr
-    podLabels:
-      groundcover.com/service: seerr
-      groundcover.com/team: homelab
     extraEnv:
       - name: DB_TYPE
         value: postgres

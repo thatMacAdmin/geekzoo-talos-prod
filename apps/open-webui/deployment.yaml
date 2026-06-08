@@ -10,8 +10,6 @@ metadata:
     app.kubernetes.io/component: web
     app.kubernetes.io/part-of: apps
     app.kubernetes.io/managed-by: kustomize
-    groundcover.com/service: open-webui
-    groundcover.com/team: homelab
 spec:
   selector:
     matchLabels:
@@ -28,8 +26,6 @@ spec:
         app.kubernetes.io/component: web
         app.kubernetes.io/part-of: apps
         app.kubernetes.io/managed-by: kustomize
-        groundcover.com/service: open-webui
-        groundcover.com/team: homelab
     spec:
       containers:
         - name: open-webui

@@ -148,10 +148,6 @@ minecraftServer:
 podAnnotations:
   backup.velero.io/backup-volumes-excludes: backupdir
 
-podLabels:
-  groundcover.com/service: geekzoo-minecraft
-  groundcover.com/team: homelab
-
 persistence:
   labels: {}
   annotations: {}

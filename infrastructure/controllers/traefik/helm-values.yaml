@@ -92,8 +92,6 @@ deployment:
   kind: DaemonSet
   podLabels:
     app.kubernetes.io/part-of: system
-    groundcover.com/service: traefik
-    groundcover.com/team: homelab
 
 # Accept forwarded headers from cluster/LAN ranges (working config)
 additionalArguments:
