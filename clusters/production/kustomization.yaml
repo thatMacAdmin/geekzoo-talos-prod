@@ -3,7 +3,6 @@ kind: Kustomization
 
 resources:
   - 00-namespaces.yaml
-  - 01-crds.yaml
   - 02-cilium.yaml
   - 03-storage.yaml
   - 04-external-secrets.yaml

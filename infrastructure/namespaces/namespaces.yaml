@@ -65,17 +65,6 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: monitoring
-  labels:
-    name: monitoring
-    pod-security.kubernetes.io/enforce: privileged
-    pod-security.kubernetes.io/audit: privileged
-    pod-security.kubernetes.io/warn: privileged
-    pod-security.kubernetes.io/enforce-version: latest
----
-apiVersion: v1
-kind: Namespace
-metadata:
   name: rook-ceph
   labels:
     name: rook-ceph
