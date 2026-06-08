@@ -22,17 +22,6 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: coroot
-  labels:
-    name: coroot
-    pod-security.kubernetes.io/enforce: privileged
-    pod-security.kubernetes.io/audit: privileged
-    pod-security.kubernetes.io/warn: privileged
-    pod-security.kubernetes.io/enforce-version: latest
----
-apiVersion: v1
-kind: Namespace
-metadata:
   name: database
   labels:
     name: database
@@ -68,17 +57,6 @@ metadata:
   name: media
   labels:
     name: media
-    pod-security.kubernetes.io/enforce: privileged
-    pod-security.kubernetes.io/audit: privileged
-    pod-security.kubernetes.io/warn: privileged
-    pod-security.kubernetes.io/enforce-version: latest
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: monitoring
-  labels:
-    name: monitoring
     pod-security.kubernetes.io/enforce: privileged
     pod-security.kubernetes.io/audit: privileged
     pod-security.kubernetes.io/warn: privileged

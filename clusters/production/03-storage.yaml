@@ -5,7 +5,6 @@ metadata:
   namespace: flux-system
 spec:
   dependsOn:
-    - name: crds
     - name: cilium
   interval: 10m
   retryInterval: 2m
