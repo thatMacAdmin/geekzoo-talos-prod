@@ -71,7 +71,10 @@ data:
 
     IN=/var/hubble/dropped-flows.log
     URL=http://openobserve-openobserve-standalone.openobserve.svc.cluster.local:5080/api/default/hubble_dropped_flows/_json
-    touch "${IN}"
+
+    while [ ! -f "${IN}" ]; do
+      sleep 1
+    done
 
     tail -n +1 -F "${IN}" | while IFS= read -r line; do
       [ -n "${line}" ] || continue
@@ -105,7 +108,7 @@ spec:
         app.kubernetes.io/name: hubble-flow-exporter
         app.kubernetes.io/part-of: openobserve
       annotations:
-        observability.macbytes.io/config-version: "2026-06-09-2"
+        observability.macbytes.io/config-version: "2026-06-09-3"
     spec:
       containers:
         - name: hubble-observer
