@@ -65,45 +65,26 @@ data:
 
       sleep 5
     done
-  collector.yaml: |
-    receivers:
-      filelog/hubble_dropped_flows:
-        include:
-          - /var/hubble/dropped-flows.log
-        start_at: beginning
-        operators:
-          - type: json_parser
-            timestamp:
-              parse_from: attributes._timestamp
-              layout_type: gotime
-              layout: "2006-01-02T15:04:05.999999999Z07:00"
+  ingest.sh: |
+    #!/usr/bin/env sh
+    set -eu
 
-    processors:
-      memory_limiter:
-        check_interval: 5s
-        limit_mib: 128
-      batch:
-        timeout: 5s
-        send_batch_size: 256
+    IN=/var/hubble/dropped-flows.log
+    URL=http://openobserve-openobserve-standalone.openobserve.svc.cluster.local:5080/api/default/hubble_dropped_flows/_json
+    touch "${IN}"
 
-    exporters:
-      otlphttp/openobserve:
-        endpoint: http://openobserve-openobserve-standalone.openobserve.svc.cluster.local:5080/api/default/
-        compression: gzip
-        headers:
-          Authorization: ${env:OPENOBSERVE_AUTH_HEADER}
-          stream-name: hubble_dropped_flows
+    tail -n +1 -F "${IN}" | while IFS= read -r line; do
+      [ -n "${line}" ] || continue
+      printf '[%s]' "${line}" > /tmp/hubble-flow-payload.json
 
-    service:
-      pipelines:
-        logs:
-          receivers:
-            - filelog/hubble_dropped_flows
-          processors:
-            - memory_limiter
-            - batch
-          exporters:
-            - otlphttp/openobserve
+      until curl -fsS \
+        -H "Authorization: ${OPENOBSERVE_AUTH_HEADER}" \
+        -H "Content-Type: application/json" \
+        --data-binary @/tmp/hubble-flow-payload.json \
+        "${URL}" >/dev/null; do
+        sleep 5
+      done
+    done
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -124,7 +105,7 @@ spec:
         app.kubernetes.io/name: hubble-flow-exporter
         app.kubernetes.io/part-of: openobserve
       annotations:
-        observability.macbytes.io/config-version: "2026-06-09-1"
+        observability.macbytes.io/config-version: "2026-06-09-2"
     spec:
       containers:
         - name: hubble-observer
@@ -145,11 +126,12 @@ spec:
             - name: hubble-flow-exporter-config
               mountPath: /etc/hubble-exporter
               readOnly: true
-        - name: otel-exporter
-          image: ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib:0.138.0
+        - name: openobserve-ingester
+          image: curlimages/curl:8.11.1
           imagePullPolicy: IfNotPresent
-          args:
-            - --config=/etc/otel/collector.yaml
+          command:
+            - /bin/sh
+            - /etc/hubble-exporter/ingest.sh
           env:
             - name: OPENOBSERVE_AUTH_HEADER
               valueFrom:
@@ -159,14 +141,14 @@ spec:
           resources:
             requests:
               cpu: 20m
-              memory: 128Mi
+              memory: 32Mi
             limits:
-              memory: 256Mi
+              memory: 128Mi
           volumeMounts:
             - name: hubble-buffer
               mountPath: /var/hubble
             - name: hubble-flow-exporter-config
-              mountPath: /etc/otel
+              mountPath: /etc/hubble-exporter
               readOnly: true
       volumes:
         - name: hubble-buffer
