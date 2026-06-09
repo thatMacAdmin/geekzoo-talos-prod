@@ -7,4 +7,5 @@ resources:
   - cnpg-operator
   - gpu-operator
   - metrics-server
+  - opentelemetry-operator
   - traefik

@@ -1,0 +1,43 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: openobserve-collector
+  namespace: openobserve
+spec:
+  interval: 30m
+  releaseName: openobserve-collector
+  dependsOn:
+    - name: opentelemetry-operator
+    - name: openobserve
+  chart:
+    spec:
+      chart: openobserve-collector
+      version: "0.4.4"
+      sourceRef:
+        kind: HelmRepository
+        name: openobserve
+        namespace: openobserve
+  valuesFrom:
+    - kind: Secret
+      name: openobserve-root-user
+      valuesKey: collector-values.yaml
+  values:
+    k8sCluster: geekzoo-prod
+    opentelemetry-operator:
+      enabled: false
+    autoinstrumentation:
+      enabled: true
+    agent:
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          memory: 1Gi
+    gateway:
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          memory: 1Gi

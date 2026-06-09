@@ -65,6 +65,13 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
+  name: openobserve
+  labels:
+    name: openobserve
+---
+apiVersion: v1
+kind: Namespace
+metadata:
   name: rook-ceph
   labels:
     name: rook-ceph
