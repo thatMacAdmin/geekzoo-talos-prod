@@ -60,6 +60,13 @@ ingressRoute:
   dashboard:
     enabled: true
 
+tracing:
+  otlp:
+    enabled: true
+    grpc:
+      endpoint: signoz-otel-collector.observability.svc.cluster.local:4317
+      insecure: true
+
 metrics:
   prometheus:
     service:
