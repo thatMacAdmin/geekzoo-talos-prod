@@ -1,8 +1,0 @@
-apiVersion: source.toolkit.fluxcd.io/v1
-kind: HelmRepository
-metadata:
-  name: openobserve
-  namespace: openobserve
-spec:
-  url: https://charts.openobserve.ai
-  interval: 24h
