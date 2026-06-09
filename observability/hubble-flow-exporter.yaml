@@ -1,0 +1,175 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hubble-flow-exporter-config
+  namespace: openobserve
+data:
+  observe.sh: |
+    #!/usr/bin/env sh
+    set -eu
+
+    OUT=/var/hubble/dropped-flows.log
+    touch "${OUT}"
+
+    while true; do
+      hubble observe \
+        --server hubble-relay.kube-system.svc.cluster.local:80 \
+        --verdict DROPPED \
+        --follow \
+        --output json |
+      jq --unbuffered -c '
+        def label_value($prefix):
+          (. // [] | map(select(startswith($prefix)) | split("="; 2)[1]) | first);
+
+        .flow as $f |
+        {
+          _timestamp: (.time // $f.time),
+          hubble_node_name: (.node_name // $f.node_name),
+          flow_uuid: $f.uuid,
+          verdict: $f.verdict,
+          drop_reason: $f.drop_reason,
+          drop_reason_desc: $f.drop_reason_desc,
+          traffic_direction: $f.traffic_direction,
+          flow_type: $f.Type,
+          summary: $f.Summary,
+          ip_version: $f.IP.ipVersion,
+          source_ip: $f.IP.source,
+          destination_ip: $f.IP.destination,
+          source_identity: $f.source.identity,
+          destination_identity: $f.destination.identity,
+          source_namespace: ($f.source.namespace // ($f.source.labels | label_value("k8s:io.kubernetes.pod.namespace="))),
+          destination_namespace: ($f.destination.namespace // ($f.destination.labels | label_value("k8s:io.kubernetes.pod.namespace="))),
+          source_pod: ($f.source.pod_name // ($f.source.labels | label_value("k8s:io.kubernetes.pod.name="))),
+          destination_pod: ($f.destination.pod_name // ($f.destination.labels | label_value("k8s:io.kubernetes.pod.name="))),
+          source_workload: ($f.source.workloads[0].name // null),
+          destination_workload: ($f.destination.workloads[0].name // null),
+          source_service: ($f.source.service_name // null),
+          destination_service: ($f.destination.service_name // null),
+          source_reserved_identity: ($f.source.labels | map(select(startswith("reserved:"))) | first),
+          destination_reserved_identity: ($f.destination.labels | map(select(startswith("reserved:"))) | first),
+          l4_protocol:
+            (if $f.l4.TCP then "TCP"
+             elif $f.l4.UDP then "UDP"
+             elif $f.l4.ICMPv4 then "ICMPv4"
+             elif $f.l4.ICMPv6 then "ICMPv6"
+             else null end),
+          source_port: ($f.l4.TCP.source_port // $f.l4.UDP.source_port // null),
+          destination_port: ($f.l4.TCP.destination_port // $f.l4.UDP.destination_port // null),
+          icmp_type: ($f.l4.ICMPv4.type // $f.l4.ICMPv6.type // null),
+          event_type: $f.event_type.type,
+          event_sub_type: $f.event_type.sub_type,
+          source_label_count: ($f.source.labels | length),
+          destination_label_count: ($f.destination.labels | length)
+        }
+      ' >> "${OUT}"
+
+      sleep 5
+    done
+  collector.yaml: |
+    receivers:
+      filelog/hubble_dropped_flows:
+        include:
+          - /var/hubble/dropped-flows.log
+        start_at: beginning
+        operators:
+          - type: json_parser
+            timestamp:
+              parse_from: attributes._timestamp
+              layout_type: gotime
+              layout: "2006-01-02T15:04:05.999999999Z07:00"
+
+    processors:
+      memory_limiter:
+        check_interval: 5s
+        limit_mib: 128
+      batch:
+        timeout: 5s
+        send_batch_size: 256
+
+    exporters:
+      otlphttp/openobserve:
+        endpoint: http://openobserve-openobserve-standalone.openobserve.svc.cluster.local:5080/api/default/
+        compression: gzip
+        headers:
+          Authorization: ${env:OPENOBSERVE_AUTH_HEADER}
+          stream-name: hubble_dropped_flows
+
+    service:
+      pipelines:
+        logs:
+          receivers:
+            - filelog/hubble_dropped_flows
+          processors:
+            - memory_limiter
+            - batch
+          exporters:
+            - otlphttp/openobserve
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hubble-flow-exporter
+  namespace: openobserve
+  labels:
+    app.kubernetes.io/name: hubble-flow-exporter
+    app.kubernetes.io/part-of: openobserve
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: hubble-flow-exporter
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: hubble-flow-exporter
+        app.kubernetes.io/part-of: openobserve
+    spec:
+      containers:
+        - name: hubble-observer
+          image: quay.io/cilium/cilium:v1.19.1@sha256:41f1f74a0000de8656f1de4088ea00c8f2d49d6edea579034c73c5fd5fe01792
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - /etc/hubble-exporter/observe.sh
+          resources:
+            requests:
+              cpu: 20m
+              memory: 64Mi
+            limits:
+              memory: 256Mi
+          volumeMounts:
+            - name: hubble-buffer
+              mountPath: /var/hubble
+            - name: hubble-flow-exporter-config
+              mountPath: /etc/hubble-exporter
+              readOnly: true
+        - name: otel-exporter
+          image: ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib:0.138.0
+          imagePullPolicy: IfNotPresent
+          args:
+            - --config=/etc/otel/collector.yaml
+          env:
+            - name: OPENOBSERVE_AUTH_HEADER
+              valueFrom:
+                secretKeyRef:
+                  name: openobserve-root-user
+                  key: OPENOBSERVE_AUTH_HEADER
+          resources:
+            requests:
+              cpu: 20m
+              memory: 128Mi
+            limits:
+              memory: 256Mi
+          volumeMounts:
+            - name: hubble-buffer
+              mountPath: /var/hubble
+            - name: hubble-flow-exporter-config
+              mountPath: /etc/otel
+              readOnly: true
+      volumes:
+        - name: hubble-buffer
+          emptyDir: {}
+        - name: hubble-flow-exporter-config
+          configMap:
+            name: hubble-flow-exporter-config
+            defaultMode: 0755

@@ -7,5 +7,6 @@ resources:
   - openobserve-helm-release.yaml
   - openobserve-collector-helm-release.yaml
   - hubble-metrics-collector.yaml
+  - hubble-flow-exporter.yaml
   - certificate.yaml
   - ingressroute.yaml
