@@ -33,6 +33,11 @@ signoz:
 
 otelCollector:
   replicaCount: 1
+  configMap:
+    create: false
+  command:
+    extraArgs:
+      - --config=/conf/otel-collector-config.yaml
   resources:
     requests:
       cpu: 250m

@@ -5,6 +5,7 @@ resources:
   - helm-repository.yaml
   - signoz-helm-release.yaml
   - k8s-infra-helm-release.yaml
+  - signoz-otel-collector-config.yaml
   - certificate.yaml
   - ingressroute.yaml
 
