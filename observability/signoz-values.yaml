@@ -1,0 +1,39 @@
+global:
+  cloud: other
+  clusterName: geekzoo-prod
+  storageClass: ceph-block
+
+clickhouse:
+  installCustomStorageClass: false
+  persistence:
+    enabled: true
+    storageClass: ceph-block
+    size: 80Gi
+  resources:
+    requests:
+      cpu: 500m
+      memory: 2Gi
+  zookeeper:
+    replicaCount: 1
+    persistence:
+      enabled: true
+      storageClass: ceph-block
+      size: 8Gi
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+
+signoz:
+  replicaCount: 1
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+
+otelCollector:
+  replicaCount: 1
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi

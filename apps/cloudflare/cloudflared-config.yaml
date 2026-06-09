@@ -191,4 +191,10 @@ ingress:
       noTLSVerify: true
       originServerName: hubble.macbytes.io
       httpHostHeader: hubble.macbytes.io
+  - hostname: signoz.macbytes.io
+    service: https://traefik.traefik.svc.cluster.local:443
+    originRequest:
+      noTLSVerify: true
+      originServerName: signoz.macbytes.io
+      httpHostHeader: signoz.macbytes.io
   - service: http_status:404
