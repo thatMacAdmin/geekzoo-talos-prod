@@ -19,7 +19,7 @@ data:
         --output json |
       jq --unbuffered -c '
         def label_value($prefix):
-          (. // [] | map(select(startswith($prefix)) | split("="; 2)[1]) | first);
+          (. // [] | map(select(startswith($prefix)) | ltrimstr($prefix)) | first);
 
         .flow as $f |
         {
@@ -45,8 +45,8 @@ data:
           destination_workload: ($f.destination.workloads[0].name // null),
           source_service: ($f.source.service_name // null),
           destination_service: ($f.destination.service_name // null),
-          source_reserved_identity: ($f.source.labels | map(select(startswith("reserved:"))) | first),
-          destination_reserved_identity: ($f.destination.labels | map(select(startswith("reserved:"))) | first),
+          source_reserved_identity: (($f.source.labels // []) | map(select(startswith("reserved:"))) | first),
+          destination_reserved_identity: (($f.destination.labels // []) | map(select(startswith("reserved:"))) | first),
           l4_protocol:
             (if $f.l4.TCP then "TCP"
              elif $f.l4.UDP then "UDP"
@@ -58,8 +58,8 @@ data:
           icmp_type: ($f.l4.ICMPv4.type // $f.l4.ICMPv6.type // null),
           event_type: $f.event_type.type,
           event_sub_type: $f.event_type.sub_type,
-          source_label_count: ($f.source.labels | length),
-          destination_label_count: ($f.destination.labels | length)
+          source_label_count: (($f.source.labels // []) | length),
+          destination_label_count: (($f.destination.labels // []) | length)
         }
       ' >> "${OUT}"
 
