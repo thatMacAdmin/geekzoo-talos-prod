@@ -6,5 +6,6 @@ resources:
   - object-bucket-claim.yaml
   - openobserve-helm-release.yaml
   - openobserve-collector-helm-release.yaml
+  - hubble-metrics-collector.yaml
   - certificate.yaml
   - ingressroute.yaml
