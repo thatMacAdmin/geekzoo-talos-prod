@@ -123,6 +123,8 @@ spec:
       labels:
         app.kubernetes.io/name: hubble-flow-exporter
         app.kubernetes.io/part-of: openobserve
+      annotations:
+        observability.macbytes.io/config-version: "2026-06-09-1"
     spec:
       containers:
         - name: hubble-observer
