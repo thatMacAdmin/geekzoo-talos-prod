@@ -32,10 +32,123 @@ data:
       httplogreceiver/json:
         endpoint: 0.0.0.0:8082
         source: json
+      # Scrape Hubble (Cilium) network metrics from each cilium agent on :9965.
+      # Pod-role discovery only; the collector SA already has pods list/watch.
+      prometheus/hubble:
+        config:
+          scrape_configs:
+            - job_name: hubble
+              scrape_interval: 60s
+              kubernetes_sd_configs:
+                - role: pod
+                  namespaces:
+                    names: [kube-system]
+              relabel_configs:
+                - source_labels: [__meta_kubernetes_pod_label_k8s_app]
+                  action: keep
+                  regex: cilium
+                - source_labels: [__meta_kubernetes_pod_ip]
+                  action: replace
+                  target_label: __address__
+                  replacement: ${1}:9965
+                - source_labels: [__meta_kubernetes_pod_node_name]
+                  action: replace
+                  target_label: node
+                - source_labels: [__meta_kubernetes_pod_name]
+                  action: replace
+                  target_label: pod
     processors:
       batch:
         send_batch_size: 50000
         timeout: 1s
+      transform/logs:
+        error_mode: ignore
+        log_statements:
+          # Universal: parse JSON bodies, extract severity + human-readable message
+          - context: log
+            statements:
+              - merge_maps(attributes, ParseJSON(body), "upsert") where IsMatch(body, "^\\s*\\{")
+              - set(severity_text, ConvertCase(attributes["level"], "upper")) where attributes["level"] != nil and severity_text == ""
+              - set(body, attributes["msg"]) where attributes["msg"] != nil and attributes["msg"] != "" and IsMatch(body, "^\\s*\\{")
+              - delete_key(attributes, "level")
+              - delete_key(attributes, "ts")
+              - delete_key(attributes, "msg")
+
+          # Traefik: promote HTTP fields to semantic conventions, clean up header noise
+          - context: log
+            conditions:
+              - resource.attributes["k8s.namespace.name"] == "traefik"
+            statements:
+              - set(attributes["http.request.method"], attributes["RequestMethod"]) where attributes["RequestMethod"] != nil
+              - set(attributes["url.path"], attributes["RequestPath"]) where attributes["RequestPath"] != nil
+              - set(attributes["server.address"], attributes["RequestHost"]) where attributes["RequestHost"] != nil
+              - set(attributes["http.response.status_code"], Int(attributes["DownstreamStatus"])) where attributes["DownstreamStatus"] != nil
+              - set(attributes["http.server.request.duration_ns"], Int(attributes["Duration"])) where attributes["Duration"] != nil
+              - set(attributes["traefik.router"], attributes["RouterName"]) where attributes["RouterName"] != nil
+              - set(attributes["traefik.entrypoint"], attributes["entryPointName"]) where attributes["entryPointName"] != nil
+              - set(attributes["tls.protocol.version"], attributes["TLSVersion"]) where attributes["TLSVersion"] != nil
+              - set(attributes["user_agent.original"], attributes["request_User-Agent"]) where attributes["request_User-Agent"] != nil
+              - set(body, Concat([attributes["http.request.method"], attributes["url.path"]], " ")) where attributes["http.request.method"] != nil
+              - delete_matching_keys(attributes, "^(Client|Downstream|Duration|GzipRatio|Origin|Overhead|Request|RetryAttempts|RouterName|Service|SpanId|StartLocal|StartUTC|TLSCipher|TLSVersion|TraceId|entryPointName|time)")
+              - delete_matching_keys(attributes, "^(request_|downstream_|origin_)")
+
+          # Authentik: promote HTTP fields, drop internal/noisy fields
+          - context: log
+            conditions:
+              - resource.attributes["k8s.deployment.name"] == "authentik-server"
+            statements:
+              - set(attributes["url.path"], attributes["event"]) where attributes["event"] != nil
+              - set(attributes["http.request.method"], attributes["method"]) where attributes["method"] != nil
+              - set(attributes["http.response.status_code"], Int(attributes["status"])) where attributes["status"] != nil
+              - set(attributes["user_agent.original"], attributes["user_agent"]) where attributes["user_agent"] != nil
+              - set(attributes["http.request.id"], attributes["request_id"]) where attributes["request_id"] != nil
+              - set(attributes["http.server.request.duration_ms"], attributes["runtime"]) where attributes["runtime"] != nil
+              - set(attributes["enduser.id"], attributes["user"]) where attributes["user"] != nil and attributes["user"] != ""
+              - set(body, Concat([attributes["http.request.method"], attributes["url.path"]], " ")) where attributes["http.request.method"] != nil
+              - delete_key(attributes, "event")
+              - delete_key(attributes, "method")
+              - delete_key(attributes, "status")
+              - delete_key(attributes, "user_agent")
+              - delete_key(attributes, "request_id")
+              - delete_key(attributes, "runtime")
+              - delete_key(attributes, "user")
+              - delete_key(attributes, "pid")
+              - delete_key(attributes, "auth_via")
+              - delete_key(attributes, "domain_url")
+              - delete_key(attributes, "host")
+              - delete_key(attributes, "schema_name")
+              - delete_key(attributes, "scheme")
+              - delete_key(attributes, "remote")
+              - delete_key(attributes, "timestamp")
+
+          # CloudNativePG postgres container: extract nested record, surface postgres severity
+          - context: log
+            conditions:
+              - resource.attributes["k8s.namespace.name"] == "database"
+              - resource.attributes["k8s.container.name"] == "postgres"
+            statements:
+              - set(attributes["db.postgresql.severity"], attributes["record"]["error_severity"]) where attributes["record"] != nil
+              - set(attributes["db.statement.summary"], attributes["record"]["message"]) where attributes["record"] != nil
+              - set(attributes["db.postgresql.backend_type"], attributes["record"]["backend_type"]) where attributes["record"] != nil
+              - set(attributes["db.postgresql.sql_state"], attributes["record"]["sql_state_code"]) where attributes["record"] != nil
+              - set(severity_text, attributes["record"]["error_severity"]) where attributes["record"] != nil and attributes["record"]["error_severity"] != nil
+              - set(body, attributes["record"]["message"]) where attributes["record"] != nil and attributes["record"]["message"] != nil
+              - delete_key(attributes, "record")
+              - delete_key(attributes, "logging_pod")
+
+          # Sonarr: parse plain-text "[Level] Logger: Message" format
+          - context: log
+            conditions:
+              - resource.attributes["k8s.deployment.name"] == "sonarr"
+              - IsMatch(body, "^\\[\\w+\\]")
+            statements:
+              - merge_maps(attributes, ExtractPatterns(body, "^\\[(?P<log_level>\\w+)\\]\\s+(?P<log_logger>[^:]+):\\s+(?P<log_message>.*)"), "upsert") where IsMatch(body, "^\\[\\w+\\]")
+              - set(severity_text, ConvertCase(attributes["log_level"], "upper")) where attributes["log_level"] != nil and severity_text == ""
+              - set(attributes["logger"], attributes["log_logger"]) where attributes["log_logger"] != nil
+              - set(body, attributes["log_message"]) where attributes["log_message"] != nil
+              - delete_key(attributes, "log_level")
+              - delete_key(attributes, "log_logger")
+              - delete_key(attributes, "log_message")
       batch/meter:
         send_batch_max_size: 25000
         send_batch_size: 20000
@@ -93,12 +206,12 @@ data:
           processors: [signozspanmetrics/delta, batch]
           exporters: [clickhousetraces, metadataexporter, signozmeter]
         metrics:
-          receivers: [otlp]
+          receivers: [otlp, prometheus/hubble]
           processors: [batch]
           exporters: [metadataexporter, signozclickhousemetrics, signozmeter]
         logs:
           receivers: [otlp, httplogreceiver/heroku, httplogreceiver/json]
-          processors: [batch]
+          processors: [transform/logs, batch]
           exporters: [clickhouselogsexporter, metadataexporter, signozmeter]
         metrics/meter:
           receivers: [signozmeter]
