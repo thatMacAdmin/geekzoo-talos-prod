@@ -39,7 +39,8 @@ stack, create these AWS SSM Parameter Store entries as JSON objects.
 ```json
 {
   "username": "plane",
-  "password": "<rabbitmq password>"
+  "password": "<rabbitmq password>",
+  "default_user.conf": "default_user = plane\ndefault_pass = <rabbitmq password>\n"
 }
 ```
 
