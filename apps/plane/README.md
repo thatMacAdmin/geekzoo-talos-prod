@@ -56,7 +56,7 @@ stack, create these AWS SSM Parameter Store entries as JSON objects.
   "PI_INTERNAL_SECRET": "<pi internal secret>",
   "REDIS_URL": "redis://:<redis password>@plane-redis.database.svc.cluster.local:6379/0",
   "DATABASE_URL": "postgresql://plane:<postgres password>@plane-pg-cluster-rw.database.svc.cluster.local:5432/plane",
-  "AMQP_URL": "amqp://plane:<rabbitmq password>@plane-rabbitmq.database.svc.cluster.local:5672/plane?frameMax=8192"
+  "AMQP_URL": "amqp://plane:<rabbitmq password>@plane-rabbitmq.database.svc.cluster.local:5672/plane"
 }
 ```
 
@@ -77,7 +77,7 @@ stack, create these AWS SSM Parameter Store entries as JSON objects.
   "AES_SECRET_KEY": "<silo aes key>",
   "DATABASE_URL": "postgresql://plane:<postgres password>@plane-pg-cluster-rw.database.svc.cluster.local:5432/plane",
   "REDIS_URL": "redis://:<redis password>@plane-redis.database.svc.cluster.local:6379/0",
-  "AMQP_URL": "amqp://plane:<rabbitmq password>@plane-rabbitmq.database.svc.cluster.local:5672/plane?frameMax=8192"
+  "AMQP_URL": "amqp://plane:<rabbitmq password>@plane-rabbitmq.database.svc.cluster.local:5672/plane"
 }
 ```
 
