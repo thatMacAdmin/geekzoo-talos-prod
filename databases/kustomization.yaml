@@ -3,6 +3,9 @@ kind: Kustomization
 
 resources:
   - authentik-pg
+  - plane-pg
+  - plane-rabbitmq
+  - plane-redis
   - seerr-pg
   - vaultwarden-pg
   - redis

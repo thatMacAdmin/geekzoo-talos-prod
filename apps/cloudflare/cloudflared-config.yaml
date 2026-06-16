@@ -42,6 +42,12 @@ ingress:
       noTLSVerify: true
       originServerName: authentik.macbytes.io
       httpHostHeader: authentik.macbytes.io
+  - hostname: plane.macbytes.io
+    service: https://traefik.traefik.svc.cluster.local:443
+    originRequest:
+      noTLSVerify: true
+      originServerName: plane.macbytes.io
+      httpHostHeader: plane.macbytes.io
   - hostname: prowlarr.macbytes.io
     service: https://traefik.traefik.svc.cluster.local:443
     originRequest:

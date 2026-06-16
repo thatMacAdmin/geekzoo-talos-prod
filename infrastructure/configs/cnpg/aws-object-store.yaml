@@ -1,0 +1,22 @@
+apiVersion: barmancloud.cnpg.io/v1
+kind: ObjectStore
+metadata:
+  name: aws-object-store
+  namespace: database
+spec:
+  retentionPolicy: "30d"
+  configuration:
+    destinationPath: s3://macbytes-cnpg-backups/
+    endpointURL: https://s3.us-east-2.amazonaws.com
+    s3Credentials:
+      accessKeyId:
+        name: cnpg-aws-credentials
+        key: ACCESS_KEY_ID
+      secretAccessKey:
+        name: cnpg-aws-credentials
+        key: ACCESS_SECRET_KEY
+      region:
+        name: cnpg-aws-credentials
+        key: AWS_REGION
+    wal:
+      compression: gzip

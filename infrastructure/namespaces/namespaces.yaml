@@ -76,6 +76,20 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
+  name: plane
+  labels:
+    name: plane
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: redis-operator
+  labels:
+    name: redis-operator
+---
+apiVersion: v1
+kind: Namespace
+metadata:
   name: rook-ceph
   labels:
     name: rook-ceph

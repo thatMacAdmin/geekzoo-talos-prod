@@ -1,0 +1,60 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: plane
+  namespace: plane
+spec:
+  interval: 30m
+  releaseName: plane
+  chart:
+    spec:
+      chart: plane-enterprise
+      version: "2.5.1"
+      sourceRef:
+        kind: HelmRepository
+        name: plane
+        namespace: plane
+  timeout: 10m
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+  values:
+    planeVersion: v2.6.2
+    license:
+      licenseDomain: plane.macbytes.io
+      licenseServer: https://prime.plane.so
+    ingress:
+      enabled: true
+      ingressClass: traefik
+      traefik:
+        maxRequestBodyBytes: 20971520
+    ssl:
+      tls_secret_name: plane-tls-certificate
+    env:
+      storageClass: ceph-block
+      docstore_bucket: plane-uploads
+      doc_upload_size_limit: "20971520"
+      web_url: https://plane.macbytes.io
+    services:
+      postgres:
+        local_setup: false
+      redis:
+        local_setup: false
+      rabbitmq:
+        local_setup: false
+      minio:
+        local_setup: false
+      monitor:
+        volumeSize: 1Gi
+      pi:
+        enabled: false
+      runner:
+        enabled: false
+    external_secrets:
+      app_env_existingSecret: plane-app-secrets
+      doc_store_existingSecret: plane-doc-store-secrets
+      live_env_existingSecret: plane-live-secrets
+      silo_env_existingSecret: plane-silo-secrets
