@@ -19,6 +19,7 @@ spec:
       name: plane-redis
       tag: v7.0.15
       imagePullPolicy: IfNotPresent
+      maxMemoryPercentOfLimit: 75
       redisSecret:
         secretName: plane-redis-auth
         secretKey: password
