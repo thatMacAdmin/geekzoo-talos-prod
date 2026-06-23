@@ -102,3 +102,26 @@ stack, create these AWS SSM Parameter Store entries as JSON objects.
 > service (`rook-ceph-rgw-ceph-objectstore.rook-ceph.svc`) — the browser can
 > neither resolve the internal name nor make a plaintext request from the HTTPS
 > app, so uploads ("failed to upload cover image") fail.
+
+### Bucket CORS
+
+Because the browser uploads cross-origin (`plane.macbytes.io` ->
+`s3.macbytes.io`), the `plane-uploads` bucket needs a CORS policy allowing the
+Plane origin, otherwise the upload reaches RGW (HTTP 204) but the browser blocks
+the response for lack of an `Access-Control-Allow-Origin` header. The
+ObjectBucketClaim does NOT manage CORS, so it must be applied to the bucket
+directly (re-apply if the bucket is ever recreated). Using the OBC credentials
+from the `plane-uploads` secret against the external endpoint:
+
+```sh
+aws s3api put-bucket-cors --endpoint-url https://s3.macbytes.io \
+  --bucket plane-uploads --cors-configuration '{
+    "CORSRules": [{
+      "AllowedOrigins": ["https://plane.macbytes.io"],
+      "AllowedMethods": ["GET", "PUT", "POST", "HEAD"],
+      "AllowedHeaders": ["*"],
+      "ExposeHeaders": ["ETag"],
+      "MaxAgeSeconds": 3600
+    }]
+  }'
+```
