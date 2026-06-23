@@ -91,7 +91,14 @@ stack, create these AWS SSM Parameter Store entries as JSON objects.
   "AWS_ACCESS_KEY_ID": "<plane-uploads ObjectBucketClaim access key>",
   "AWS_SECRET_ACCESS_KEY": "<plane-uploads ObjectBucketClaim secret key>",
   "AWS_REGION": "us-east-1",
-  "AWS_S3_ENDPOINT_URL": "http://rook-ceph-rgw-ceph-objectstore.rook-ceph.svc:80",
+  "AWS_S3_ENDPOINT_URL": "https://s3.macbytes.io",
   "AWS_S3_ADDRESSING_STYLE": "path"
 }
 ```
+
+> **Endpoint must be browser-reachable.** With `USE_MINIO=0` Plane hands the
+> browser presigned upload URLs built from `AWS_S3_ENDPOINT_URL`. Use the
+> external Ceph RGW ingress (`https://s3.macbytes.io`), not the in-cluster
+> service (`rook-ceph-rgw-ceph-objectstore.rook-ceph.svc`) — the browser can
+> neither resolve the internal name nor make a plaintext request from the HTTPS
+> app, so uploads ("failed to upload cover image") fail.
