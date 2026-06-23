@@ -53,6 +53,13 @@ spec:
         enabled: false
       runner:
         enabled: false
+      # Celery prefork sizes worker count to the node's CPU count (16 on these
+      # nodes) and is not cgroup-aware, so the worker forks 16 children that each
+      # load the full Django app. The chart default 1000Mi limit OOMKills it at
+      # warm-up. Raise the limit to fit all forks; nodes have 64Gi RAM.
+      worker:
+        memoryLimit: 6Gi
+        memoryRequest: 2Gi
     external_secrets:
       app_env_existingSecret: plane-app-secrets
       doc_store_existingSecret: plane-doc-store-secrets
