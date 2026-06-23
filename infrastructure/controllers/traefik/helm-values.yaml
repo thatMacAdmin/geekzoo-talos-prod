@@ -106,6 +106,12 @@ deployment:
 additionalArguments:
   - "--entryPoints.websecure.forwardedHeaders.trustedIPs=10.42.0.0/16,10.43.0.0/16,192.168.0.0/16"
   - "--entryPoints.web.forwardedHeaders.trustedIPs=10.42.0.0/16,10.43.0.0/16,192.168.0.0/16"
+  # Global HTTP->HTTPS redirect: every plain-HTTP request on :80 is 308-redirected
+  # to HTTPS, so apps only need a websecure IngressRoute (no per-app redirect
+  # middleware). Safe with DNS-01 issuance (no ACME HTTP-01 challenge on :80).
+  - "--entryPoints.web.http.redirections.entryPoint.to=websecure"
+  - "--entryPoints.web.http.redirections.entryPoint.scheme=https"
+  - "--entryPoints.web.http.redirections.entryPoint.permanent=true"
   - "--accessLog.filePath=/dev/stdout"
   - "--accessLog.fields.names.ClientHost=keep"
 
