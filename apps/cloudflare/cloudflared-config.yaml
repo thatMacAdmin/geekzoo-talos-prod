@@ -42,12 +42,6 @@ ingress:
       noTLSVerify: true
       originServerName: authentik.macbytes.io
       httpHostHeader: authentik.macbytes.io
-  - hostname: plane.macbytes.io
-    service: https://traefik.traefik.svc.cluster.local:443
-    originRequest:
-      noTLSVerify: true
-      originServerName: plane.macbytes.io
-      httpHostHeader: plane.macbytes.io
   - hostname: prowlarr.macbytes.io
     service: https://traefik.traefik.svc.cluster.local:443
     originRequest:
@@ -203,4 +197,10 @@ ingress:
       noTLSVerify: true
       originServerName: signoz.macbytes.io
       httpHostHeader: signoz.macbytes.io
+  - hostname: vikunja.macbytes.io
+    service: https://traefik.traefik.svc.cluster.local:443
+    originRequest:
+      noTLSVerify: true
+      originServerName: vikunja.macbytes.io
+      httpHostHeader: vikunja.macbytes.io
   - service: http_status:404

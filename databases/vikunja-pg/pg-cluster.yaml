@@ -1,24 +1,24 @@
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
-  name: plane-pg-cluster
+  name: vikunja-pg-cluster
   namespace: database
 spec:
   imageName: ghcr.io/cloudnative-pg/postgresql:17.6-system-trixie
-  instances: 3
+  instances: 1
   enableSuperuserAccess: true
   plugins:
     - name: barman-cloud.cloudnative-pg.io
       isWALArchiver: true
       parameters:
-        barmanObjectName: aws-object-store
-        serverName: plane-pg-cluster-geekzoo-prod
+        barmanObjectName: wasabi-object-store
+        serverName: vikunja-pg-cluster-geekzoo-prod
   bootstrap:
     initdb:
-      database: plane
-      owner: plane
+      database: vikunja
+      owner: vikunja
       secret:
-        name: pg-app-user-plane
+        name: pg-app-user-vikunja
   storage:
     storageClass: ceph-block
-    size: 20Gi
+    size: 10Gi

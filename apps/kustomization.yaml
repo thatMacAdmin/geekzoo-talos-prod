@@ -7,6 +7,6 @@ resources:
   - adguard
   - authentik
   - open-webui
-  - plane
   - home-assistant
+  - vikunja
   - minecraft

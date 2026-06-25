@@ -1,12 +1,12 @@
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: plane-certificate
-  namespace: plane
+  name: vikunja-certificate
+  namespace: apps
 spec:
-  secretName: plane-tls-certificate
+  secretName: vikunja-tls-certificate
   issuerRef:
     name: letsencrypt-prod
     kind: ClusterIssuer
   dnsNames:
-    - plane.macbytes.io
+    - vikunja.macbytes.io

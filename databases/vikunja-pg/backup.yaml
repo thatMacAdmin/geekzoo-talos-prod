@@ -1,11 +1,11 @@
 apiVersion: postgresql.cnpg.io/v1
 kind: ScheduledBackup
 metadata:
-  name: plane-pg-cluster-backup
+  name: vikunja-pg-cluster-backup
   namespace: database
 spec:
   cluster:
-    name: plane-pg-cluster
+    name: vikunja-pg-cluster
   schedule: "0 0 0 * * *"
   backupOwnerReference: self
   method: plugin
