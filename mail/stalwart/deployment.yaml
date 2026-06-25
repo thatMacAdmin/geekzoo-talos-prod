@@ -51,13 +51,18 @@ spec:
           image: stalwartlabs/stalwart:v0.16.10
           imagePullPolicy: IfNotPresent
           securityContext:
-            allowPrivilegeEscalation: false
-            # NOTE: kept false for first boot — the image declares /etc/stalwart as a VOLUME.
-            # Tighten to true once we confirm Stalwart only writes to /var/lib/stalwart.
+            # The stalwartlabs/stalwart binary is setcap'd cap_net_bind_service=+ep (effective
+            # bit set), so the kernel refuses to exec it unless that cap is in the bounding set
+            # AND privilege escalation is allowed. We bind only unprivileged ports, but must
+            # still satisfy the binary's file cap to exec. Net result: runs as uid 2000 with
+            # exactly one capability (NET_BIND_SERVICE), everything else dropped.
+            allowPrivilegeEscalation: true
             readOnlyRootFilesystem: false
             capabilities:
               drop:
                 - ALL
+              add:
+                - NET_BIND_SERVICE
           ports:
             - { name: smtp-mx, containerPort: 2525 }
             - { name: submission, containerPort: 5587 }
@@ -76,16 +81,10 @@ spec:
                 secretKeyRef:
                   name: mail-secrets
                   key: SES_SMTP_PASSWORD
-            # --- BOOTSTRAP ONLY: remove BOTH after provisioning (Phase 3 step 5) ---
-            # recovery mode brings up only the mgmt HTTP endpoint on :8080 so the
-            # apply plan (which defines the real listeners) can be pushed via stalwart-cli.
-            - name: STALWART_RECOVERY_MODE
-              value: "1"
-            - name: STALWART_RECOVERY_ADMIN
-              valueFrom:
-                secretKeyRef:
-                  name: mail-secrets
-                  key: STALWART_RECOVERY_ADMIN
+            # Provisioning recovery env removed — admin is now the datastore account
+            # edward@macbytes.io (Administrator role). For break-glass / re-provisioning,
+            # temporarily re-add: STALWART_RECOVERY_MODE="1" + STALWART_RECOVERY_ADMIN
+            # (valueFrom secret mail-secrets key STALWART_RECOVERY_ADMIN).
           volumeMounts:
             - name: bootstrap
               mountPath: /etc/stalwart/config.json

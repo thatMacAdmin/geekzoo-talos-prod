@@ -3,25 +3,28 @@ kind: ConfigMap
 metadata:
   name: stalwart-plan
   namespace: mail
-# The authoritative Stalwart config, applied to the running server's datastore via
-#   stalwart-cli apply --file stalwart-plan.ndjson
-# NDJSON = one JSON op per line, no enclosing array. Schema VERIFIED against v0.16.10
-# (incl. adversarial review): listener `bind` is an ARRAY; useTls/tlsImplicit are
-# top-level booleans; is_local_domain('', rcpt_domain) takes two args; DKIM-off via
-# SenderAuth.dkimSignDomain. authUsername is a literal (envsubst ${SES_SMTP_USERNAME}
-# at apply time); only the password is an env-var ref resolved by the server at runtime.
-# RUN `stalwart-cli apply --dry-run` FIRST to confirm against the live binary.
+# Authoritative Stalwart config, applied to the datastore via `stalwart-cli apply`.
+# NDJSON = one JSON op per line. Shapes VERIFIED LIVE against v0.16.10 (describe/snapshot):
+#   - NetworkListener.bind is a SET serialized as an object: {"[::]:2525": true}
+#   - Expression.match is an OBJECT keyed by "0","1",... (NOT an array); empty match = {}
+#   - is_local_domain(rcpt_domain) takes ONE arg
+#   - Certificate has NO `name` field -> use `create`. The `#id` cross-ref did NOT resolve
+#     for SystemSettings.defaultCertificateId, so it uses LITERAL server-assigned ids from
+#     THIS datastore (Domain=b, Certificate=ixupxm7sabaa) — env-specific; on a fresh rebuild,
+#     set SystemSettings AFTER Domain+Certificate are created (read their ids via `query`).
+#   - authUsername is the non-secret SES access-key id (inlined); the password is an env
+#     ref resolved by the SERVER (SES_SMTP_PASSWORD in the Deployment env), never stored here.
 data:
   stalwart-plan.ndjson: |
     {"@type":"upsert","object":"Domain","matchOn":["name"],"value":{"d1":{"name":"macbytes.io"}}}
-    {"@type":"upsert","object":"Certificate","matchOn":["name"],"value":{"mail-cert":{"name":"mail-cert","certificate":{"@type":"File","filePath":"/etc/stalwart/tls/tls.crt"},"privateKey":{"@type":"File","filePath":"/etc/stalwart/tls/tls.key"}}}}
-    {"@type":"update","object":"SystemSettings","value":{"defaultCertificateId":"#mail-cert"}}
-    {"@type":"upsert","object":"NetworkListener","matchOn":["name"],"value":{"mx":{"name":"mx","protocol":"smtp","bind":["[::]:2525"],"useTls":true,"tlsImplicit":false}}}
-    {"@type":"upsert","object":"NetworkListener","matchOn":["name"],"value":{"submission":{"name":"submission","protocol":"smtp","bind":["[::]:5587"],"useTls":true,"tlsImplicit":false}}}
-    {"@type":"upsert","object":"NetworkListener","matchOn":["name"],"value":{"submissions":{"name":"submissions","protocol":"smtp","bind":["[::]:5465"],"useTls":true,"tlsImplicit":true}}}
-    {"@type":"upsert","object":"NetworkListener","matchOn":["name"],"value":{"imaps":{"name":"imaps","protocol":"imap","bind":["[::]:9993"],"useTls":true,"tlsImplicit":true}}}
-    {"@type":"upsert","object":"NetworkListener","matchOn":["name"],"value":{"http":{"name":"http","protocol":"http","bind":["[::]:8080"],"useTls":false}}}
-    {"@type":"upsert","object":"MtaRoute","matchOn":["name"],"value":{"ses":{"@type":"Relay","name":"ses","address":"email-smtp.us-east-2.amazonaws.com","port":587,"protocol":"smtp","implicitTls":false,"allowInvalidCerts":false,"authUsername":"${SES_SMTP_USERNAME}","authSecret":{"@type":"EnvironmentVariable","variableName":"SES_SMTP_PASSWORD"}}}}
+    {"@type":"create","object":"Certificate","value":{"mail-cert":{"certificate":{"@type":"File","filePath":"/etc/stalwart/tls/tls.crt"},"privateKey":{"@type":"File","filePath":"/etc/stalwart/tls/tls.key"}}}}
+    {"@type":"update","object":"SystemSettings","value":{"defaultDomainId":"b","defaultCertificateId":"ixupxm7sabaa","defaultHostname":"mail.macbytes.io"}}
+    {"@type":"upsert","object":"NetworkListener","matchOn":["name"],"value":{"mx":{"name":"mx","protocol":"smtp","bind":{"[::]:2525":true},"useTls":true,"tlsImplicit":false}}}
+    {"@type":"upsert","object":"NetworkListener","matchOn":["name"],"value":{"submission":{"name":"submission","protocol":"smtp","bind":{"[::]:5587":true},"useTls":true,"tlsImplicit":false}}}
+    {"@type":"upsert","object":"NetworkListener","matchOn":["name"],"value":{"submissions":{"name":"submissions","protocol":"smtp","bind":{"[::]:5465":true},"useTls":true,"tlsImplicit":true}}}
+    {"@type":"upsert","object":"NetworkListener","matchOn":["name"],"value":{"imaps":{"name":"imaps","protocol":"imap","bind":{"[::]:9993":true},"useTls":true,"tlsImplicit":true}}}
+    {"@type":"upsert","object":"NetworkListener","matchOn":["name"],"value":{"http":{"name":"http","protocol":"http","bind":{"[::]:8080":true},"useTls":false}}}
+    {"@type":"upsert","object":"MtaRoute","matchOn":["name"],"value":{"ses":{"@type":"Relay","name":"ses","address":"email-smtp.us-east-2.amazonaws.com","port":587,"protocol":"smtp","implicitTls":false,"allowInvalidCerts":false,"authUsername":"AKIA4UQ7IVGQATX6FS57","authSecret":{"@type":"EnvironmentVariable","variableName":"SES_SMTP_PASSWORD"}}}}
     {"@type":"upsert","object":"MtaTlsStrategy","matchOn":["name"],"value":{"relay-tls":{"name":"relay-tls","dane":"disable","mtaSts":"disable","startTls":"require","allowInvalidCerts":false}}}
-    {"@type":"update","object":"MtaOutboundStrategy","value":{"route":{"else":"'ses'","match":[{"if":"is_local_domain('', rcpt_domain)","then":"'local'"}]},"tls":{"else":"'relay-tls'","match":[{"if":"is_local_domain('', rcpt_domain)","then":"'default'"}]}}}
-    {"@type":"update","object":"SenderAuth","value":{"dkimSignDomain":{"else":"false","match":[]}}}
+    {"@type":"update","object":"MtaOutboundStrategy","value":{"route":{"else":"'ses'","match":{"0":{"if":"is_local_domain(rcpt_domain)","then":"'local'"}}},"tls":{"else":"'relay-tls'","match":{"0":{"if":"is_local_domain(rcpt_domain)","then":"'default'"}}}}}
+    {"@type":"update","object":"SenderAuth","value":{"dkimSignDomain":{"else":"false","match":{}}}}

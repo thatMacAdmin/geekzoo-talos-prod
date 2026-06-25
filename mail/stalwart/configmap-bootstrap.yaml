@@ -4,21 +4,11 @@ metadata:
   name: stalwart-bootstrap
   namespace: mail
 data:
-  # Minimal v0.16 Bootstrap object. Mounted read-only at /etc/stalwart/config.json.
-  # Only SEEDS the datastore on first boot; the authoritative config is the NDJSON
-  # apply plan pushed via stalwart-cli (see configmap-plan.yaml / apply-job.yaml).
+  # In v0.16 the --config file is ONLY the data-store descriptor (top-level @type).
+  # serverHostname/domain/listeners/relay/etc. all live in the datastore and are set
+  # via the NDJSON apply plan (configmap-plan.yaml) through stalwart-cli.
   config.json: |
     {
-      "serverHostname": "mail.macbytes.io",
-      "defaultDomain": "macbytes.io",
-      "requestTlsCertificate": false,
-      "generateDkimKeys": false,
-      "dataStore": {
-        "@type": "RocksDb",
-        "path": "/var/lib/stalwart"
-      },
-      "tracer": {
-        "@type": "Stdout",
-        "ansi": false
-      }
+      "@type": "RocksDb",
+      "path": "/var/lib/stalwart"
     }
