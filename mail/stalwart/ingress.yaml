@@ -1,0 +1,19 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: stalwart-ingressroute
+  namespace: mail
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    # CalDAV/CardDAV + JMAP + autoconfig/autodiscover — all served by Stalwart's HTTP listener (:8080).
+    # These hostnames ride the shared Cloudflare tunnel (added in Phase 5). mail.macbytes.io is NOT
+    # here — it stays grey-cloud for raw IMAP/SMTP via frps and has no HTTP path.
+    - match: Host(`dav.macbytes.io`) || Host(`autoconfig.macbytes.io`) || Host(`autodiscover.macbytes.io`)
+      kind: Rule
+      services:
+        - name: stalwart-svc
+          port: 8080
+  tls:
+    secretName: stalwart-tls-certificate

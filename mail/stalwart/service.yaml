@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: stalwart-svc
+  namespace: mail
+  labels:
+    app: stalwart
+spec:
+  selector:
+    app: stalwart
+  ports:
+    - name: smtp-mx          # frpc remote 25  -> here
+      protocol: TCP
+      port: 2525
+      targetPort: 2525
+    - name: submission       # frpc remote 587 -> here (STARTTLS)
+      protocol: TCP
+      port: 5587
+      targetPort: 5587
+    - name: submissions      # frpc remote 465 -> here (implicit TLS)
+      protocol: TCP
+      port: 5465
+      targetPort: 5465
+    - name: imaps            # frpc remote 993 -> here (implicit TLS)
+      protocol: TCP
+      port: 9993
+      targetPort: 9993
+    - name: http             # Traefik IngressRoute + cluster-internal JMAP (Bulwark) -> here
+      protocol: TCP
+      port: 8080
+      targetPort: 8080

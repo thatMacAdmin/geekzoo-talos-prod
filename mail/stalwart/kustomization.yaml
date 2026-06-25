@@ -1,0 +1,14 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - pvc.yaml
+  - certificate.yaml
+  - configmap-bootstrap.yaml
+  - configmap-plan.yaml
+  - service.yaml
+  - deployment.yaml
+  - ingress.yaml
+  # apply-job.yaml — provisioning (stalwart-cli apply) is run LIVE during bootstrap
+  # (--dry-run, then real) and codified as a Job only after the plan schema is
+  # confirmed against the running v0.16.10 binary.

@@ -1,0 +1,17 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: stalwart-certificate
+  namespace: mail
+spec:
+  secretName: stalwart-tls-certificate
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+    - mail.macbytes.io        # MX + raw IMAP/SMTP host (client-validated over frp)
+    - imap.macbytes.io        # Apple/Thunderbird name-guessing (client-validated)
+    - smtp.macbytes.io        # Apple/Thunderbird name-guessing (client-validated)
+    - dav.macbytes.io         # CalDAV/CardDAV/JMAP (origin behind Traefik/Cloudflare)
+    - autoconfig.macbytes.io  # Thunderbird autoconfig
+    - autodiscover.macbytes.io # Outlook autodiscover

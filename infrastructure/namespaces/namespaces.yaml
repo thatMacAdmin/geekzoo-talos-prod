@@ -110,3 +110,10 @@ metadata:
   name: velero
   labels:
     name: velero
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mail
+  labels:
+    name: mail

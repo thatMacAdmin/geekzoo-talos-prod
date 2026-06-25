@@ -1,0 +1,127 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stalwart
+  namespace: mail
+  labels:
+    app: stalwart
+    app.kubernetes.io/name: stalwart
+    app.kubernetes.io/instance: stalwart
+    app.kubernetes.io/component: mail
+    app.kubernetes.io/part-of: mail
+    app.kubernetes.io/managed-by: kustomize
+spec:
+  selector:
+    matchLabels:
+      app: stalwart
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: stalwart
+        app.kubernetes.io/name: stalwart
+        app.kubernetes.io/instance: stalwart
+        app.kubernetes.io/component: mail
+        app.kubernetes.io/part-of: mail
+        app.kubernetes.io/managed-by: kustomize
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 2000        # image user (uid=gid=2000)
+        runAsGroup: 2000
+        fsGroup: 2000          # so the ceph-block PVC is writable for RocksDB
+        seccompProfile:
+          type: RuntimeDefault
+      volumes:
+        - name: bootstrap
+          configMap:
+            name: stalwart-bootstrap
+        - name: data
+          persistentVolumeClaim:
+            claimName: stalwart-data-pvc
+        - name: tls
+          secret:
+            secretName: stalwart-tls-certificate
+        - name: tmp
+          emptyDir: {}
+      containers:
+        - name: stalwart
+          image: stalwartlabs/stalwart:v0.16.10
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            # NOTE: kept false for first boot — the image declares /etc/stalwart as a VOLUME.
+            # Tighten to true once we confirm Stalwart only writes to /var/lib/stalwart.
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop:
+                - ALL
+          ports:
+            - { name: smtp-mx, containerPort: 2525 }
+            - { name: submission, containerPort: 5587 }
+            - { name: submissions, containerPort: 5465 }
+            - { name: imaps, containerPort: 9993 }
+            - { name: http, containerPort: 8080 }
+          env:
+            # --- runtime (always present): SES relay auth, resolved by the server ---
+            - name: SES_SMTP_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: mail-secrets
+                  key: SES_SMTP_USERNAME
+            - name: SES_SMTP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mail-secrets
+                  key: SES_SMTP_PASSWORD
+            # --- BOOTSTRAP ONLY: remove BOTH after provisioning (Phase 3 step 5) ---
+            # recovery mode brings up only the mgmt HTTP endpoint on :8080 so the
+            # apply plan (which defines the real listeners) can be pushed via stalwart-cli.
+            - name: STALWART_RECOVERY_MODE
+              value: "1"
+            - name: STALWART_RECOVERY_ADMIN
+              valueFrom:
+                secretKeyRef:
+                  name: mail-secrets
+                  key: STALWART_RECOVERY_ADMIN
+          volumeMounts:
+            - name: bootstrap
+              mountPath: /etc/stalwart/config.json
+              subPath: config.json
+              readOnly: true
+            - name: data
+              mountPath: /var/lib/stalwart
+            - name: tls
+              mountPath: /etc/stalwart/tls
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+          startupProbe:
+            httpGet:
+              path: /healthz/live
+              port: 8080
+            failureThreshold: 30
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /healthz/live
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /healthz/ready
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
