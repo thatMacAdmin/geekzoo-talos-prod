@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: frpc-config
+  namespace: mail
+# No secrets here — the frp token is injected as env FRP_TOKEN (from mail-secrets)
+# and referenced via frp's {{ .Envs.* }} template syntax (same pattern as frps on the VM).
+data:
+  frpc.toml: |
+    serverAddr = "35.196.228.211"
+    serverPort = 7000
+    auth.method = "token"
+    auth.token = "{{ .Envs.FRP_TOKEN }}"
+    transport.tls.enable = true
+
+    # Inbound MX (sender -> frps:25 -> here -> Stalwart 2525)
+    [[proxies]]
+    name = "smtp"
+    type = "tcp"
+    localIP = "stalwart-svc.mail.svc.cluster.local"
+    localPort = 2525
+    remotePort = 25
+
+    # Submission STARTTLS (client -> frps:587 -> Stalwart 5587)
+    [[proxies]]
+    name = "submission"
+    type = "tcp"
+    localIP = "stalwart-svc.mail.svc.cluster.local"
+    localPort = 5587
+    remotePort = 587
+
+    # Submissions implicit TLS (client -> frps:465 -> Stalwart 5465)
+    [[proxies]]
+    name = "submissions"
+    type = "tcp"
+    localIP = "stalwart-svc.mail.svc.cluster.local"
+    localPort = 5465
+    remotePort = 465
+
+    # IMAPS implicit TLS (client -> frps:993 -> Stalwart 9993)
+    [[proxies]]
+    name = "imaps"
+    type = "tcp"
+    localIP = "stalwart-svc.mail.svc.cluster.local"
+    localPort = 9993
+    remotePort = 993

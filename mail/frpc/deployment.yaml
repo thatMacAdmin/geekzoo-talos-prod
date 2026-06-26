@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frpc
+  namespace: mail
+  labels:
+    app: frpc
+    app.kubernetes.io/name: frpc
+    app.kubernetes.io/instance: frpc
+    app.kubernetes.io/component: tunnel
+    app.kubernetes.io/part-of: mail
+    app.kubernetes.io/managed-by: kustomize
+spec:
+  selector:
+    matchLabels:
+      app: frpc
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: frpc
+        app.kubernetes.io/name: frpc
+        app.kubernetes.io/instance: frpc
+        app.kubernetes.io/component: tunnel
+        app.kubernetes.io/part-of: mail
+        app.kubernetes.io/managed-by: kustomize
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+        fsGroup: 65534
+        seccompProfile:
+          type: RuntimeDefault
+      volumes:
+        - name: config
+          configMap:
+            name: frpc-config
+        - name: tmp
+          emptyDir: {}
+      containers:
+        - name: frpc
+          image: snowdreamtech/frpc:0.69.1
+          imagePullPolicy: IfNotPresent
+          args: ["-c", "/etc/frp/frpc.toml"]
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          env:
+            - name: FRP_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: mail-secrets
+                  key: FRP_TOKEN
+          volumeMounts:
+            - name: config
+              mountPath: /etc/frp/frpc.toml
+              subPath: frpc.toml
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "10m"
+            limits:
+              memory: "128Mi"
+              cpu: "200m"
