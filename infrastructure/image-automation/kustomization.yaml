@@ -32,3 +32,6 @@ resources:
   - image-policy-open-webui.yaml
   - image-update-automation.yaml
   - image-update-automation-apps.yaml
+  - image-repository-bulwark.yaml
+  - image-policy-bulwark.yaml
+  - image-update-automation-mail.yaml

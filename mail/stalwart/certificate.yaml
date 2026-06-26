@@ -16,3 +16,4 @@ spec:
     - autoconfig.macbytes.io  # Thunderbird autoconfig
     - autodiscover.macbytes.io # Outlook autodiscover
     - stalwart.macbytes.io    # webadmin (Cloudflare Access-gated, behind Traefik/tunnel)
+    - webmail.macbytes.io     # Bulwark webmail (behind Traefik/tunnel)

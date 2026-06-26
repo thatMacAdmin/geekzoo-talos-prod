@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bulwark
+  namespace: mail
+  labels:
+    app: bulwark
+    app.kubernetes.io/name: bulwark
+    app.kubernetes.io/instance: bulwark
+    app.kubernetes.io/component: webmail
+    app.kubernetes.io/part-of: mail
+    app.kubernetes.io/managed-by: kustomize
+spec:
+  selector:
+    matchLabels:
+      app: bulwark
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: bulwark
+        app.kubernetes.io/name: bulwark
+        app.kubernetes.io/instance: bulwark
+        app.kubernetes.io/component: webmail
+        app.kubernetes.io/part-of: mail
+        app.kubernetes.io/managed-by: kustomize
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+        fsGroup: 1001
+        seccompProfile:
+          type: RuntimeDefault
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: bulwark-data-pvc
+        - name: tmp
+          emptyDir: {}
+      containers:
+        - name: bulwark
+          image: ghcr.io/bulwarkmail/webmail:1.7.5 # {"$imagepolicy": "flux-system:bulwark-image-policy"}
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            # Next.js standalone may write runtime cache; start false, tighten to true once confirmed.
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop:
+                - ALL
+          ports:
+            - { name: http, containerPort: 3000 }
+          env:
+            - { name: PORT, value: "3000" }
+            - { name: HOSTNAME, value: "0.0.0.0" }
+            # Bulwark's SERVER talks JMAP to Stalwart in-cluster; the browser only hits webmail.macbytes.io
+            - { name: JMAP_SERVER_URL, value: "http://stalwart-svc.mail.svc.cluster.local:8080" }
+            - { name: STALWART_FEATURES, value: "true" }
+            - { name: ADMIN_CONFIG_DIR, value: "/app/data/admin" }
+            - { name: ADMIN_STATE_DIR, value: "/app/data/admin-state" }
+            - { name: SETTINGS_DATA_DIR, value: "/app/data/settings" }
+            - name: SESSION_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: mail-secrets
+                  key: BULWARK_SESSION_SECRET
+          volumeMounts:
+            - { name: data, mountPath: /app/data }
+            - { name: tmp, mountPath: /tmp }
+          readinessProbe:
+            httpGet: { path: /, port: 3000 }
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: { path: /, port: 3000 }
+            initialDelaySeconds: 20
+            periodSeconds: 30
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "50m"
+            limits:
+              memory: "512Mi"
+              cpu: "1000m"

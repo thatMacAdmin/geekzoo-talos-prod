@@ -1,0 +1,8 @@
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: bulwark
+  namespace: flux-system
+spec:
+  image: ghcr.io/bulwarkmail/webmail
+  interval: 1h

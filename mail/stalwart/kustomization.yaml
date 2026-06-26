@@ -10,6 +10,7 @@ resources:
   - deployment.yaml
   - ingress.yaml
   - ingress-admin.yaml
+  - ingress-autodiscovery.yaml
   # apply-job.yaml — provisioning (stalwart-cli apply) is run LIVE during bootstrap
   # (--dry-run, then real) and codified as a Job only after the plan schema is
   # confirmed against the running v0.16.10 binary.

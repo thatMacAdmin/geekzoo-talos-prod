@@ -1,16 +1,18 @@
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
-  name: stalwart-ingressroute
+  name: stalwart-dav-ingressroute
   namespace: mail
 spec:
   entryPoints:
     - websecure
   routes:
-    # CalDAV/CardDAV + JMAP + autoconfig/autodiscover — all served by Stalwart's HTTP listener (:8080).
-    # These hostnames ride the shared Cloudflare tunnel (added in Phase 5). mail.macbytes.io is NOT
-    # here — it stays grey-cloud for raw IMAP/SMTP via frps and has no HTTP path.
-    - match: Host(`dav.macbytes.io`) || Host(`autoconfig.macbytes.io`) || Host(`autodiscover.macbytes.io`)
+    # dav.macbytes.io serves CalDAV/CardDAV/WebDAV + JMAP + discovery ONLY.
+    # PATH ALLOWLIST is the admin lockdown: Stalwart's :8080 serves the webadmin SPA as a
+    # catch-all fallback on every unmatched path, so we match ONLY these prefixes. Anything
+    # else (/, /account, /manage, /login, /api, SPA assets) hits NO route -> Traefik 404,
+    # keeping the webadmin reachable only via Access-gated stalwart.macbytes.io.
+    - match: Host(`dav.macbytes.io`) && (PathPrefix(`/dav`) || PathPrefix(`/jmap`) || PathPrefix(`/.well-known`) || PathPrefix(`/mail`) || PathPrefix(`/autodiscover`))
       kind: Rule
       services:
         - name: stalwart-svc

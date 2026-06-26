@@ -1,0 +1,25 @@
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageUpdateAutomation
+metadata:
+  name: mail-image-updates
+  namespace: flux-system
+spec:
+  interval: 30m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  git:
+    checkout:
+      ref:
+        branch: main
+    commit:
+      author:
+        email: flux-image-automation@macbytes.io
+        name: flux-image-automation
+      messageTemplate: 'chore(images): update mail container images'
+    push:
+      branch: main
+  update:
+    path: ./mail
+    strategy: Setters

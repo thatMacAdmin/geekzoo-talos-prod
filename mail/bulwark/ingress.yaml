@@ -1,0 +1,16 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: bulwark-ingressroute
+  namespace: mail
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`webmail.macbytes.io`)
+      kind: Rule
+      services:
+        - name: bulwark-svc
+          port: 3000
+  tls:
+    secretName: stalwart-tls-certificate

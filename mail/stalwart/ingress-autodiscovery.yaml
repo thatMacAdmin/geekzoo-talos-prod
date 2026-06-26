@@ -1,0 +1,19 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: stalwart-autodiscovery-ingressroute
+  namespace: mail
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    # Mozilla autoconfig (autoconfig.macbytes.io/mail/config-v1.1.xml) + MS autodiscover
+    # (autodiscover.macbytes.io/autodiscover/autodiscover.xml), both served by Stalwart :8080.
+    # Path-scoped so the admin SPA catch-all isn't exposed on these hosts either.
+    - match: (Host(`autoconfig.macbytes.io`) && (PathPrefix(`/mail`) || PathPrefix(`/.well-known`))) || (Host(`autodiscover.macbytes.io`) && PathPrefix(`/autodiscover`))
+      kind: Rule
+      services:
+        - name: stalwart-svc
+          port: 8080
+  tls:
+    secretName: stalwart-tls-certificate

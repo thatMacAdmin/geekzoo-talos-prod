@@ -209,4 +209,28 @@ ingress:
       noTLSVerify: true
       originServerName: stalwart.macbytes.io
       httpHostHeader: stalwart.macbytes.io
+  - hostname: webmail.macbytes.io
+    service: https://traefik.traefik.svc.cluster.local:443
+    originRequest:
+      noTLSVerify: true
+      originServerName: webmail.macbytes.io
+      httpHostHeader: webmail.macbytes.io
+  - hostname: dav.macbytes.io
+    service: https://traefik.traefik.svc.cluster.local:443
+    originRequest:
+      noTLSVerify: true
+      originServerName: dav.macbytes.io
+      httpHostHeader: dav.macbytes.io
+  - hostname: autoconfig.macbytes.io
+    service: https://traefik.traefik.svc.cluster.local:443
+    originRequest:
+      noTLSVerify: true
+      originServerName: autoconfig.macbytes.io
+      httpHostHeader: autoconfig.macbytes.io
+  - hostname: autodiscover.macbytes.io
+    service: https://traefik.traefik.svc.cluster.local:443
+    originRequest:
+      noTLSVerify: true
+      originServerName: autodiscover.macbytes.io
+      httpHostHeader: autodiscover.macbytes.io
   - service: http_status:404
