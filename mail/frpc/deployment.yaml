@@ -42,6 +42,9 @@ spec:
         - name: frpc
           image: snowdreamtech/frpc:0.69.1
           imagePullPolicy: IfNotPresent
+          # Bypass the image's su-exec ENTRYPOINT (which needs SETUID/SETGID + root to
+          # drop privileges) and run the binary directly as our non-root uid 65534.
+          command: ["/usr/bin/frpc"]
           args: ["-c", "/etc/frp/frpc.toml"]
           securityContext:
             allowPrivilegeEscalation: false
