@@ -42,7 +42,7 @@ spec:
           emptyDir: {}
       containers:
         - name: bulwark
-          image: ghcr.io/bulwarkmail/webmail:1.7.5 # {"$imagepolicy": "flux-system:bulwark-image-policy"}
+          image: ghcr.io/bulwarkmail/webmail:v1.7.5 # {"$imagepolicy": "flux-system:bulwark-image-policy"}
           imagePullPolicy: IfNotPresent
           securityContext:
             allowPrivilegeEscalation: false
@@ -52,30 +52,30 @@ spec:
               drop:
                 - ALL
           ports:
-            - { name: http, containerPort: 3000 }
+            - {name: http, containerPort: 3000}
           env:
-            - { name: PORT, value: "3000" }
-            - { name: HOSTNAME, value: "0.0.0.0" }
+            - {name: PORT, value: "3000"}
+            - {name: HOSTNAME, value: "0.0.0.0"}
             # Bulwark's SERVER talks JMAP to Stalwart in-cluster; the browser only hits webmail.macbytes.io
-            - { name: JMAP_SERVER_URL, value: "http://stalwart-svc.mail.svc.cluster.local:8080" }
-            - { name: STALWART_FEATURES, value: "true" }
-            - { name: ADMIN_CONFIG_DIR, value: "/app/data/admin" }
-            - { name: ADMIN_STATE_DIR, value: "/app/data/admin-state" }
-            - { name: SETTINGS_DATA_DIR, value: "/app/data/settings" }
+            - {name: JMAP_SERVER_URL, value: "http://stalwart-svc.mail.svc.cluster.local:8080"}
+            - {name: STALWART_FEATURES, value: "true"}
+            - {name: ADMIN_CONFIG_DIR, value: "/app/data/admin"}
+            - {name: ADMIN_STATE_DIR, value: "/app/data/admin-state"}
+            - {name: SETTINGS_DATA_DIR, value: "/app/data/settings"}
             - name: SESSION_SECRET
               valueFrom:
                 secretKeyRef:
                   name: mail-secrets
                   key: BULWARK_SESSION_SECRET
           volumeMounts:
-            - { name: data, mountPath: /app/data }
-            - { name: tmp, mountPath: /tmp }
+            - {name: data, mountPath: /app/data}
+            - {name: tmp, mountPath: /tmp}
           readinessProbe:
-            httpGet: { path: /, port: 3000 }
+            httpGet: {path: /, port: 3000}
             initialDelaySeconds: 5
             periodSeconds: 10
           livenessProbe:
-            httpGet: { path: /, port: 3000 }
+            httpGet: {path: /, port: 3000}
             initialDelaySeconds: 20
             periodSeconds: 30
           resources:
