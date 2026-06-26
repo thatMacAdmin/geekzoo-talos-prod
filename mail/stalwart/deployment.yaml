@@ -81,6 +81,12 @@ spec:
                 secretKeyRef:
                   name: mail-secrets
                   key: SES_SMTP_PASSWORD
+            # --- ACTIVE outbound relay: Brevo SMTP key, resolved by the server ---
+            - name: BREVO_SMTP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mail-secrets
+                  key: BREVO_SMTP_PASSWORD
             # Provisioning recovery env removed — admin is now the datastore account
             # edward@macbytes.io (Administrator role). For break-glass / re-provisioning,
             # temporarily re-add: STALWART_RECOVERY_MODE="1" + STALWART_RECOVERY_ADMIN
