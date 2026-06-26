@@ -1,0 +1,19 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: stalwart-admin-ingressroute
+  namespace: mail
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    # Dedicated admin host for the Stalwart webadmin. Fronted by Cloudflare Access
+    # (Authentik SAML IdP + "Authentik Infra Allow" group). Same :8080 origin as the
+    # dav/jmap route, but kept on its own hostname so admin sits behind Access.
+    - match: Host(`stalwart.macbytes.io`)
+      kind: Rule
+      services:
+        - name: stalwart-svc
+          port: 8080
+  tls:
+    secretName: stalwart-tls-certificate
