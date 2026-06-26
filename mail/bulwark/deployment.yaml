@@ -56,8 +56,13 @@ spec:
           env:
             - {name: PORT, value: "3000"}
             - {name: HOSTNAME, value: "0.0.0.0"}
-            # Bulwark's SERVER talks JMAP to Stalwart in-cluster; the browser only hits webmail.macbytes.io
-            - {name: JMAP_SERVER_URL, value: "http://stalwart-svc.mail.svc.cluster.local:8080"}
+            # Bulwark is a BROWSER-DIRECT JMAP client: it ships JMAP_SERVER_URL to the browser via
+            # /api/config and the browser connects to JMAP itself (rewriting Stalwart's session
+            # self-URLs to this origin). It MUST be a public, browser-reachable URL — an internal
+            # cluster URL fails with "Unable to reach the server". Kept same-origin with the SPA
+            # (webmail.macbytes.io) to avoid CORS; the IngressRoute sends /jmap + /.well-known/jmap
+            # on this host to stalwart-svc.
+            - {name: JMAP_SERVER_URL, value: "https://webmail.macbytes.io"}
             - {name: STALWART_FEATURES, value: "true"}
             - {name: ADMIN_CONFIG_DIR, value: "/app/data/admin"}
             - {name: ADMIN_STATE_DIR, value: "/app/data/admin-state"}

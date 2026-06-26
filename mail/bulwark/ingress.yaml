@@ -7,8 +7,18 @@ spec:
   entryPoints:
     - websecure
   routes:
+    # JMAP API must be same-origin with the Bulwark SPA (browser-direct JMAP client) to avoid CORS.
+    # Higher priority than the catch-all so /jmap* and /.well-known/jmap reach Stalwart, not Bulwark.
+    - match: Host(`webmail.macbytes.io`) && (PathPrefix(`/jmap`) || Path(`/.well-known/jmap`))
+      kind: Rule
+      priority: 100
+      services:
+        - name: stalwart-svc
+          port: 8080
+    # Everything else (the SPA + Bulwark's own /api/*) -> Bulwark
     - match: Host(`webmail.macbytes.io`)
       kind: Rule
+      priority: 1
       services:
         - name: bulwark-svc
           port: 3000
