@@ -24,6 +24,11 @@ metadata:
 #     the Deployment env), never stored here.
 #   - ACTIVE outbound route = 'brevo' (smtp-relay.brevo.com:587). The 'ses' route is kept for a
 #     one-line flip-back: change MtaOutboundStrategy route.else. Both stay authorized in SPF/DKIM.
+#   - MtaStageAuth: inbound MX must NOT require auth. Stalwart's default require expr is
+#     `local_port != 25`, but our MX listener binds 2525 (frp maps public :25 -> 2525, since the
+#     pod can't bind privileged 25), so the default demanded auth on inbound -> "503 must
+#     authenticate" -> ALL external mail rejected. Fixed to `local_port != 2525` (here + saslMechanisms).
+#     Submission stays auth-required (5587/5465 are != 2525). Re-derive if listener ports change.
 data:
   stalwart-plan.ndjson: |
     {"@type":"upsert","object":"Domain","matchOn":["name"],"value":{"d1":{"name":"macbytes.io"}}}
@@ -39,3 +44,4 @@ data:
     {"@type":"upsert","object":"MtaTlsStrategy","matchOn":["name"],"value":{"relay-tls":{"name":"relay-tls","dane":"disable","mtaSts":"disable","startTls":"require","allowInvalidCerts":false}}}
     {"@type":"update","object":"MtaOutboundStrategy","value":{"route":{"else":"'brevo'","match":{"0":{"if":"is_local_domain(rcpt_domain)","then":"'local'"}}},"tls":{"else":"'relay-tls'","match":{"0":{"if":"is_local_domain(rcpt_domain)","then":"'default'"}}}}}
     {"@type":"update","object":"SenderAuth","value":{"dkimSignDomain":{"else":"false","match":{}}}}
+    {"@type":"update","object":"MtaStageAuth","value":{"require":{"else":"local_port != 2525","match":{}},"mustMatchSender":{"else":"true","match":{}},"waitOnFail":{"else":"5s","match":{}},"saslMechanisms":{"else":"false","match":{"0":{"then":"[plain, login, oauthbearer, xoauth2]","if":"local_port != 2525 && is_tls"},"1":{"then":"[oauthbearer, xoauth2]","if":"local_port != 2525"}}},"maxFailures":{"else":"3","match":{}}}}
