@@ -15,6 +15,14 @@ spec:
     matchLabels:
       app: frpc
   replicas: 1
+  # Recreate (NOT RollingUpdate): for a 1-replica tunnel, the default RollingUpdate
+  # (maxSurge 25% -> 1) starts a NEW frpc before the old one dies, so two clients
+  # briefly hold the same proxy names on frps -> "proxy already exists" / stale
+  # session -> mail breaks until a manual clean-slate. Recreate fully terminates the
+  # old pod (closing its frps control connection, which releases the proxies) before
+  # starting the new one, so every restart reconnects cleanly. See mail-build-decisions.
+  strategy:
+    type: Recreate
   template:
     metadata:
       labels:
