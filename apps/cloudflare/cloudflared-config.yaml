@@ -233,4 +233,16 @@ ingress:
       noTLSVerify: true
       originServerName: autodiscover.macbytes.io
       httpHostHeader: autodiscover.macbytes.io
+  - hostname: macbytes.io
+    service: https://traefik.traefik.svc.cluster.local:443
+    originRequest:
+      noTLSVerify: true
+      originServerName: macbytes.io
+      httpHostHeader: macbytes.io
+  - hostname: www.macbytes.io
+    service: https://traefik.traefik.svc.cluster.local:443
+    originRequest:
+      noTLSVerify: true
+      originServerName: www.macbytes.io
+      httpHostHeader: www.macbytes.io
   - service: http_status:404
