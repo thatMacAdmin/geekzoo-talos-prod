@@ -29,6 +29,13 @@ metadata:
 #     pod can't bind privileged 25), so the default demanded auth on inbound -> "503 must
 #     authenticate" -> ALL external mail rejected. Fixed to `local_port != 2525` (here + saslMechanisms).
 #     Submission stays auth-required (5587/5465 are != 2525). Re-derive if listener ports change.
+#   - AllowedIp 10.244.0.0/16: the in-cluster pod network is allowlisted so Stalwart's auto-ban
+#     (fail2ban) never bans Traefik/frpc. Without it (incident 2026-06-28), frpc forwarding 4 ports
+#     from one source IP trips "Excessive port scanning" -> the proxy IPs get BlockedIp'd ->
+#     Traefik->:8080 dropped (502 on webadmin/dav/webmail) AND inbound mail/IMAP rejected. The bans
+#     persist in the datastore (survive restart); only an AllowedIp (or manual BlockedIp delete)
+#     clears them. PROXY-protocol (so Stalwart sees real client IPs) is the longer-term fix; until
+#     then fail2ban can't see real clients anyway, so allowlisting internal infra is correct.
 data:
   stalwart-plan.ndjson: |
     {"@type":"upsert","object":"Domain","matchOn":["name"],"value":{"d1":{"name":"macbytes.io"}}}
@@ -46,3 +53,4 @@ data:
     {"@type":"update","object":"SenderAuth","value":{"dkimSignDomain":{"else":"false","match":{}}}}
     {"@type":"update","object":"MtaStageAuth","value":{"require":{"else":"local_port != 2525","match":{}},"mustMatchSender":{"else":"true","match":{}},"waitOnFail":{"else":"5s","match":{}},"saslMechanisms":{"else":"false","match":{"0":{"then":"[plain, login, oauthbearer, xoauth2]","if":"local_port != 2525 && is_tls"},"1":{"then":"[oauthbearer, xoauth2]","if":"local_port != 2525"}}},"maxFailures":{"else":"3","match":{}}}}
     {"@type":"create","object":"Tracer","value":{"stdout-console":{"@type":"Stdout","enable":true,"level":"info","ansi":false,"buffered":false,"lossy":false,"multiline":false,"events":{},"eventsPolicy":"exclude"}}}
+    {"@type":"upsert","object":"AllowedIp","matchOn":["address"],"value":{"allow-podnet":{"address":"10.244.0.0/16","reason":"In-cluster pod network (Traefik/frpc) - never auto-ban"}}}
