@@ -5,6 +5,14 @@ metadata:
   namespace: mail
 # No secrets here — the frp token is injected as env FRP_TOKEN (from mail-secrets)
 # and referenced via frp's {{ .Envs.* }} template syntax (same pattern as frps on the VM).
+#
+# transport.proxyProtocolVersion = "v2" on every proxy: frpc prepends a PROXY v2 header
+# (carrying the real external client IP that frps saw) when dialing Stalwart. Stalwart's
+# mail listeners have overrideProxyTrustedNetworks = 10.244.0.0/16, so it parses the header
+# and fail2ban/SPF/rate-limits see the REAL client IP instead of frpc's pod IP.
+# IMPORTANT (v0.16.10): once a listener trusts a source, that source MUST send a PROXY
+# header — a trusted source connecting WITHOUT one is REJECTED ("invalid proxy header"),
+# contrary to the docs. So this MUST stay in lockstep with the listener trust setting.
 data:
   frpc.toml: |
     serverAddr = "35.196.228.211"
@@ -20,6 +28,7 @@ data:
     localIP = "stalwart-svc.mail.svc.cluster.local"
     localPort = 2525
     remotePort = 25
+    transport.proxyProtocolVersion = "v2"
 
     # Submission STARTTLS (client -> frps:587 -> Stalwart 5587)
     [[proxies]]
@@ -28,6 +37,7 @@ data:
     localIP = "stalwart-svc.mail.svc.cluster.local"
     localPort = 5587
     remotePort = 587
+    transport.proxyProtocolVersion = "v2"
 
     # Submissions implicit TLS (client -> frps:465 -> Stalwart 5465)
     [[proxies]]
@@ -36,6 +46,7 @@ data:
     localIP = "stalwart-svc.mail.svc.cluster.local"
     localPort = 5465
     remotePort = 465
+    transport.proxyProtocolVersion = "v2"
 
     # IMAPS implicit TLS (client -> frps:993 -> Stalwart 9993)
     [[proxies]]
@@ -44,3 +55,4 @@ data:
     localIP = "stalwart-svc.mail.svc.cluster.local"
     localPort = 9993
     remotePort = 993
+    transport.proxyProtocolVersion = "v2"
