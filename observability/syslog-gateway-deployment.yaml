@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: syslog-gateway
+  namespace: observability
+  labels:
+    app: syslog-gateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: syslog-gateway
+  template:
+    metadata:
+      labels:
+        app: syslog-gateway
+      annotations:
+        # Bump this when config.yaml changes so Flux rolls the pod
+        # (the collector does not hot-reload its config).
+        syslog-gateway/config-revision: "2"
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001        # matches the signoz-otel-collector image default user
+        runAsGroup: 0
+        fsGroup: 0
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: collector
+          image: docker.io/signoz/signoz-otel-collector:v0.144.5
+          args: ["--config=/conf/config.yaml"]
+          ports:
+            - name: syslog-udp
+              containerPort: 1514
+              protocol: UDP
+            - name: syslog-tcp
+              containerPort: 1514
+              protocol: TCP
+            - name: health
+              containerPort: 13133
+              protocol: TCP
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 13133
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 13133
+            initialDelaySeconds: 5
+            periodSeconds: 15
+          resources:
+            requests:
+              cpu: 25m
+              memory: 64Mi
+            limits:
+              memory: 128Mi
+          volumeMounts:
+            - name: config
+              mountPath: /conf
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: config
+          configMap:
+            name: syslog-gateway-config
+        - name: tmp
+          emptyDir: {}

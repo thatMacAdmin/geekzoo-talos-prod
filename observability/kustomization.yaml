@@ -8,6 +8,9 @@ resources:
   - signoz-otel-collector-config.yaml
   - certificate.yaml
   - ingressroute.yaml
+  - syslog-gateway-configmap.yaml
+  - syslog-gateway-deployment.yaml
+  - syslog-gateway-service.yaml
 
 configMapGenerator:
   - name: signoz-values

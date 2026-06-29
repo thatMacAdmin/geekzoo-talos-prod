@@ -1,0 +1,57 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: syslog-gateway-config
+  namespace: observability
+  labels:
+    app: syslog-gateway
+data:
+  config.yaml: |-
+    # Dedicated syslog ingestion gateway: receives RFC3164 syslog from the
+    # MikroTik CRS518 (192.168.0.99) on UDP/TCP 1514 (exposed as 514 via the
+    # LoadBalancer Service) and forwards over OTLP to the central SigNoz
+    # collector. RouterOS topic/flap parsing lives in the central collector's
+    # transform/logs processor, gated on resource service.name=mikrotik-crs518.
+    receivers:
+      syslog/mikrotik_udp:
+        udp:
+          listen_address: 0.0.0.0:1514
+        protocol: rfc3164
+        location: America/New_York   # RFC3164 omits the year/offset; backfill in the switch's TZ
+        on_error: send
+      syslog/mikrotik_tcp:
+        tcp:
+          listen_address: 0.0.0.0:1514
+        protocol: rfc3164
+        location: America/New_York
+        on_error: send
+    processors:
+      resource/mikrotik:
+        attributes:
+          - key: service.name
+            value: mikrotik-crs518
+            action: upsert
+          - key: network.device.vendor
+            value: mikrotik
+            action: upsert
+      batch:
+        send_batch_size: 1000
+        timeout: 2s
+    exporters:
+      otlp_grpc/signoz:
+        endpoint: signoz-otel-collector.observability.svc.cluster.local:4317
+        tls:
+          insecure: true
+    extensions:
+      health_check:
+        endpoint: 0.0.0.0:13133
+    service:
+      telemetry:
+        logs:
+          encoding: json
+      extensions: [health_check]
+      pipelines:
+        logs:
+          receivers: [syslog/mikrotik_udp, syslog/mikrotik_tcp]
+          processors: [resource/mikrotik, batch]
+          exporters: [otlp_grpc/signoz]
