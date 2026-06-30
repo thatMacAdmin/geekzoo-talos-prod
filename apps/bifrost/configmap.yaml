@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bifrost-config
+  namespace: apps
+  labels:
+    app: bifrost
+data:
+  # Bifrost gateway config. Source of truth lives here in git; the pod runs it
+  # read-only (seeded into an emptyDir at /app/data on boot — see deployment).
+  #
+  # Single provider for now: the Mac Studio LM Studio server, declared as a
+  # keyless OpenAI-compatible custom provider. In-cluster clients call Bifrost
+  # with model "lmstudio-local/<model>" and never touch 192.168.2.4 directly.
+  #
+  # NOTE (verify on first boot): base_url is host:port with NO /v1, matching
+  # Bifrost's own vLLM example. If a test call 404s, append /v1 here.
+  # A second provider (GPU-node Ollama) can be added later for fallback.
+  config.json: |
+    {
+      "providers": {
+        "lmstudio-local": {
+          "keys": [
+            {
+              "name": "lmstudio-key",
+              "value": "dummy",
+              "models": ["*"],
+              "weight": 1.0
+            }
+          ],
+          "network_config": {
+            "base_url": "http://192.168.2.4:1234",
+            "default_request_timeout_in_seconds": 120
+          },
+          "custom_provider_config": {
+            "base_provider_type": "openai",
+            "allowed_requests": {
+              "chat_completion": true,
+              "chat_completion_stream": true
+            }
+          }
+        }
+      }
+    }

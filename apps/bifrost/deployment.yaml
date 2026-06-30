@@ -1,0 +1,98 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bifrost
+  namespace: apps
+  labels:
+    app: bifrost
+    app.kubernetes.io/name: bifrost
+    app.kubernetes.io/instance: bifrost
+    app.kubernetes.io/component: llm-gateway
+    app.kubernetes.io/part-of: apps
+    app.kubernetes.io/managed-by: kustomize
+spec:
+  selector:
+    matchLabels:
+      app: bifrost
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: bifrost
+        app.kubernetes.io/name: bifrost
+        app.kubernetes.io/instance: bifrost
+        app.kubernetes.io/component: llm-gateway
+        app.kubernetes.io/part-of: apps
+        app.kubernetes.io/managed-by: kustomize
+      annotations:
+        # Roll the pod when the gateway config changes so git stays source of truth.
+        checksum/config: bifrost-config
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+        fsGroup: 65534
+        seccompProfile:
+          type: RuntimeDefault
+      initContainers:
+        # Seed the git-managed config.json into the writable data dir Bifrost owns.
+        - name: seed-config
+          image: busybox:1.37
+          command: ["sh", "-c", "cp /seed/config.json /data/config.json"]
+          volumeMounts:
+            - name: seed
+              mountPath: /seed
+              readOnly: true
+            - name: data
+              mountPath: /data
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+      containers:
+        - name: bifrost
+          # TODO: pin to a release tag before commit (confirming current version).
+          image: maximhq/bifrost:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+          volumeMounts:
+            - name: data
+              mountPath: /app/data
+            - name: tmp
+              mountPath: /tmp
+          readinessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+      volumes:
+        - name: seed
+          configMap:
+            name: bifrost-config
+        - name: data
+          emptyDir: {}
+        - name: tmp
+          emptyDir: {}

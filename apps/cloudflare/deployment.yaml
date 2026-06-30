@@ -14,7 +14,10 @@ spec:
   selector:
     matchLabels:
       app: cloudflared
-  replicas: 2
+  # Single replica so the egress-bandwidth cap below is a true ceiling.
+  # Cloudflare load-balances tunnel connections across replicas, so a per-pod
+  # cap with 2 replicas would allow up to 2x the limit.
+  replicas: 1
   template:
     metadata:
       labels:
@@ -24,6 +27,12 @@ spec:
         app.kubernetes.io/component: tunnel
         app.kubernetes.io/part-of: system
         app.kubernetes.io/managed-by: kustomize
+      annotations:
+        # Cap remote (tunnel) egress to 25 Mbit/s to protect the ~40 Mbit/s uplink.
+        # Only inbound/remote traffic traverses cloudflared; LAN clients hit Traefik
+        # directly (192.168.3.0) and stay unthrottled for full-bitrate local direct play.
+        # Enforced by Cilium Bandwidth Manager (enable-bandwidth-manager: true).
+        kubernetes.io/egress-bandwidth: "25M"
     spec:
       securityContext:
         runAsNonRoot: true
