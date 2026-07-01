@@ -91,6 +91,11 @@ spec:
                 secretKeyRef:
                   name: open-webui-oidc-config
                   key: OAUTH_SCOPES
+            - name: WEBUI_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: open-webui-oidc-config
+                  key: WEBUI_SECRET_KEY
           volumeMounts:
             - name: open-webui-data
               mountPath: /app/backend/data
