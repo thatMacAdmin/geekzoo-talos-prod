@@ -67,6 +67,23 @@ global:
         </text_log>
       </clickhouse>
 
+# Containerd workaround for Talos Linux
+# The sensor DaemonSet hardcodes /var/lib/docker/containers, which doesn't
+# exist on Talos. Adding the containerd path so the resolver can access
+# container metadata. Partial fix — may need Groundcover support ticket
+# to make the Docker path configurable.
+agent:
+  sensor:
+    extraVolumes:
+      - name: containerd
+        hostPath:
+          path: /var/lib/containerd
+          type: DirectoryOrCreate
+    extraVolumeMounts:
+      - name: containerd
+        mountPath: /var/lib/containerd
+        readOnly: true
+
 # ClickHouse-specific settings
 clickhouse:
   volumePermissions:
