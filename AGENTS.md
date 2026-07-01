@@ -65,7 +65,7 @@ Note: there is **no `01-*.yaml`** in `clusters/production/` — the gap is inten
 | `media/` | Arr-stack + Jellyfin + Seerr + qBittorrent in namespace `media`. |
 | `mail/` | Stalwart mail server, frpc tunnel client, Bulwark webmail (namespace `mail`). |
 | `databases/` | One CNPG `Cluster` per consuming app (`authentik-pg`, `seerr-pg`, `vaultwarden-pg`, `vikunja-pg`) + `redis` (Bitnami Helm) + `blocky-pg`. Each PG cluster has a sibling `ScheduledBackup` to Wasabi via the barman-cloud plugin. |
-| `observability/` | SigNoz + OTel collector + `k8s-infra` chart + a custom syslog gateway Deployment for the MikroTik switch. |
+| `observability/` | Custom syslog gateway Deployment collecting MikroTik CRS518 RFC3164 syslog. (The SigNoz stack was removed; a replacement logging/metrics backend is TBD.) |
 | `omni/` | Talos/Omni configs. **Only `omni/patches/*.yaml` is tracked** — everything else is gitignored. Per-node patches are named `400-cm-<machine-uuid>.yaml`, `410-resolvers-<machine-uuid>.yaml`. |
 | `cert-manager/` | Top-level ClusterIssuers (also referenced from `infrastructure/configs/cert-manager/`). |
 | `docs/` | `FLUX-MIGRATION-PLAN.md` (history of how the repo got to its current shape) and `SELF-HOSTED-EMAIL-IMPLEMENTATION.md` (running implementation log for the mail stack — the source of truth for mail design decisions). |
@@ -124,7 +124,7 @@ Two paths, both terminating at Traefik:
 Pattern is always:
 1. `helm-repository.yaml` → `source.toolkit.fluxcd.io/v1 HelmRepository`
 2. `helm-release.yaml` → `helm.toolkit.fluxcd.io/v2 HelmRelease`
-3. Big values files (`helm-values.yaml`, `values.yaml`, `signoz-values.yaml`, …) are injected as ConfigMaps via `configMapGenerator` with `disableNameSuffixHash: true`, then referenced from the HelmRelease via `valuesFrom: [{kind: ConfigMap, name: <foo>-values, valuesKey: values.yaml}]`.
+3. Big values files (`helm-values.yaml`, `values.yaml`, …) are injected as ConfigMaps via `configMapGenerator` with `disableNameSuffixHash: true`, then referenced from the HelmRelease via `valuesFrom: [{kind: ConfigMap, name: <foo>-values, valuesKey: values.yaml}]`.
 
 Don't switch to `spec.values:` for non-trivial charts — keep the ConfigMap pattern for diff-ability.
 
@@ -216,5 +216,5 @@ kustomize build apps/<name> | kubectl --dry-run=client apply -f -
 
 - Mail design questions → `docs/SELF-HOSTED-EMAIL-IMPLEMENTATION.md` (decisions log + phase plan).
 - "Why is the repo structured this way?" → `docs/FLUX-MIGRATION-PLAN.md` (bootstrap-order rationale).
-- Cluster-side debugging → `kubectl`, `flux`, `talosctl`, `omnictl`. Logs and metrics flow into SigNoz (`observability/` namespace).
+- Cluster-side debugging → `kubectl`, `flux`, `talosctl`, `omnictl`.
 - A workload won't reconcile → check `flux events -A` and the relevant controller logs in `flux-system` before touching manifests.
