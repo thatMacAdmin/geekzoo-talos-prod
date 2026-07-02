@@ -1,0 +1,47 @@
+# Beyla values for geekzoo-prod — eBPF network auto-instrumentation
+# DaemonSet mode: auto-discovers all pod traffic, produces RED metrics + network flows
+
+# Network preset: instrument all network traffic on each node
+preset: network
+
+# Service exposing metrics endpoint for ServiceMonitor scraping
+service:
+  enabled: true
+  port: 9090
+  targetPort: 9090
+
+# ServiceMonitor — auto-discovered by kube-prometheus-stack Prometheus
+serviceMonitor:
+  enabled: true
+  additionalLabels:
+    release: kube-prometheus-stack
+
+# Resources — eBPF overhead is modest
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 768Mi
+
+# Beyla agent configuration
+config:
+  data:
+    # Enrich metrics with Kubernetes metadata (namespace, pod, owner name)
+    attributes:
+      kubernetes:
+        enable: true
+
+    # Exclude infra/system noise from instrumentation
+    filter:
+      network:
+        k8s_dst_owner_name:
+          not_match: '{kube*,*jaeger-agent*,*prometheus*,*promtail*,*loki*,*node-exporter*,*cilium*,*beyla*}'
+        k8s_src_owner_name:
+          not_match: '{kube*,*jaeger-agent*,*prometheus*,*promtail*,*loki*,*node-exporter*,*cilium*,*beyla*}'
+
+    # Prometheus exporter — scraped by kube-prometheus-stack
+    prometheus_export:
+      port: 9090
+      path: /metrics
