@@ -5,3 +5,9 @@ resources:
   - syslog-gateway-configmap.yaml
   - syslog-gateway-deployment.yaml
   - syslog-gateway-service.yaml
+  - kube-prometheus-stack
+  - beyla
+  - loki
+  - promtail
+  - grafana-certificate.yaml
+  - grafana-ingressroute.yaml

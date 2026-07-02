@@ -1,0 +1,25 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: beyla
+  namespace: observability
+spec:
+  interval: 30m
+  releaseName: beyla
+  chart:
+    spec:
+      chart: beyla
+      sourceRef:
+        kind: HelmRepository
+        name: grafana
+        namespace: observability
+  install:
+    remediation:
+      retries: 5
+  upgrade:
+    remediation:
+      retries: 5
+  valuesFrom:
+    - kind: ConfigMap
+      name: beyla-values
+      valuesKey: values.yaml

@@ -1,0 +1,115 @@
+# kube-prometheus-stack values for geekzoo-prod
+
+defaultRules:
+  create: true
+
+alertmanager:
+  enabled: true
+  config:
+    route:
+      group_by: ["alertname"]
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 4h
+      receiver: default
+    receivers:
+      - name: default
+  alertmanagerSpec:
+    storage:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: ceph-block
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 10Gi
+
+grafana:
+  enabled: true
+  ingress:
+    enabled: false
+  admin:
+    existingSecret: grafana-admin-secret
+    userKey: admin-user
+    passwordKey: admin-password
+  extraSecretNamesForEnvFrom:
+    - grafana-oidc-secret
+  persistence:
+    enabled: true
+    storageClassName: ceph-block
+    size: 10Gi
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  additionalDataSources:
+    - name: Loki
+      type: loki
+      url: http://loki.observability.svc:3100
+      access: proxy
+      isDefault: false
+      jsonData:
+        maxLines: 1000
+  grafana.ini:
+    auth.generic_oauth:
+      enabled: true
+      name: Authentik
+      allow_sign_up: true
+      auto_login: false
+      client_id: ${GF_AUTH_GENERIC_OAUTH_CLIENT_ID}
+      client_secret: ${GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET}
+      scopes: openid profile email
+      auth_url: https://authentik.macbytes.io/application/o/authorize/
+      token_url: https://authentik.macbytes.io/application/o/token/
+      api_url: https://authentik.macbytes.io/application/o/userinfo/
+      login_attribute_path: preferred_username
+      name_attribute_path: name
+      email_attribute_path: email
+      role_attribute_path: contains(info.groups[*], 'Grafana Admins') && 'Admin' || contains(info.groups[*], 'Grafana Editors') && 'Editor' || 'Viewer'
+      sign_out_redirect_url: https://authentik.macbytes.io/application/o/grafana/end-session/
+      tls_skip_verify_insecure: false
+
+kubeApiServer:
+  enabled: true
+
+kubelet:
+  enabled: true
+
+kubeControllerManager:
+  enabled: false
+
+kubeEtcd:
+  enabled: false
+
+kubeScheduler:
+  enabled: false
+
+nodeExporter:
+  enabled: true
+
+prometheus-node-exporter:
+  hostRootFsMount:
+    enabled: true
+
+prometheus:
+  enabled: true
+  prometheusSpec:
+    retention: 15d
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: ceph-block
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 50Gi
+    resources:
+      requests:
+        cpu: 200m
+        memory: 512Mi
+      limits:
+        cpu: "1"
+        memory: 2Gi

@@ -52,6 +52,9 @@ spec:
                 - ALL
           ports:
             - containerPort: 80
+          env:
+            - name: EXTENDED_LOGGING
+              value: "true"
           envFrom:
             - secretRef:
                 name: vaultwarden-config

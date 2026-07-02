@@ -6,6 +6,25 @@ Domain: `macbytes.io`. Cluster context: `geekzoo-geekzoo-prod`. Single environme
 
 ---
 
+## Agent operating principles
+
+**Role:** Senior infrastructure engineer and full-stack developer with deep expertise in GitOps, Kubernetes, Flux CI/CD, OWASP security principles, and general vulnerability detection and mitigation. Ensure every manifest, Helm release, and change proposed here is well structured, carefully reviewed, and fact-based. Find the facts before suggesting anything — if something is genuinely unknown, say "I don't know" and go find the answer rather than guessing.
+
+**Care & review:** Review anything before suggesting or publishing it. Suggestions must be fact-based; never speculate. Confirm before destructive or irreversible operations (see cardinal rule §0).
+
+### Skill usage (always apply when applicable)
+
+- **caveman** — Use as often as possible. Default to terse, high-signal output that drops filler while keeping full technical accuracy.
+- **grill-me** — Use when asked to **diagnose** an issue, problem, or bug, to fully understand the scope of the request before acting.
+- **improve-codebase-architecture** — Use when asked to **review** the architecture or general shape of the repository, codebase, or project.
+- **grill-me** — Use when asked to **develop a new feature** or addition to the project, to nail down requirements first.
+
+### Conventions
+
+Always understand the general style of the codebase (this file, existing manifests, naming, and label conventions in §3) and follow good programming conventions. Match existing patterns — don't introduce inconsistency.
+
+---
+
 ## 0. Cardinal rules
 
 1. **Never `kubectl apply` application or infrastructure manifests.** Commit to `main` and let Flux reconcile. `kubectl`/`flux` are for *observing* and *forcing reconciliation* only. (Exception: live debugging via `kubectl port-forward`, `kubectl logs`, `kubectl describe`.)
@@ -65,7 +84,7 @@ Note: there is **no `01-*.yaml`** in `clusters/production/` — the gap is inten
 | `media/` | Arr-stack + Jellyfin + Seerr + qBittorrent in namespace `media`. |
 | `mail/` | Stalwart mail server, frpc tunnel client, Bulwark webmail (namespace `mail`). |
 | `databases/` | One CNPG `Cluster` per consuming app (`authentik-pg`, `seerr-pg`, `vaultwarden-pg`, `vikunja-pg`) + `redis` (Bitnami Helm) + `blocky-pg`. Each PG cluster has a sibling `ScheduledBackup` to Wasabi via the barman-cloud plugin. |
-| `observability/` | Custom syslog gateway Deployment collecting MikroTik CRS518 RFC3164 syslog. (The SigNoz stack was removed; a replacement logging/metrics backend is TBD.) |
+| `observability/` | MikroTik CRS518 syslog gateway, plus the Grafana stack (kube-prometheus-stack + Loki + Promtail) for cluster-wide metrics and log aggregation. |
 | `omni/` | Talos/Omni configs. **Only `omni/patches/*.yaml` is tracked** — everything else is gitignored. Per-node patches are named `400-cm-<machine-uuid>.yaml`, `410-resolvers-<machine-uuid>.yaml`. |
 | `cert-manager/` | Top-level ClusterIssuers (also referenced from `infrastructure/configs/cert-manager/`). |
 | `docs/` | `FLUX-MIGRATION-PLAN.md` (history of how the repo got to its current shape) and `SELF-HOSTED-EMAIL-IMPLEMENTATION.md` (running implementation log for the mail stack — the source of truth for mail design decisions). |
@@ -103,7 +122,7 @@ app.kubernetes.io/managed-by: kustomize
 The matchLabels selector intentionally uses **only** `app: <name>` (not the full set) — keep it that way to avoid breaking rollouts.
 
 ### 3.3 PodSecurity
-Pods run **restricted** by default: `runAsNonRoot: true`, `runAsUser: 65534` (or image-specific UID like nginx-unprivileged 101), `seccompProfile.type: RuntimeDefault`, `allowPrivilegeEscalation: false`, all capabilities dropped. Only namespaces explicitly labeled `pod-security.kubernetes.io/enforce: privileged` (`media`, `observability`, `gpu-operator`, `rook-ceph`) allow looser pods (Jellyfin uses `runtimeClassName: nvidia`; qBittorrent uses gluetun w/ NET_ADMIN; etc).
+Pods run **restricted** by default: `runAsNonRoot: true`, `runAsUser: 65534` (or image-specific UID like nginx-unprivileged 101), `seccompProfile.type: RuntimeDefault`, `allowPrivilegeEscalation: false`, all capabilities dropped. Only namespaces explicitly labeled `pod-security.kubernetes.io/enforce: privileged` (`media`, `observability`, `gpu-operator`, `rook-ceph`) allow looser pods (Jellyfin uses `runtimeClassName: nvidia`; qBittorrent uses gluetun w/ NET_ADMIN; Prometheus node-exporter needs host filesystem/PID access; etc).
 
 ### 3.4 Ingress = Traefik IngressRoute, not k8s Ingress
 All HTTPS routing uses `traefik.io/v1alpha1 / IngressRoute` on entrypoint `websecure`, with `tls.secretName` pointing at a cert-manager-issued secret in the same namespace. The certificate is requested by a sibling `cert-manager.io/v1 Certificate` referencing `ClusterIssuer/letsencrypt-prod` (Cloudflare DNS-01).
@@ -149,6 +168,22 @@ spec:
         key: /k3s-geekzoo/<param-name>
 ```
 Use `dataFrom.extract` for SSM SecureStrings containing JSON (keys become Secret keys). Use `data: [{secretKey, remoteRef: {key, property}}]` when pulling a single field.
+
+### 3.10 Observability — Grafana stack
+
+The observability stack is **fully open-source** and Flux-managed (unlike the previous Groundcover experiment). All components live under `observability/` in namespace `observability`:
+
+| Component | Helm chart | Purpose |
+|---|---|---|
+| `kube-prometheus-stack/` | `prometheus-community/kube-prometheus-stack` | Prometheus (metrics, 15d retention, 50Gi ceph-block), Alertmanager (10Gi), Grafana (10Gi), node-exporter DaemonSet |
+| `loki/` | `grafana/loki` | Log aggregation, single-binary mode (small cluster), 50Gi filesystem storage |
+| `promtail/` | `grafana/promtail` | DaemonSet that ships container logs to Loki |
+
+Grafana is exposed at `grafana.macbytes.io` via Traefik IngressRoute + cert-manager cert, and is added to the cloudflared tunnel config. The Loki datasource is pre-provisioned in Grafana via `additionalDataSources` in the KPS values.
+
+**Grafana admin credentials** are pulled from AWS SSM at `/k3s-geekzoo/grafana-admin` (two properties: `username`, `password`) via `secrets/external-secrets/grafana-admin.yaml`. The SSM parameter must be created out-of-band.
+
+**kube-prometheus-stack CRDs** are managed via `install.crds: CreateReplace` / `upgrade.crds: CreateReplace` in the HelmRelease — this is required because the chart ships many CRDs (PrometheusRule, ServiceMonitor, etc.) that Flux would otherwise not apply.
 
 ---
 
@@ -209,6 +244,10 @@ kustomize build apps/<name> | kubectl --dry-run=client apply -f -
 - **`.claude/` is in `.gitignore`** but `.claude/settings.local.json` exists locally with a large pre-approved bash allowlist. New tooling that needs cluster access can be added there without polluting the repo.
 - **`seerr-chart-3.3.0.tgz`** and `vaultwarden-db-backup-20260401-101234.dump` at the repo root are residue from past one-off operations — ignored by `.gitignore`, safe to ignore.
 - **No `dependsOn` on `apps`/`media`/`mail` for `image-automation`.** Image automation runs independently and only mutates files on `main`; the resulting commit re-triggers the normal Flux sync.
+- **kube-prometheus-stack CRDs need `CreateReplace`.** The HelmRelease for KPS uses `install.crds` / `upgrade.crds: CreateReplace` because the chart bundles many CRDs. Don't switch this to `Skip` or monitoring rules will silently stop being applied.
+- **Loki runs in single-binary mode** (1 replica, filesystem storage) because this is a small cluster. Don't switch to distributed mode (backend/read/write replicas) without also configuring object storage and bumping resources.
+- **Authentik requires sequential minor-version upgrades.** See `apps/authentik/UPGRADE.md` — never jump more than one minor version at a time (e.g., 2025.10 → 2025.12 → 2026.2), and back up PostgreSQL before each hop.
+- **Grafana admin password requires an SSM parameter.** The `grafana-admin` ExternalSecret reads `/k3s-geekzoo/grafana-admin` (properties: `username`, `password`). Create it in AWS SSM out-of-band or Grafana won't start.
 
 ---
 
