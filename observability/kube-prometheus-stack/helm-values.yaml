@@ -32,8 +32,15 @@ grafana:
     existingSecret: grafana-admin-secret
     userKey: admin-user
     passwordKey: admin-password
-  extraSecretNamesForEnvFrom:
-    - grafana-oidc-secret
+  envValueFrom:
+    GF_AUTH_GENERIC_OAUTH_CLIENT_ID:
+      secretKeyRef:
+        name: grafana-oidc-secret
+        key: GF_AUTH_GENERIC_OAUTH_CLIENT_ID
+    GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET:
+      secretKeyRef:
+        name: grafana-oidc-secret
+        key: GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET
   persistence:
     enabled: true
     storageClassName: ceph-block
