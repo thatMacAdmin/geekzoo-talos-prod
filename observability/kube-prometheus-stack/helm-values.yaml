@@ -55,6 +55,7 @@ grafana:
   additionalDataSources:
     - name: Loki
       type: loki
+      uid: loki
       url: http://loki.observability.svc:3100
       access: proxy
       isDefault: false
@@ -120,6 +121,8 @@ prometheus:
   enabled: true
   prometheusSpec:
     retention: 15d
+    # Accept remote_write from Tempo metrics-generator (service graphs / span metrics)
+    enableRemoteWriteReceiver: true
     storageSpec:
       volumeClaimTemplate:
         spec:
@@ -128,10 +131,12 @@ prometheus:
           resources:
             requests:
               storage: 50Gi
+    # Running ~1.4Gi with Beyla network metrics; span-metrics from Tempo
+    # generator adds more series — 2Gi limit left no headroom
     resources:
       requests:
         cpu: 200m
-        memory: 512Mi
+        memory: 1Gi
       limits:
         cpu: "1"
-        memory: 2Gi
+        memory: 3Gi

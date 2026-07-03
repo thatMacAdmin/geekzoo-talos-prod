@@ -18,13 +18,19 @@ tempo:
         path: /var/tempo/traces
       wal:
         path: /var/tempo/wal
+  # Metrics generator — chart schema is remoteWriteUrl (flat), not a nested
+  # config block; previous nesting was silently ignored and the chart default
+  # URL (prometheus.monitoring) was rendered instead
   metricsGenerator:
     enabled: true
-    config:
-      storage:
-        path: /var/tempo/generator/wal
-        remote_write:
-          - url: http://kube-prometheus-stack-prometheus.observability.svc:9090/api/v1/write
+    remoteWriteUrl: "http://kube-prometheus-stack-prometheus.observability.svc:9090/api/v1/write"
+  # Generator does nothing unless processors are enabled via overrides
+  overrides:
+    defaults:
+      metrics_generator:
+        processors:
+          - service-graphs
+          - span-metrics
 
 persistence:
   enabled: true
