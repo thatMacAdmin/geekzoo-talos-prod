@@ -9,6 +9,8 @@ spec:
   chart:
     spec:
       chart: kube-prometheus-stack
+      # Semver range: minors/patches auto-upgrade, majors require a manual bump
+      version: "87.x"
       sourceRef:
         kind: HelmRepository
         name: prometheus-community

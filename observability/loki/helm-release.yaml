@@ -9,6 +9,8 @@ spec:
   chart:
     spec:
       chart: loki
+      # Semver range: minors/patches auto-upgrade, majors require a manual bump
+      version: "7.x"
       sourceRef:
         kind: HelmRepository
         name: grafana
