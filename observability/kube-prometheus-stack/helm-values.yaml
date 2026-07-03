@@ -161,6 +161,11 @@ kubelet:
 kubeControllerManager:
   enabled: false
 
+# Cilium runs with kube-proxy-replacement — there is no kube-proxy to
+# scrape, and the KubeProxyDown default rule false-pages without this.
+kubeProxy:
+  enabled: false
+
 kubeEtcd:
   enabled: false
 
