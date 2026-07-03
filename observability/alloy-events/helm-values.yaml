@@ -10,6 +10,11 @@ controller:
   replicas: 1
 
 alloy:
+  extraPorts:
+    - name: syslog-udp
+      port: 5514
+      targetPort: 5514
+      protocol: UDP
   resources:
     requests:
       cpu: 50m
@@ -40,6 +45,39 @@ alloy:
         }
         stage.structured_metadata {
           values = { type = "evt_type", reason = "evt_reason" }
+        }
+      }
+
+      // ---- network-device syslog (MikroTik switch, UniFi UDM SE) ----
+      // Devices send RFC3164/BSD syslog over UDP to the LB VIP
+      // 192.168.3.12:514 (service maps to 5514 — non-root can't bind <1024).
+      loki.source.syslog "network_devices" {
+        listener {
+          address       = "0.0.0.0:5514"
+          protocol      = "udp"
+          syslog_format = "rfc3164"
+          // RFC3164 timestamps lack year/zone; receive time is more reliable
+          use_incoming_timestamp = false
+          labels        = { job = "syslog" }
+        }
+        relabel_rules = loki.relabel.syslog.rules
+        forward_to    = [loki.write.loki.receiver]
+      }
+
+      loki.relabel "syslog" {
+        forward_to = [] // rules-only component
+
+        rule {
+          source_labels = ["__syslog_message_hostname"]
+          target_label  = "host"
+        }
+        rule {
+          source_labels = ["__syslog_message_severity"]
+          target_label  = "level"
+        }
+        rule {
+          source_labels = ["__syslog_message_facility"]
+          target_label  = "facility"
         }
       }
 

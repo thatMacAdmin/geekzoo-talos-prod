@@ -1,0 +1,19 @@
+# LAN-facing syslog entrypoint for network devices (MikroTik switch,
+# UniFi UDM SE). Cilium LB VIP — does not answer ICMP (known behavior).
+apiVersion: v1
+kind: Service
+metadata:
+  name: alloy-syslog
+  namespace: observability
+  annotations:
+    io.cilium/lb-ipam-ips: "192.168.3.12"
+spec:
+  type: LoadBalancer
+  ports:
+    - name: syslog-udp
+      port: 514
+      targetPort: 5514
+      protocol: UDP
+  selector:
+    app.kubernetes.io/name: alloy
+    app.kubernetes.io/instance: alloy-events
