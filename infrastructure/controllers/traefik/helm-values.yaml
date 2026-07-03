@@ -62,6 +62,14 @@ ingressRoute:
 
 metrics:
   prometheus:
+    # ServiceMonitor is required: kube-prometheus-stack's operator only scrapes
+    # via ServiceMonitor CRDs and ignores prometheus.io/* annotations. The
+    # release label must match the operator's serviceMonitorSelector.
+    serviceMonitor:
+      enabled: true
+      additionalLabels:
+        release: kube-prometheus-stack
+      interval: 30s
     service:
       enabled: true
       type: ClusterIP
