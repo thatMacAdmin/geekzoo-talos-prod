@@ -9,7 +9,6 @@ resources:
   - beyla
   - loki
   - tempo
-  - promtail
   - alloy-logs
   - alloy-events
   - dashboards
