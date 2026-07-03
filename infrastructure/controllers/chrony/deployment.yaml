@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chrony
+  namespace: kube-system
+  labels:
+    app: chrony
+spec:
+  # Exactly one replica: multiple independent clocks answering one VIP would
+  # feed clients inconsistent time. Recreate avoids two chronyds overlapping.
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: chrony
+  template:
+    metadata:
+      labels:
+        app: chrony
+    spec:
+      containers:
+        - name: chrony
+          image: docker.io/dockurr/chrony:4.6.1
+          # -x: serve time WITHOUT disciplining the host clock — Talos timed
+          # owns the node clock; chrony tracks upstream offset in software and
+          # serves corrected time. -d: foreground, logs to stderr.
+          command: ["/usr/sbin/chronyd", "-d", "-x", "-f", "/etc/chrony/chrony.conf"]
+          ports:
+            - name: ntp
+              containerPort: 123
+              protocol: UDP
+          volumeMounts:
+            - name: config
+              mountPath: /etc/chrony/chrony.conf
+              subPath: chrony.conf
+              readOnly: true
+            - name: run
+              mountPath: /var/run/chrony
+          livenessProbe:
+            exec:
+              command: ["chronyc", "-n", "tracking"]
+            initialDelaySeconds: 30
+            periodSeconds: 60
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 64Mi
+      volumes:
+        - name: config
+          configMap:
+            name: chrony-config
+        - name: run
+          emptyDir: {}

@@ -4,6 +4,7 @@ kind: Kustomization
 resources:
   - barman-cloud
   - cert-manager
+  - chrony
   - cnpg-operator
   - gpu-operator
   - metrics-server

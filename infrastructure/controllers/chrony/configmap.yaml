@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: chrony-config
+  namespace: kube-system
+  labels:
+    app: chrony
+data:
+  chrony.conf: |
+    # Upstream sources — chrony continuously selects the best. All plain UTC
+    # (no leap-smeared sources like time.google.com — never mix smeared and
+    # unsmeared). Cloudflare anycast is the closest/most stable from this WAN;
+    # NIST + us pool give diversity for outages and falseticker detection.
+    server time.cloudflare.com iburst
+    server time.nist.gov iburst
+    server 0.us.pool.ntp.org iburst
+    server 1.us.pool.ntp.org iburst
+
+    driftfile /var/run/chrony/drift
+
+    # Serve the LAN and the pod network
+    allow 192.168.0.0/16
+    allow 10.244.0.0/16
+
+    # WAN outage: keep serving our own clock at stratum 10 so the Talos nodes
+    # stay mutually synced (relative skew is what Ceph cares about) even when
+    # upstream is unreachable.
+    local stratum 10 orphan distance 0.1
