@@ -26,6 +26,11 @@ alertmanager:
 
 grafana:
   enabled: true
+  # Recreate is required with a single RWO PVC: RollingUpdate surges a second
+  # pod against the same sqlite DB, which deadlocks the rollout and crashes
+  # startup provisioning with "database is locked" races.
+  deploymentStrategy:
+    type: Recreate
   ingress:
     enabled: false
   admin:
