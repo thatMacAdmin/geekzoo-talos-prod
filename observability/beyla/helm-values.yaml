@@ -1,8 +1,13 @@
 # Beyla values for geekzoo-prod — eBPF network auto-instrumentation
-# DaemonSet mode: auto-discovers all pod traffic, produces RED metrics + network flows
+# DaemonSet mode: auto-discovers all pod traffic, produces RED metrics + traces
 
 # Network preset: instrument all network traffic on each node
 preset: network
+
+# Export traces to Tempo via OTLP
+env:
+  BEYLA_OTLP_TRACES: "1"
+  OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: "http://tempo.observability.svc:4318/v1/traces"
 
 # Service exposing metrics endpoint for ServiceMonitor scraping
 service:

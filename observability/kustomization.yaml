@@ -8,6 +8,7 @@ resources:
   - kube-prometheus-stack
   - beyla
   - loki
+  - tempo
   - promtail
   - grafana-certificate.yaml
   - grafana-ingressroute.yaml

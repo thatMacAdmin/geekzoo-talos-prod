@@ -60,6 +60,18 @@ grafana:
       isDefault: false
       jsonData:
         maxLines: 1000
+    - name: Tempo
+      type: tempo
+      url: http://tempo.observability.svc:3200
+      access: proxy
+      isDefault: false
+      jsonData:
+        tracesToLogs:
+          datasourceUid: loki
+          filterByTraceID: true
+          tags:
+            - key: service.name
+              value: k8s.pod.name
   grafana.ini:
     server:
       root_url: https://grafana.macbytes.io/

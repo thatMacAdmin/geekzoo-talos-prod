@@ -1,0 +1,36 @@
+# Tempo values for geekzoo-prod — single-binary mode (small cluster)
+
+replicas: 1
+
+tempo:
+  retention: 24h
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi
+  storage:
+    trace:
+      backend: local
+      local:
+        path: /var/tempo/traces
+      wal:
+        path: /var/tempo/wal
+
+persistence:
+  enabled: true
+  size: 10Gi
+  storageClass: ceph-block
+
+serviceMonitor:
+  enabled: true
+  additionalLabels:
+    release: kube-prometheus-stack
+
+gateway:
+  enabled: false
+
+test:
+  enabled: false
