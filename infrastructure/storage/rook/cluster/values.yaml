@@ -9,6 +9,14 @@ configOverride: |
   mon_cluster_log_level = info
 cephClusterSpec:
   removeOSDsIfOutAndSafeToRemove: true
+  # Node clocks oscillate ±40ms under NTP (loose WAN sync); relative mon skew
+  # occasionally brushes the 50ms default and flaps MON_CLOCK_SKEW warnings.
+  # 150ms is still warn-only and far below quorum-relevant timescales
+  # (mon_lease 5s). Proper fix if it worsens: Talos machine.time.servers →
+  # local NTP source.
+  cephConfig:
+    mon:
+      mon_clock_drift_allowed: "0.150"
   # CPU requests tuned 2026-07-03 from 12h p95 observations (memory left at
   # chart defaults). Chart defaults reserved ~13 cores across the ceph pods
   # while total usage was <1 core; OSDs keep 4x observed for recovery bursts.
