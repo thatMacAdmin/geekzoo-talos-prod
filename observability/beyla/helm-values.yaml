@@ -1,13 +1,8 @@
-# Beyla values for geekzoo-prod — eBPF network auto-instrumentation
-# DaemonSet mode: auto-discovers all pod traffic, produces RED metrics + traces
+# Beyla values for geekzoo-prod — eBPF auto-instrumentation
+# Dual mode: network flow metrics (Prometheus) + application traces (Tempo)
 
-# Network preset: instrument all network traffic on each node
+# Network preset keeps network.enable: true for flow metrics
 preset: network
-
-# Export traces to Tempo via OTLP
-env:
-  BEYLA_OTLP_TRACES: "1"
-  OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: "http://tempo.observability.svc:4318/v1/traces"
 
 # Service exposing metrics endpoint for ServiceMonitor scraping
 service:
@@ -33,25 +28,32 @@ resources:
 # Beyla agent configuration
 config:
   data:
-    # Enrich metrics with Kubernetes metadata (namespace, pod, owner name)
+    # Enrich metrics and traces with Kubernetes metadata
     attributes:
       kubernetes:
         enable: true
 
-    # Exclude infra/system noise from instrumentation
+    # Application discovery — instrument all HTTP/gRPC services
+    # Activates AppO11y mode alongside NetO11y
+    discovery:
+      instrument:
+        - name: web-services
+          open_ports: 80,8080,443,3000,5000,8000,8443,9000
+
+    # Exclude infra/system noise from network metrics
     filter:
       network:
         k8s_dst_owner_name:
-          not_match: '{kube*,*jaeger-agent*,*prometheus*,*promtail*,*loki*,*node-exporter*,*cilium*,*beyla*}'
+          not_match: '{kube*,*jaeger-agent*,*prometheus*,*promtail*,*loki*,*node-exporter*,*cilium*,*beyla*,*tempo*}'
         k8s_src_owner_name:
-          not_match: '{kube*,*jaeger-agent*,*prometheus*,*promtail*,*loki*,*node-exporter*,*cilium*,*beyla*}'
+          not_match: '{kube*,*jaeger-agent*,*prometheus*,*promtail*,*loki*,*node-exporter*,*cilium*,*beyla*,*tempo*}'
 
-    # Prometheus exporter — scraped by kube-prometheus-stack
+    # Prometheus exporter — network + application RED metrics
     prometheus_export:
       port: 9090
       path: /metrics
 
-    # OTLP trace export — sends to Tempo
-    otlp_traces:
+    # OTLP trace export — sends application traces to Tempo
+    otel_traces_export:
       endpoint: http://tempo.observability.svc:4318/v1/traces
-      protocol: http
+      protocol: http/protobuf
