@@ -24,6 +24,8 @@ spec:
   # reserved ~4.5 cores of pure headroom across plugins + provisioners).
   # Memory and limits untouched.
   values:
+    monitoring:
+      enabled: true
     csi:
       csiRBDProvisionerResource: |
         - name : csi-provisioner

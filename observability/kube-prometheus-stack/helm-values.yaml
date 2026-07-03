@@ -184,8 +184,8 @@ prometheus:
   prometheusSpec:
     retention: 15d
     # Rook/other charts create ServiceMonitors + PrometheusRules without the release label
-    serviceMonitorSelectorNilUsesHelmValues: false
-    ruleSelectorNilUsesHelmValues: false
+    serviceMonitorSelector: {}
+    ruleSelector: {}
     # Accept remote_write from Tempo metrics-generator (service graphs / span metrics)
     enableRemoteWriteReceiver: true
     storageSpec:
