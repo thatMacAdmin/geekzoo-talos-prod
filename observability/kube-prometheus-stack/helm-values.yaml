@@ -183,9 +183,13 @@ prometheus:
   enabled: true
   prometheusSpec:
     retention: 15d
-    # Rook/other charts create ServiceMonitors + PrometheusRules without the release label
-    serviceMonitorSelector: {}
-    ruleSelector: {}
+    # Rook/other charts create ServiceMonitors + PrometheusRules without the release
+    # label. An empty selector ({}) is falsy in Helm, so the chart's
+    # *SelectorNilUsesHelmValues defaults still inject the release-label selector —
+    # these flags are the only way to get a true match-everything selector.
+    serviceMonitorSelectorNilUsesHelmValues: false
+    ruleSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
     # Accept remote_write from Tempo metrics-generator (service graphs / span metrics)
     enableRemoteWriteReceiver: true
     storageSpec:
