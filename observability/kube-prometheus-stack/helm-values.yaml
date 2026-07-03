@@ -61,6 +61,9 @@ grafana:
       jsonData:
         maxLines: 1000
   grafana.ini:
+    server:
+      root_url: https://grafana.macbytes.io/
+      serve_from_sub_path: false
     auth.generic_oauth:
       enabled: true
       name: Authentik
