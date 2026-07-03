@@ -1,0 +1,94 @@
+# Alloy health dashboard — shipper throughput, drops, write errors, memory.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dashboard-alloy-health
+  namespace: observability
+  labels:
+    grafana_dashboard: "1"
+data:
+  alloy-health.json: |
+    {
+      "title": "Alloy / Log Shipping Health",
+      "uid": "alloy-health",
+      "tags": ["alloy", "loki", "observability"],
+      "timezone": "browser",
+      "schemaVersion": 39,
+      "refresh": "30s",
+      "time": {"from": "now-6h", "to": "now"},
+      "panels": [
+        {
+          "id": 1,
+          "type": "stat",
+          "title": "Alloy instances up",
+          "gridPos": {"h": 6, "w": 6, "x": 0, "y": 0},
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {"refId": "A", "expr": "count(up{job=~\".*alloy.*\"} == 1)"}
+          ],
+          "fieldConfig": {"defaults": {"thresholds": {"steps": [{"color": "red", "value": null}, {"color": "green", "value": 4}]}}, "overrides": []}
+        },
+        {
+          "id": 2,
+          "type": "timeseries",
+          "title": "Lines shipped to Loki (rate)",
+          "gridPos": {"h": 6, "w": 9, "x": 6, "y": 0},
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {"refId": "A", "expr": "sum by (pod) (rate(loki_write_sent_entries_total[5m]))", "legendFormat": "{{pod}}"}
+          ]
+        },
+        {
+          "id": 3,
+          "type": "timeseries",
+          "title": "Write failures (rate)",
+          "gridPos": {"h": 6, "w": 9, "x": 15, "y": 0},
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {"refId": "A", "expr": "sum by (pod) (rate(loki_write_dropped_entries_total[5m]))", "legendFormat": "dropped {{pod}}"}
+          ]
+        },
+        {
+          "id": 4,
+          "type": "timeseries",
+          "title": "Pipeline-dropped lines by reason (noise filters)",
+          "gridPos": {"h": 7, "w": 12, "x": 0, "y": 6},
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {"refId": "A", "expr": "sum by (reason) (rate(loki_process_dropped_lines_total[5m]))", "legendFormat": "{{reason}}"}
+          ]
+        },
+        {
+          "id": 5,
+          "type": "timeseries",
+          "title": "Alloy memory working set",
+          "gridPos": {"h": 7, "w": 12, "x": 12, "y": 6},
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {"refId": "A", "expr": "sum by (pod) (container_memory_working_set_bytes{namespace=\"observability\", pod=~\"alloy-.*\", container=\"alloy\"})", "legendFormat": "{{pod}}"}
+          ],
+          "fieldConfig": {"defaults": {"unit": "bytes"}, "overrides": []}
+        },
+        {
+          "id": 6,
+          "type": "timeseries",
+          "title": "Loki ingest rate (all shippers)",
+          "gridPos": {"h": 7, "w": 12, "x": 0, "y": 13},
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {"refId": "A", "expr": "sum(rate(loki_distributor_bytes_received_total[5m]))", "legendFormat": "bytes/s"}
+          ],
+          "fieldConfig": {"defaults": {"unit": "Bps"}, "overrides": []}
+        },
+        {
+          "id": 7,
+          "type": "timeseries",
+          "title": "Loki discarded samples by reason",
+          "gridPos": {"h": 7, "w": 12, "x": 12, "y": 13},
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {"refId": "A", "expr": "sum by (reason) (rate(loki_discarded_samples_total[5m]))", "legendFormat": "{{reason}}"}
+          ]
+        }
+      ]
+    }

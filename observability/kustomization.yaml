@@ -12,5 +12,6 @@ resources:
   - promtail
   - alloy-logs
   - alloy-events
+  - dashboards
   - grafana-certificate.yaml
   - grafana-ingressroute.yaml

@@ -1,0 +1,93 @@
+# Kubernetes events dashboard — picked up by the kube-prometheus-stack
+# Grafana sidecar via the grafana_dashboard label.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dashboard-kubernetes-events
+  namespace: observability
+  labels:
+    grafana_dashboard: "1"
+data:
+  kubernetes-events.json: |
+    {
+      "title": "Kubernetes / Events",
+      "uid": "k8s-events",
+      "tags": ["kubernetes", "events", "loki"],
+      "timezone": "browser",
+      "schemaVersion": 39,
+      "refresh": "30s",
+      "time": {"from": "now-3h", "to": "now"},
+      "templating": {
+        "list": [
+          {
+            "name": "namespace",
+            "type": "query",
+            "datasource": {"type": "loki", "uid": "loki"},
+            "query": {"label": "namespace", "stream": "{job=\"kubernetes-events\"}", "type": 1},
+            "includeAll": true,
+            "multi": true,
+            "current": {"selected": true, "text": ["All"], "value": ["$__all"]}
+          }
+        ]
+      },
+      "panels": [
+        {
+          "id": 1,
+          "type": "timeseries",
+          "title": "Warning events by namespace",
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+          "datasource": {"type": "loki", "uid": "loki"},
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum by (namespace) (count_over_time({job=\"kubernetes-events\", namespace=~\"$namespace\"} | type=\"Warning\" [$__auto]))",
+              "legendFormat": "{{namespace}}"
+            }
+          ],
+          "fieldConfig": {"defaults": {"custom": {"drawStyle": "bars", "fillOpacity": 60}}, "overrides": []}
+        },
+        {
+          "id": 2,
+          "type": "timeseries",
+          "title": "All events by namespace",
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+          "datasource": {"type": "loki", "uid": "loki"},
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum by (namespace) (count_over_time({job=\"kubernetes-events\", namespace=~\"$namespace\"} [$__auto]))",
+              "legendFormat": "{{namespace}}"
+            }
+          ],
+          "fieldConfig": {"defaults": {"custom": {"drawStyle": "bars", "fillOpacity": 60}}, "overrides": []}
+        },
+        {
+          "id": 3,
+          "type": "logs",
+          "title": "Warning events",
+          "gridPos": {"h": 10, "w": 24, "x": 0, "y": 8},
+          "datasource": {"type": "loki", "uid": "loki"},
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "{job=\"kubernetes-events\", namespace=~\"$namespace\"} | type=\"Warning\""
+            }
+          ],
+          "options": {"showTime": true, "wrapLogMessage": true, "sortOrder": "Descending", "enableLogDetails": true}
+        },
+        {
+          "id": 4,
+          "type": "logs",
+          "title": "All events",
+          "gridPos": {"h": 10, "w": 24, "x": 0, "y": 18},
+          "datasource": {"type": "loki", "uid": "loki"},
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "{job=\"kubernetes-events\", namespace=~\"$namespace\"}"
+            }
+          ],
+          "options": {"showTime": true, "wrapLogMessage": true, "sortOrder": "Descending", "enableLogDetails": true}
+        }
+      ]
+    }
