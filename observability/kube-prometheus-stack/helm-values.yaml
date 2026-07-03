@@ -197,7 +197,8 @@ prometheus:
     # generator adds more series — 2Gi limit left no headroom
     resources:
       requests:
-        cpu: 200m
+        # p95 sits right at 200m — 300m keeps it honestly scheduled
+        cpu: 300m
         memory: 1Gi
       limits:
         cpu: "1"

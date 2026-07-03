@@ -57,7 +57,8 @@ spec:
           resources:
             requests:
               memory: "512Mi"
-              cpu: "500m"
+              # Idle except during download/unpack bursts (covered by limit)
+              cpu: "100m"
             limits:
               memory: "12Gi"
               cpu: "4000m"

@@ -9,6 +9,19 @@ configOverride: |
   mon_cluster_log_level = info
 cephClusterSpec:
   removeOSDsIfOutAndSafeToRemove: true
+  # CPU requests tuned 2026-07-03 from 12h p95 observations (memory left at
+  # chart defaults). Chart defaults reserved ~13 cores across the ceph pods
+  # while total usage was <1 core; OSDs keep 4x observed for recovery bursts.
+  resources:
+    mon:
+      requests:
+        cpu: "250m"
+    osd:
+      requests:
+        cpu: "1000m"
+    logcollector:
+      requests:
+        cpu: "50m"
   storage:
     useAllNodes: false
     useAllDevices: false
@@ -25,6 +38,52 @@ cephClusterSpec:
       devices:
         - name: "/dev/disk/by-id/nvme-SAMSUNG_MZ1LB1T9HALS-00007_S436NC0R677283"
         - name: "/dev/disk/by-id/nvme-SAMSUNG_MZ1LB1T9HALS-00007_S436NC0R677465"
+# Verbatim copy of the chart's default cephFileSystems (lists replace
+# wholesale — deployed CR verified identical before overriding) with ONE
+# change: MDS cpu request 1000m -> 250m (observed ~20m/pod).
+cephFileSystems:
+  - name: ceph-filesystem
+    spec:
+      metadataPool:
+        replicated:
+          size: 3
+      dataPools:
+        - failureDomain: host
+          replicated:
+            size: 3
+          name: data0
+      metadataServer:
+        activeCount: 1
+        activeStandby: true
+        resources:
+          limits:
+            memory: "4Gi"
+          requests:
+            cpu: "250m"
+            memory: "4Gi"
+        priorityClassName: system-cluster-critical
+    storageClass:
+      enabled: true
+      isDefault: false
+      name: ceph-filesystem
+      pool: data0
+      reclaimPolicy: Delete
+      allowVolumeExpansion: true
+      volumeBindingMode: "Immediate"
+      annotations: {}
+      labels: {}
+      mountOptions: []
+      parameters:
+        csi.storage.k8s.io/provisioner-secret-name: rook-csi-cephfs-provisioner
+        csi.storage.k8s.io/provisioner-secret-namespace: "{{ .Release.Namespace }}"
+        csi.storage.k8s.io/controller-expand-secret-name: rook-csi-cephfs-provisioner
+        csi.storage.k8s.io/controller-expand-secret-namespace: "{{ .Release.Namespace }}"
+        csi.storage.k8s.io/controller-publish-secret-name: rook-csi-cephfs-provisioner
+        csi.storage.k8s.io/controller-publish-secret-namespace: "{{ .Release.Namespace }}"
+        csi.storage.k8s.io/node-stage-secret-name: rook-csi-cephfs-node
+        csi.storage.k8s.io/node-stage-secret-namespace: "{{ .Release.Namespace }}"
+        csi.storage.k8s.io/fstype: ext4
+
 ingress:
   dashboard:
     enabled: true

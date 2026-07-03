@@ -7,7 +7,9 @@ resources:
     cpu: 6000m
   requests:
     memory: 4096Mi
-    cpu: 2000m
+    # Observed ~130m steady; 1000m reserves real headroom for Java GC
+    # and player-login bursts without hogging a fifth of a node
+    cpu: 1000m
 
 strategyType: Recreate
 revisionHistoryLimit: 5

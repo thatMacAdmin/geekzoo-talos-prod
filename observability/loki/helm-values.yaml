@@ -51,6 +51,26 @@ singleBinary:
       cpu: 500m
       memory: 1Gi
 
+# Memcached caches: chart defaults reserve 500m CPU + ~9.6Gi memory EACH —
+# absurd for this cluster's log volume. allocatedMemory drives the memory
+# request/limit.
+chunksCache:
+  allocatedMemory: 1024
+  resources:
+    requests:
+      cpu: 100m
+      memory: 1229Mi
+    limits:
+      memory: 1229Mi
+resultsCache:
+  allocatedMemory: 512
+  resources:
+    requests:
+      cpu: 100m
+      memory: 615Mi
+    limits:
+      memory: 615Mi
+
 gateway:
   enabled: false
 

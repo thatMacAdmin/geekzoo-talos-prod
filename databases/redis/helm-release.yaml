@@ -26,12 +26,26 @@ spec:
       enabled: false
     master:
       count: 1
-      resourcesPreset: "medium"
+      # Explicit resources override resourcesPreset. Observed ~50m/pod;
+      # memory kept at the old preset's values.
+      resources:
+        requests:
+          cpu: 125m
+          memory: 1Gi
+        limits:
+          cpu: 750m
+          memory: 1536Mi
       persistence:
         enabled: false
     replica:
       replicaCount: 3
-      resourcesPreset: "medium"
+      resources:
+        requests:
+          cpu: 125m
+          memory: 1Gi
+        limits:
+          cpu: 750m
+          memory: 1536Mi
       persistence:
         enabled: true
         size: 10Gi

@@ -69,7 +69,9 @@ spec:
           resources:
             requests:
               memory: "2Gi"
-              cpu: "2000m"
+              # Idle ~100m; transcode bursts live in the limit, and GPU
+              # transcode barely touches CPU anyway
+              cpu: "500m"
               nvidia.com/gpu: "1"
             limits:
               memory: "4Gi"
