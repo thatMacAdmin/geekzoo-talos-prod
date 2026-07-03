@@ -55,18 +55,21 @@ spec:
               command: ["chronyc", "-n", "tracking"]
             initialDelaySeconds: 30
             periodSeconds: 60
-          # Gate the VIP: not Ready until synced to a real upstream with <50ms
+          # Gate the VIP: not Ready until synced to a real upstream with <100ms
           # correction remaining. A cold-starting chrony serving a swinging
           # estimate is worse than no VIP — endpoints withdraw, Talos nodes
-          # fall back to time.cloudflare.com until we've converged. Tradeoff:
-          # during a WAN outage longer than ~1min the VIP withdraws too and
-          # nodes coast on their own clocks (~few ms/hr relative drift — fine).
+          # fall back to time.cloudflare.com until we've converged. The gate is
+          # deliberately slow to withdraw (8 x 15s): while nodes slew toward a
+          # newly-Ready chrony, its own host clock moves underneath it and its
+          # estimate wobbles — withdrawing on that wobble would flap the VIP
+          # and restart the transient. Tradeoff: a WAN outage >2min withdraws
+          # the VIP and nodes coast (~few ms/hr relative drift — fine).
           readinessProbe:
             exec:
-              command: ["chronyc", "waitsync", "1", "0.05", "0.0", "1"]
+              command: ["chronyc", "waitsync", "1", "0.1", "0.0", "1"]
             initialDelaySeconds: 5
             periodSeconds: 15
-            failureThreshold: 4
+            failureThreshold: 8
           resources:
             requests:
               cpu: 10m

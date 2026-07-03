@@ -28,8 +28,11 @@ data:
     allow 192.168.0.0/16
     allow 10.244.0.0/16
 
-    # Brief upstream flaps (< readiness-probe window): keep answering from our
-    # own clock at stratum 10 so clients see no gap. Outages longer than ~1min
-    # fail the readiness gate and withdraw the VIP — nodes then coast on their
-    # own clocks (few ms/hr relative drift).
-    local stratum 10 orphan distance 0.1
+    # Brief upstream flaps: keep answering from our own clock at stratum 10 so
+    # clients see no gap; sustained outages fail the readiness gate and
+    # withdraw the VIP — nodes then coast on their own clocks (few ms/hr
+    # relative drift). No `distance` option: the default (1s) means orphan
+    # activates only on real outage. 0.1 was hair-triggered — WAN sources sit
+    # at 50-90ms root distance, so transient dispersion flipped us to orphan
+    # (refid 7F7F0101) and the readiness probe could never pass.
+    local stratum 10 orphan
