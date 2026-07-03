@@ -1,13 +1,9 @@
 # Beyla values for geekzoo-prod — eBPF auto-instrumentation
 # Dual mode: network flow metrics (Prometheus) + application traces (Tempo)
 
-# Network preset keeps network.enable: true for flow metrics
-preset: network
-
-# hostPID required for application instrumentation — Beyla must see
-# host processes to attach eBPF probes for trace generation
-podSecurityContext:
-  hostPID: true
+# Application preset sets hostPID=true (required for trace instrumentation)
+# Network mode enabled via config.data.network below (also triggers hostNetwork)
+preset: application
 
 # Service exposing metrics endpoint for ServiceMonitor scraping
 service:
