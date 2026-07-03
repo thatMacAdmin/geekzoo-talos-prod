@@ -26,6 +26,17 @@ resources:
     cpu: 500m
     memory: 768Mi
 
+# Mount bpffs and kernel headers — required for eBPF trace instrumentation on Talos
+volumes:
+  - name: bpffs
+    hostPath:
+      path: /sys/fs/bpf
+      type: DirectoryOrCreate
+volumeMounts:
+  - name: bpffs
+    mountPath: /sys/fs/bpf
+    mountPropagation: HostToContainer
+
 # Beyla agent configuration
 config:
   data:
