@@ -9,6 +9,7 @@ preset: application
 # Endpoint must NOT include /v1/traces — OTLP SDK appends it automatically
 env:
   BEYLA_OTLP_TRACES: "1"
+  OTEL_TRACES_EXPORTER: "otlp"
   OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: "http://tempo.observability.svc:4318"
   OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
 
