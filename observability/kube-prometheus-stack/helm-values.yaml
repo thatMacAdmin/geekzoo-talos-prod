@@ -78,7 +78,7 @@ grafana:
       login_attribute_path: preferred_username
       name_attribute_path: name
       email_attribute_path: email
-      role_attribute_path: contains(info.groups[*], 'Grafana Admins') && 'Admin' || contains(info.groups[*], 'Grafana Editors') && 'Editor' || 'Viewer'
+      role_attribute_path: contains(groups, 'Grafana Admins') && 'Admin' || contains(groups, 'Grafana Editors') && 'Editor' || 'Viewer'
       sign_out_redirect_url: https://authentik.macbytes.io/application/o/grafana/end-session/
       tls_skip_verify_insecure: false
 
