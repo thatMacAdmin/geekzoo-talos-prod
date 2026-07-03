@@ -1,0 +1,240 @@
+# Alloy (log-shipping DaemonSet) values for geekzoo-prod — replaces promtail.
+#
+# Index labels replicate the promtail chart defaults exactly so existing
+# stream selectors keep working. Log LEVEL is intentionally NOT a label:
+# Loki 3.x derives `detected_level` structured metadata automatically, and
+# the pipeline below adds an explicit structured-metadata `level` only for
+# the formats Loki 3.6's (case-sensitive) detector provably misses.
+# NOTE once Loki >= 3.7 lands (case-insensitive detection), the arr-stack
+# and jellyfin stages below can be deleted.
+
+controller:
+  type: daemonset
+  volumes:
+    extra:
+      # Positions must live on a kubelet-visible host path. Talos kubelet
+      # cannot see /var/lib/* without machine extraMounts, so use /run
+      # (same durability as promtail's /run/promtail: survives pod
+      # restarts, cleared on node reboot — harmless, files re-read from
+      # positions-lost point are bounded by Loki reject_old_samples 168h).
+      - name: alloy-data
+        hostPath:
+          path: /run/alloy
+          type: DirectoryOrCreate
+
+alloy:
+  # Wires --storage.path; loki.source.file keeps read positions here.
+  storagePath: /run/alloy
+  mounts:
+    # Read-only hostPath /var/log (includes /var/log/pods)
+    varlog: true
+    extra:
+      - name: alloy-data
+        mountPath: /run/alloy
+  securityContext:
+    # Pod log files on the host are root-only; namespace is PSA-privileged
+    runAsUser: 0
+    runAsGroup: 0
+  extraEnv:
+    - name: NODE_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: spec.nodeName
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  configMap:
+    content: |
+      logging {
+        level  = "warn"
+        format = "logfmt"
+      }
+
+      // ---- discover this node's pods only ----
+      discovery.kubernetes "pods" {
+        role = "pod"
+        selectors {
+          role  = "pod"
+          field = "spec.nodeName=" + coalesce(sys.env("NODE_NAME"), constants.hostname)
+        }
+      }
+
+      // ---- replicate promtail chart's default label schema exactly ----
+      discovery.relabel "pods" {
+        targets = discovery.kubernetes.pods.targets
+
+        rule {
+          source_labels = ["__meta_kubernetes_pod_controller_name"]
+          regex         = "([0-9a-z-.]+?)(-[0-9a-f]{8,10})?"
+          target_label  = "__tmp_controller_name"
+        }
+        rule {
+          source_labels = ["__meta_kubernetes_pod_label_app_kubernetes_io_name", "__meta_kubernetes_pod_label_app", "__tmp_controller_name", "__meta_kubernetes_pod_name"]
+          regex         = "^;*([^;]+)(;.*)?$"
+          target_label  = "app"
+        }
+        rule {
+          source_labels = ["__meta_kubernetes_pod_label_app_kubernetes_io_instance", "__meta_kubernetes_pod_label_instance"]
+          regex         = "^;*([^;]+)(;.*)?$"
+          target_label  = "instance"
+        }
+        rule {
+          source_labels = ["__meta_kubernetes_pod_label_app_kubernetes_io_component", "__meta_kubernetes_pod_label_component"]
+          regex         = "^;*([^;]+)(;.*)?$"
+          target_label  = "component"
+        }
+        rule {
+          source_labels = ["__meta_kubernetes_pod_node_name"]
+          target_label  = "node_name"
+        }
+        rule {
+          source_labels = ["__meta_kubernetes_namespace"]
+          target_label  = "namespace"
+        }
+        rule {
+          source_labels = ["namespace", "app"]
+          separator     = "/"
+          target_label  = "job"
+        }
+        rule {
+          source_labels = ["__meta_kubernetes_pod_name"]
+          target_label  = "pod"
+        }
+        rule {
+          source_labels = ["__meta_kubernetes_pod_container_name"]
+          target_label  = "container"
+        }
+        rule {
+          source_labels = ["__meta_kubernetes_pod_uid", "__meta_kubernetes_pod_container_name"]
+          separator     = "/"
+          replacement   = "/var/log/pods/*$1/*.log"
+          target_label  = "__path__"
+        }
+        rule {
+          // static/mirror pods use the kubelet config hash in the log dir
+          source_labels = ["__meta_kubernetes_pod_annotationpresent_kubernetes_io_config_hash", "__meta_kubernetes_pod_annotation_kubernetes_io_config_hash", "__meta_kubernetes_pod_container_name"]
+          regex         = "true/(.*)"
+          separator     = "/"
+          replacement   = "/var/log/pods/*$1/*.log"
+          target_label  = "__path__"
+        }
+      }
+
+      local.file_match "pods" {
+        path_targets = discovery.relabel.pods.output
+      }
+
+      loki.source.file "pods" {
+        targets = local.file_match.pods.targets
+        // MUST stay false: true would skip the first lines of every NEW
+        // file forever (crashloop output, short-lived Job pods).
+        tail_from_end = false
+        forward_to    = [loki.process.pods.receiver]
+      }
+
+      loki.process "pods" {
+        forward_to = [loki.write.loki.receiver]
+
+        stage.cri { }
+
+        // ---- .NET mixed-case [Info] etc: Loki 3.6 detector misses these ----
+        stage.match {
+          selector = "{app=~\"sonarr|radarr|prowlarr|lingarr\"} |~ \"\\\\[(Info|Warn|Error|Fatal|Debug)\\\\]\""
+          stage.regex {
+            expression = "\\[(?P<level>Info|Warn|Error|Fatal|Debug)\\]"
+          }
+          // NOTE: {{ `...` }} wrappers below escape Helm's tpl pass; the
+          // rendered ConfigMap contains the plain Go template Alloy needs.
+          stage.template {
+            source   = "level"
+            template = "{{ `{{ ToLower .Value }}` }}"
+          }
+          stage.structured_metadata {
+            values = { level = "" }
+          }
+        }
+
+        // ---- klog I0703/W0703/E0703 (cert-manager, kube-system) ----
+        stage.match {
+          selector = "{namespace=~\"cert-manager|kube-system\"} |~ \"^[IWEF][0-9]{4}\""
+          stage.regex {
+            expression = "^(?P<klog_sev>[IWEF])[0-9]{4}"
+          }
+          stage.template {
+            source   = "level"
+            template = "{{ `{{ if eq .klog_sev \"I\" }}info{{ else if eq .klog_sev \"W\" }}warn{{ else if eq .klog_sev \"E\" }}error{{ else }}fatal{{ end }}` }}"
+          }
+          stage.structured_metadata {
+            values = { level = "" }
+          }
+        }
+
+        // ---- 3-letter [INF]/[WRN]/[ERR]/[DBG] (rook-ceph, jellyfin serilog) ----
+        stage.match {
+          selector = "{namespace=\"rook-ceph\"} |~ \"\\\\[(DBG|INF|WRN|ERR)\\\\]\""
+          stage.regex {
+            expression = "\\[(?P<sev3>DBG|INF|WRN|ERR)\\]"
+          }
+          stage.template {
+            source   = "level"
+            template = "{{ `{{ if eq .sev3 \"DBG\" }}debug{{ else if eq .sev3 \"INF\" }}info{{ else if eq .sev3 \"WRN\" }}warn{{ else }}error{{ end }}` }}"
+          }
+          stage.structured_metadata {
+            values = { level = "" }
+          }
+        }
+        stage.match {
+          selector = "{app=\"jellyfin\"} |~ \"\\\\[(DBG|INF|WRN|ERR)\\\\]\""
+          stage.regex {
+            expression = "\\[(?P<sev3>DBG|INF|WRN|ERR)\\]"
+          }
+          stage.template {
+            source   = "level"
+            template = "{{ `{{ if eq .sev3 \"DBG\" }}debug{{ else if eq .sev3 \"INF\" }}info{{ else if eq .sev3 \"WRN\" }}warn{{ else }}error{{ end }}` }}"
+          }
+          stage.structured_metadata {
+            values = { level = "" }
+          }
+        }
+
+        // ---- website nginx access log: request fields as structured metadata ----
+        stage.match {
+          selector = "{app=\"website\"}"
+          stage.regex {
+            expression = "^(?P<remote_addr>\\S+) \\S+ \\S+ \\[[^\\]]+\\] \"(?P<method>\\S+) (?P<path>\\S+) [^\"]+\" (?P<status>\\d{3}) "
+          }
+          stage.structured_metadata {
+            values = { status = "", method = "" }
+          }
+        }
+
+        // ---- conservative noise drops (each independently removable; counted
+        //      in loki_process_dropped_lines_total by reason) ----
+        // traefik kubelet health-probe access lines
+        stage.match {
+          selector            = "{app=\"traefik\"} |~ \"(\\\"GET /ping |\\\"RequestPath\\\":\\\"/ping\\\")\""
+          action              = "drop"
+          drop_counter_reason = "traefik_ping_probe"
+        }
+        // rook-ceph mon audit-channel debug chatter
+        stage.match {
+          selector            = "{namespace=\"rook-ceph\"} |~ \"log_channel\\\\(audit\\\\) log \\\\[DBG\\\\]\""
+          action              = "drop"
+          drop_counter_reason = "ceph_audit_dbg"
+        }
+      }
+
+      loki.write "loki" {
+        endpoint {
+          url = "http://loki.observability.svc:3100/loki/api/v1/push"
+        }
+      }
+
+serviceMonitor:
+  enabled: true
+  additionalLabels:
+    release: kube-prometheus-stack

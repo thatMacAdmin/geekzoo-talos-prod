@@ -10,5 +10,6 @@ resources:
   - loki
   - tempo
   - promtail
+  - alloy-logs
   - grafana-certificate.yaml
   - grafana-ingressroute.yaml
