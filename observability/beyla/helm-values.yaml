@@ -4,6 +4,11 @@
 # Network preset keeps network.enable: true for flow metrics
 preset: network
 
+# hostPID required for application instrumentation — Beyla must see
+# host processes to attach eBPF probes for trace generation
+podSecurityContext:
+  hostPID: true
+
 # Service exposing metrics endpoint for ServiceMonitor scraping
 service:
   enabled: true
