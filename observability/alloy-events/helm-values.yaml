@@ -1,0 +1,55 @@
+# Alloy (cluster-singleton) values for geekzoo-prod.
+# Collects Kubernetes events -> Loki. Runs as a StatefulSet with 1 replica:
+# STS updates are delete-then-create, so upgrades never run two event
+# tailers concurrently (a Deployment RollingUpdate would surge a second
+# pod and double-ingest events).
+# Restart/reschedule worst case: re-delivers <=1h of events (k8s event TTL).
+
+controller:
+  type: statefulset
+  replicas: 1
+
+alloy:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+  configMap:
+    content: |
+      logging {
+        level  = "warn"
+        format = "logfmt"
+      }
+
+      loki.source.kubernetes_events "cluster" {
+        job_name   = "kubernetes-events"
+        log_format = "logfmt"
+        forward_to = [loki.process.events.receiver]
+      }
+
+      loki.process "events" {
+        forward_to = [loki.write.loki.receiver]
+
+        // type (Normal/Warning) and reason are bounded sets -> structured
+        // metadata for cheap filtering; object name/kind stay query-time.
+        stage.logfmt {
+          mapping = { evt_type = "type", evt_reason = "reason" }
+        }
+        stage.structured_metadata {
+          values = { type = "evt_type", reason = "evt_reason" }
+        }
+      }
+
+      loki.write "loki" {
+        endpoint {
+          url = "http://loki.observability.svc:3100/loki/api/v1/push"
+        }
+      }
+
+serviceMonitor:
+  enabled: true
+  additionalLabels:
+    release: kube-prometheus-stack

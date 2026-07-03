@@ -11,5 +11,6 @@ resources:
   - tempo
   - promtail
   - alloy-logs
+  - alloy-events
   - grafana-certificate.yaml
   - grafana-ingressroute.yaml
