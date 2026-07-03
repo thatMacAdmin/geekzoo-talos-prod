@@ -1,0 +1,17 @@
+metadata:
+    namespace: default
+    type: ConfigPatches.omni.sidero.dev
+    id: 430-time-servers
+    labels:
+        omni.sidero.dev/cluster: geekzoo-prod
+spec:
+    data: |
+        # All nodes track the in-cluster chrony VIP (single shared reference —
+        # collapses relative skew, which is what Ceph mon quorum cares about).
+        # time.cloudflare.com stays as fallback for cold boot / chrony outage,
+        # when the VIP is unreachable.
+        machine:
+            time:
+                servers:
+                    - 192.168.3.13
+                    - time.cloudflare.com
