@@ -24,6 +24,12 @@ tempo:
   metricsGenerator:
     enabled: true
     remoteWriteUrl: "http://kube-prometheus-stack-prometheus.observability.svc:9090/api/v1/write"
+    # local-blocks processor config — required for TraceQL metrics queries
+    # (Grafana Traces Drilldown); flush to storage so metrics survive restarts
+    processor:
+      local_blocks:
+        flush_to_storage: true
+        filter_server_spans: false
   # Generator does nothing unless processors are enabled via overrides
   overrides:
     defaults:
@@ -31,6 +37,7 @@ tempo:
         processors:
           - service-graphs
           - span-metrics
+          - local-blocks
 
 persistence:
   enabled: true
