@@ -5,6 +5,14 @@
 # Network mode enabled via config.data.network below (also triggers hostNetwork)
 preset: application
 
+# Enable OTLP trace export to Tempo via env vars
+# These override/augment the YAML config below
+env:
+  BEYLA_OTLP_TRACES: "true"
+  OTEL_TRACES_EXPORTER: "otlp"
+  OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: "http://tempo.observability.svc:4318"
+  OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
+
 # Service exposing metrics endpoint for ServiceMonitor scraping
 service:
   enabled: true
