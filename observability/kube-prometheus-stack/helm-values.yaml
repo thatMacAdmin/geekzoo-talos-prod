@@ -63,6 +63,13 @@ alertmanager:
     # Mounted at /etc/alertmanager/secrets/pushover-credentials/
     secrets:
       - pushover-credentials
+    # Tiny workload: 7d max 22Mi / ~1m CPU
+    resources:
+      requests:
+        cpu: 10m
+        memory: 64Mi
+      limits:
+        memory: 128Mi
     storage:
       volumeClaimTemplate:
         spec:
@@ -98,10 +105,11 @@ grafana:
     enabled: true
     storageClassName: ceph-block
     size: 10Gi
+  # Steady ~320Mi, provisioning-reload peaks ~950Mi — request tracks steady
   resources:
     requests:
       cpu: 100m
-      memory: 256Mi
+      memory: 384Mi
     limits:
       cpu: 500m
       memory: 1Gi
@@ -200,13 +208,13 @@ prometheus:
           resources:
             requests:
               storage: 50Gi
-    # Running ~1.4Gi with Beyla network metrics; span-metrics from Tempo
-    # generator adds more series — 2Gi limit left no headroom
+    # 7d max 2.5Gi working set, and the Cilium/Hubble/Envoy + Ceph monitors
+    # added 2026-07-03 brought ~11k new series — 3Gi limit left no headroom
     resources:
       requests:
         # p95 sits right at 200m — 300m keeps it honestly scheduled
         cpu: 300m
-        memory: 1Gi
+        memory: 2Gi
       limits:
         cpu: "1"
-        memory: 3Gi
+        memory: 4Gi

@@ -4,13 +4,16 @@ replicas: 1
 
 tempo:
   retention: 24h
+  # Steady state ~1Gi working set, compaction spikes to ~2.4Gi (7d max);
+  # CPU p99 65m. 256Mi request was dishonest scheduling; 8Gi/4-core limits
+  # were pure headroom.
   resources:
     requests:
       cpu: 100m
-      memory: 256Mi
+      memory: 1Gi
     limits:
-      cpu: 4
-      memory: 8Gi
+      cpu: 2
+      memory: 4Gi
   storage:
     trace:
       backend: local

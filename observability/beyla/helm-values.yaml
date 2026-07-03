@@ -25,12 +25,13 @@ serviceMonitor:
   additionalLabels:
     release: kube-prometheus-stack
 
-# Resources — dual mode (network + app traces) holds ~500-600Mi steady state;
-# 768Mi limit caused OOMKills
+# Resources — dual mode (network + app traces) holds ~500-700Mi steady state
+# with excursions to ~1.25Gi (7d max); 768Mi limit caused OOMKills. Request
+# tracks steady state so scheduling stays honest.
 resources:
   requests:
     cpu: 100m
-    memory: 512Mi
+    memory: 768Mi
   limits:
     cpu: 500m
     memory: 1536Mi
