@@ -5,14 +5,6 @@
 # Network mode enabled via config.data.network below (also triggers hostNetwork)
 preset: application
 
-# Enable OTLP trace export to Tempo via env vars
-# Endpoint must NOT include /v1/traces — OTLP SDK appends it automatically
-env:
-  BEYLA_OTLP_TRACES: "1"
-  OTEL_TRACES_EXPORTER: "otlp"
-  OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: "http://tempo.observability.svc:4318"
-  OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
-
 # Service exposing metrics endpoint for ServiceMonitor scraping
 service:
   enabled: true
@@ -48,6 +40,9 @@ volumeMounts:
 # Beyla agent configuration
 config:
   data:
+    # Debug logging to trace export pipeline issues
+    log_level: debug
+
     # Enrich metrics and traces with Kubernetes metadata
     attributes:
       kubernetes:
@@ -75,3 +70,9 @@ config:
     prometheus_export:
       port: 9090
       path: /metrics
+
+    # OTLP trace export — sends application traces to Tempo
+    # Endpoint must NOT include /v1/traces (SDK appends automatically)
+    otel_traces_export:
+      endpoint: http://tempo.observability.svc:4318
+      protocol: http/protobuf
