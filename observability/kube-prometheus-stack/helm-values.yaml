@@ -94,6 +94,10 @@ grafana:
       role_attribute_path: contains(groups, 'Grafana Admins') && 'Admin' || contains(groups, 'Grafana Editors') && 'Editor' || 'Viewer'
       sign_out_redirect_url: https://authentik.macbytes.io/application/o/grafana/end-session/
       tls_skip_verify_insecure: false
+    news:
+      enable_feed: false
+    dashboards:
+      default_home_dashboard_path: /tmp/dashboards/k8s-resources-cluster.json
 
 kubeApiServer:
   enabled: true
