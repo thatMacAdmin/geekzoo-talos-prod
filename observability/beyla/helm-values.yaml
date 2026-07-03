@@ -5,6 +5,13 @@
 # Network mode enabled via config.data.network below (also triggers hostNetwork)
 preset: application
 
+# Enable OTLP trace export to Tempo via env vars
+# Endpoint must NOT include /v1/traces — OTLP SDK appends it automatically
+env:
+  BEYLA_OTLP_TRACES: "1"
+  OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: "http://tempo.observability.svc:4318"
+  OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
+
 # Service exposing metrics endpoint for ServiceMonitor scraping
 service:
   enabled: true
@@ -26,7 +33,7 @@ resources:
     cpu: 500m
     memory: 768Mi
 
-# Mount bpffs and kernel headers — required for eBPF trace instrumentation on Talos
+# Mount bpffs — required for eBPF trace probes on Talos
 volumes:
   - name: bpffs
     hostPath:
@@ -45,8 +52,11 @@ config:
       kubernetes:
         enable: true
 
+    # Network mode — enables flow metrics alongside app traces
+    network:
+      enable: true
+
     # Application discovery — instrument all HTTP/gRPC services
-    # Activates AppO11y mode alongside NetO11y
     discovery:
       instrument:
         - name: web-services
@@ -64,8 +74,3 @@ config:
     prometheus_export:
       port: 9090
       path: /metrics
-
-    # OTLP trace export — sends application traces to Tempo
-    otel_traces_export:
-      endpoint: http://tempo.observability.svc:4318/v1/traces
-      protocol: http/protobuf
