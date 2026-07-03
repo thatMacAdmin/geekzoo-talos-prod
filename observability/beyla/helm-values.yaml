@@ -50,3 +50,8 @@ config:
     prometheus_export:
       port: 9090
       path: /metrics
+
+    # OTLP trace export — sends to Tempo
+    otlp_traces:
+      endpoint: http://tempo.observability.svc:4318/v1/traces
+      protocol: http
