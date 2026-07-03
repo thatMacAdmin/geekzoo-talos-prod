@@ -16,13 +16,20 @@ data:
     server 0.us.pool.ntp.org iburst
     server 1.us.pool.ntp.org iburst
 
-    driftfile /var/run/chrony/drift
+    # Persisted on hostPath: the frequency estimate belongs to the node's
+    # oscillator, so per-node persistence is exactly right — restarts on the
+    # same node skip the 20-30 min cold-start convergence (during which served
+    # time swings enough to spike mon skew 50-105ms). dump/restore additionally
+    # saves per-source measurement history on graceful shutdown.
+    driftfile /var/lib/chrony/drift
+    dumpdir /var/lib/chrony
 
     # Serve the LAN and the pod network
     allow 192.168.0.0/16
     allow 10.244.0.0/16
 
-    # WAN outage: keep serving our own clock at stratum 10 so the Talos nodes
-    # stay mutually synced (relative skew is what Ceph cares about) even when
-    # upstream is unreachable.
+    # Brief upstream flaps (< readiness-probe window): keep answering from our
+    # own clock at stratum 10 so clients see no gap. Outages longer than ~1min
+    # fail the readiness gate and withdraw the VIP — nodes then coast on their
+    # own clocks (few ms/hr relative drift).
     local stratum 10 orphan distance 0.1

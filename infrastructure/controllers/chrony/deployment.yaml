@@ -19,6 +19,17 @@ spec:
       labels:
         app: chrony
     spec:
+      # hostPath is root-owned on creation; chronyd runs as uid 100 (image
+      # USER, no privdrop) and must write drift + measurement dumps there.
+      initContainers:
+        - name: fix-perms
+          image: docker.io/dockurr/chrony:4.6.1
+          command: ["sh", "-c", "chown -R 100:101 /var/lib/chrony"]
+          securityContext:
+            runAsUser: 0
+          volumeMounts:
+            - name: state
+              mountPath: /var/lib/chrony
       containers:
         - name: chrony
           image: docker.io/dockurr/chrony:4.6.1
@@ -37,11 +48,25 @@ spec:
               readOnly: true
             - name: run
               mountPath: /var/run/chrony
+            - name: state
+              mountPath: /var/lib/chrony
           livenessProbe:
             exec:
               command: ["chronyc", "-n", "tracking"]
             initialDelaySeconds: 30
             periodSeconds: 60
+          # Gate the VIP: not Ready until synced to a real upstream with <50ms
+          # correction remaining. A cold-starting chrony serving a swinging
+          # estimate is worse than no VIP — endpoints withdraw, Talos nodes
+          # fall back to time.cloudflare.com until we've converged. Tradeoff:
+          # during a WAN outage longer than ~1min the VIP withdraws too and
+          # nodes coast on their own clocks (~few ms/hr relative drift — fine).
+          readinessProbe:
+            exec:
+              command: ["chronyc", "waitsync", "1", "0.05", "0.0", "1"]
+            initialDelaySeconds: 5
+            periodSeconds: 15
+            failureThreshold: 4
           resources:
             requests:
               cpu: 10m
@@ -54,3 +79,10 @@ spec:
             name: chrony-config
         - name: run
           emptyDir: {}
+        # Per-node persistence is semantically correct: the drift value is the
+        # frequency error of THIS node's oscillator. After a reschedule to
+        # another node the file there is that node's own last estimate.
+        - name: state
+          hostPath:
+            path: /var/lib/chrony
+            type: DirectoryOrCreate
