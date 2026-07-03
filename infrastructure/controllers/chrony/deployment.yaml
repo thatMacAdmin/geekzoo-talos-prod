@@ -19,17 +19,27 @@ spec:
       labels:
         app: chrony
     spec:
-      # hostPath is root-owned on creation; chronyd runs as uid 100 (image
-      # USER, no privdrop) and must write drift + measurement dumps there.
+      # chronyd runs as uid 100 (image USER, no privdrop). The hostPath is
+      # root-owned on creation and must hold drift + measurement dumps; the
+      # run emptyDir mounts 0777 root:root, which chronyd rejects ("Wrong
+      # permissions on /run/chrony") and then disables its command socket —
+      # it wants the dir owned by itself and not world-writable.
       initContainers:
         - name: fix-perms
           image: docker.io/dockurr/chrony:4.6.1
-          command: ["sh", "-c", "chown -R 100:101 /var/lib/chrony"]
+          command:
+            - sh
+            - -c
+            - |
+              chown -R 100:101 /var/lib/chrony /var/run/chrony
+              chmod 750 /var/lib/chrony /var/run/chrony
           securityContext:
             runAsUser: 0
           volumeMounts:
             - name: state
               mountPath: /var/lib/chrony
+            - name: run
+              mountPath: /var/run/chrony
       containers:
         - name: chrony
           image: docker.io/dockurr/chrony:4.6.1
