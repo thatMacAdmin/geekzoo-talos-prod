@@ -55,9 +55,11 @@ spec:
               drop: ["ALL"]
       containers:
         - name: bifrost
-          # TODO: pin to a release tag before commit (confirming current version).
-          image: maximhq/bifrost:latest
+          image: maximhq/bifrost:v1.6.2
           imagePullPolicy: IfNotPresent
+          envFrom:
+            - secretRef:
+                name: bifrost-secrets
           ports:
             - name: http
               containerPort: 8080
