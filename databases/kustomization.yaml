@@ -3,6 +3,7 @@ kind: Kustomization
 
 resources:
   - authentik-pg
+  - inbox-zero-pg
   - seerr-pg
   - vaultwarden-pg
   - vikunja-pg

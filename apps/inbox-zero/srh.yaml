@@ -1,0 +1,84 @@
+# serverless-redis-http (SRH): Upstash-REST-API shim in front of the shared
+# cluster Redis. Inbox Zero's cache layer speaks Upstash HTTP, not raw redis.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inbox-zero-srh
+  namespace: apps
+  labels:
+    app: inbox-zero-srh
+    app.kubernetes.io/name: inbox-zero
+    app.kubernetes.io/instance: inbox-zero
+    app.kubernetes.io/component: redis-http-shim
+    app.kubernetes.io/part-of: apps
+    app.kubernetes.io/managed-by: kustomize
+spec:
+  selector:
+    matchLabels:
+      app: inbox-zero-srh
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: inbox-zero-srh
+        app.kubernetes.io/name: inbox-zero
+        app.kubernetes.io/instance: inbox-zero
+        app.kubernetes.io/component: redis-http-shim
+        app.kubernetes.io/part-of: apps
+        app.kubernetes.io/managed-by: kustomize
+    spec:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: srh
+          image: hiett/serverless-redis-http:0.0.10
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: SRH_MODE
+              value: "env"
+            - name: SRH_CONNECTION_STRING
+              valueFrom:
+                secretKeyRef:
+                  name: inbox-zero-secrets
+                  key: SRH_CONNECTION_STRING
+            - name: SRH_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: inbox-zero-secrets
+                  key: SRH_TOKEN
+          ports:
+            - name: http
+              containerPort: 80
+          readinessProbe:
+            tcpSocket:
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "25m"
+            limits:
+              memory: "256Mi"
+              cpu: "250m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: inbox-zero-srh-svc
+  namespace: apps
+  labels:
+    app: inbox-zero-srh
+spec:
+  type: ClusterIP
+  selector:
+    app: inbox-zero-srh
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80

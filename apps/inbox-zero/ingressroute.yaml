@@ -1,0 +1,16 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: inbox-zero-ingressroute
+  namespace: apps
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`inboxzero.macbytes.io`)
+      kind: Rule
+      services:
+        - name: inbox-zero-svc
+          port: 3000
+  tls:
+    secretName: inbox-zero-tls-certificate

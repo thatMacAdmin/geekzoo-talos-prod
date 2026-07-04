@@ -1,0 +1,154 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inbox-zero
+  namespace: apps
+  labels:
+    app: inbox-zero
+    app.kubernetes.io/name: inbox-zero
+    app.kubernetes.io/instance: inbox-zero
+    app.kubernetes.io/component: web
+    app.kubernetes.io/part-of: apps
+    app.kubernetes.io/managed-by: kustomize
+spec:
+  selector:
+    matchLabels:
+      app: inbox-zero
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: inbox-zero
+        app.kubernetes.io/name: inbox-zero
+        app.kubernetes.io/instance: inbox-zero
+        app.kubernetes.io/component: web
+        app.kubernetes.io/part-of: apps
+        app.kubernetes.io/managed-by: kustomize
+    spec:
+      # The image's entrypoint rewrites baked NEXT_PUBLIC_* placeholders inside
+      # /app at boot and the app files are root-owned, so this pod cannot run
+      # nonRoot/readOnlyRootFilesystem like our other apps. Caps still dropped.
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: inbox-zero
+          image: ghcr.io/elie222/inbox-zero:2.30.0
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - secretRef:
+                name: inbox-zero-secrets
+          env:
+            - name: NEXT_PUBLIC_BASE_URL
+              value: "https://inboxzero.macbytes.io"
+            - name: INTERNAL_API_URL
+              value: "http://inbox-zero-svc.apps.svc.cluster.local:3000"
+            # LLM calls go through the Bifrost gateway → z.ai GLM-4.7-Flash
+            # ($0/token). Bifrost strips the "zai/" prefix and routes upstream.
+            - name: DEFAULT_LLMS
+              value: "openai-compatible:zai/glm-4.7-flash"
+            - name: ECONOMY_LLMS
+              value: "openai-compatible:zai/glm-4.7-flash"
+            - name: OPENAI_COMPATIBLE_BASE_URL
+              value: "http://bifrost-svc.apps.svc.cluster.local:8080/v1"
+            - name: OPENAI_COMPATIBLE_MODEL
+              value: "zai/glm-4.7-flash"
+            # Bifrost is keyless in-cluster; the app still wants a key string.
+            - name: LLM_API_KEY
+              value: "bifrost-internal"
+            - name: QUEUE_BACKEND
+              value: "bullmq"
+            # Upstash-HTTP cache API served by the SRH shim (srh.yaml)
+            - name: UPSTASH_REDIS_URL
+              value: "http://inbox-zero-srh-svc.apps.svc.cluster.local:80"
+            # Self-hosted: unlock features gated behind the hosted premium plans
+            - name: NEXT_PUBLIC_BYPASS_PREMIUM_CHECKS
+              value: "true"
+          ports:
+            - name: http
+              containerPort: 3000
+          # Startup runs prisma migrations; give it slack before liveness bites.
+          readinessProbe:
+            tcpSocket:
+              port: 3000
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 3000
+            initialDelaySeconds: 90
+            periodSeconds: 20
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "100m"
+            limits:
+              memory: "2Gi"
+              cpu: "2"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inbox-zero-worker
+  namespace: apps
+  labels:
+    app: inbox-zero-worker
+    app.kubernetes.io/name: inbox-zero
+    app.kubernetes.io/instance: inbox-zero
+    app.kubernetes.io/component: queue-worker
+    app.kubernetes.io/part-of: apps
+    app.kubernetes.io/managed-by: kustomize
+spec:
+  selector:
+    matchLabels:
+      app: inbox-zero-worker
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: inbox-zero-worker
+        app.kubernetes.io/name: inbox-zero
+        app.kubernetes.io/instance: inbox-zero
+        app.kubernetes.io/component: queue-worker
+        app.kubernetes.io/part-of: apps
+        app.kubernetes.io/managed-by: kustomize
+    spec:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: worker
+          image: ghcr.io/elie222/inbox-zero:2.30.0
+          imagePullPolicy: IfNotPresent
+          command: ["/app/docker/scripts/start-worker.sh"]
+          envFrom:
+            - secretRef:
+                name: inbox-zero-secrets
+          env:
+            - name: INTERNAL_API_URL
+              value: "http://inbox-zero-svc.apps.svc.cluster.local:3000"
+            - name: QUEUE_BACKEND
+              value: "bullmq"
+            - name: UPSTASH_REDIS_URL
+              value: "http://inbox-zero-srh-svc.apps.svc.cluster.local:80"
+            - name: SKIP_DB_MIGRATIONS
+              value: "true"
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "50m"
+            limits:
+              memory: "1Gi"
+              cpu: "1"

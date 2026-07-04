@@ -245,4 +245,10 @@ ingress:
       noTLSVerify: true
       originServerName: www.macbytes.io
       httpHostHeader: www.macbytes.io
+  - hostname: inboxzero.macbytes.io
+    service: https://traefik.traefik.svc.cluster.local:443
+    originRequest:
+      noTLSVerify: true
+      originServerName: inboxzero.macbytes.io
+      httpHostHeader: inboxzero.macbytes.io
   - service: http_status:404

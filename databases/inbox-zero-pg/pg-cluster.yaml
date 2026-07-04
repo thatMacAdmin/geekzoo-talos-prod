@@ -1,0 +1,29 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: inbox-zero-pg-cluster
+  namespace: database
+spec:
+  imageName: ghcr.io/cloudnative-pg/postgresql:17.6-system-trixie
+  instances: 1
+  # Baseline scheduling reservation (matches vikunja-pg)
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+  enableSuperuserAccess: true
+  plugins:
+    - name: barman-cloud.cloudnative-pg.io
+      isWALArchiver: true
+      parameters:
+        barmanObjectName: wasabi-object-store
+        serverName: inbox-zero-pg-cluster-geekzoo-prod
+  bootstrap:
+    initdb:
+      database: inboxzero
+      owner: inboxzero
+      secret:
+        name: pg-app-user-inbox-zero
+  storage:
+    storageClass: ceph-block
+    size: 10Gi
