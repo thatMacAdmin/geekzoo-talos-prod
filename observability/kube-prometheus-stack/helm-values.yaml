@@ -3,6 +3,42 @@
 defaultRules:
   create: true
 
+# Replacements for the null-routed CephNodeNetworkPacketDrops (see
+# alertmanager routes): alert on drop patterns that actually indicate
+# trouble, not on the kernel's unwanted-frame accounting.
+additionalPrometheusRulesMap:
+  network-drops:
+    groups:
+      - name: network-drops
+        rules:
+          # Sustained heavy dropping — a real storm or misconfiguration, an
+          # order of magnitude above observed LAN background noise (≤25 pps
+          # bursts).
+          - alert: NodeNetworkPacketDropsSustained
+            expr: |
+              sum by (instance, device) (
+                  rate(node_network_receive_drop_total{device=~"ens.*|eth.*|bond.*"}[15m])
+                + rate(node_network_transmit_drop_total{device=~"ens.*|eth.*|bond.*"}[15m])
+              ) > 100
+            for: 15m
+            labels:
+              severity: warning
+            annotations:
+              summary: "Sustained packet drops on {{ $labels.instance }} {{ $labels.device }}"
+              description: "{{ $value | humanize }} pkt/s dropped for 15m — beyond LAN background noise."
+          # True NIC ring-buffer overrun — the counter that stays 0 during
+          # cosmetic rx_dropped noise. Any nonzero rate here means the host
+          # genuinely failed to keep up with the wire.
+          - alert: NodeNetworkRingBufferOverflow
+            expr: |
+              rate(node_network_receive_fifo_total{device=~"ens.*|eth.*|bond.*"}[5m]) > 0
+            for: 10m
+            labels:
+              severity: warning
+            annotations:
+              summary: "NIC ring buffer overruns on {{ $labels.instance }} {{ $labels.device }}"
+              description: "receive_fifo increasing for 10m — host not draining the NIC; check IRQ/ring sizing."
+
 alertmanager:
   enabled: true
   config:
@@ -21,6 +57,16 @@ alertmanager:
         # Info-severity is inhibitor plumbing, not actionable
         - matchers:
             - severity = "info"
+          receiver: "null"
+        # Ceph-mixin rule fires instantly (for: 0) on rx_dropped, but that
+        # counter includes frames the kernel discards as unwanted (other-VLAN
+        # trunk traffic, L2 protocol frames, unjoined multicast). On our
+        # near-idle 10G NICs (~1000 pps) LAN background noise trips the 0.5%
+        # ratio a few times a night with zero rx errors / fifo overruns and
+        # Ceph healthy. Replaced by NodeNetworkPacketDropsSustained +
+        # NodeNetworkRingBufferOverflow (additionalPrometheusRulesMap).
+        - matchers:
+            - alertname = "CephNodeNetworkPacketDrops"
           receiver: "null"
         - matchers:
             - severity = "critical"
