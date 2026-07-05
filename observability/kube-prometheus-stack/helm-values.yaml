@@ -54,6 +54,12 @@ alertmanager:
         - matchers:
             - alertname = "Watchdog"
           receiver: "null"
+        # InfoInhibitor carries severity=none (not info), so it slips past
+        # the info route below onto the default receiver. It must keep
+        # FIRING to do its inhibit job — just never notify on it.
+        - matchers:
+            - alertname = "InfoInhibitor"
+          receiver: "null"
         # Info-severity is inhibitor plumbing, not actionable
         - matchers:
             - severity = "info"

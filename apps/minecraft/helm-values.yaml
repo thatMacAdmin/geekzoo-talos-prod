@@ -184,7 +184,9 @@ mcbackup:
   resources:
     limits:
       memory: 1024Mi
-      cpu: 1000m
+      # Nightly tar/gzip is a pure burst job — 1000m throttled it to 54%;
+      # more headroom just means the backup finishes sooner
+      cpu: 2000m
     requests:
       memory: 512Mi
       cpu: 500m

@@ -75,5 +75,7 @@ spec:
               nvidia.com/gpu: "1"
             limits:
               memory: "4Gi"
-              cpu: "4000m"
+              # Remux/audio-transcode bursts hit 3.2 cores against the old
+              # 4000m cap (71% CFS throttle); half a 16-core node is fine
+              cpu: "8000m"
               nvidia.com/gpu: "1"

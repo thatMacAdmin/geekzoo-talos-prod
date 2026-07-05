@@ -89,7 +89,9 @@ spec:
               cpu: "50m"
             limits:
               memory: "256Mi"
-              cpu: "500m"
+              # Go micro-bursts hit 90% CFS throttle at 500m despite ~0.14
+              # avg — throttling adds tail latency to every LLM call
+              cpu: "1000m"
       volumes:
         - name: seed
           configMap:

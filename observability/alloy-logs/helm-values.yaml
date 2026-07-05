@@ -45,7 +45,8 @@ alloy:
       cpu: 100m
       memory: 128Mi
     limits:
-      cpu: 500m
+      # Log replay/backpressure bursts to ~0.34 core against old 500m cap
+      cpu: 1000m
       memory: 512Mi
   configMap:
     content: |

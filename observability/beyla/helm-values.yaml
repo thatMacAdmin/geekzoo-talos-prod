@@ -33,7 +33,8 @@ resources:
     cpu: 100m
     memory: 768Mi
   limits:
-    cpu: 500m
+    # eBPF ringbuf processing bursts (33% CFS throttle at 500m)
+    cpu: 1000m
     memory: 1536Mi
 
 # Mount bpffs — required for eBPF trace probes on Talos

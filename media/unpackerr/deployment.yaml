@@ -72,4 +72,6 @@ spec:
               cpu: "50m"
             limits:
               memory: "512Mi"
-              cpu: "500m"
+              # Extraction bursts to ~0.33 core; 500m CFS-throttled the
+              # exact moments it had work to do
+              cpu: "1000m"

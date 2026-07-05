@@ -65,7 +65,8 @@ spec:
               cpu: "25m"
             limits:
               memory: "256Mi"
-              cpu: "250m"
+              # 44% CFS throttle at 250m on request micro-bursts
+              cpu: "500m"
 ---
 apiVersion: v1
 kind: Service

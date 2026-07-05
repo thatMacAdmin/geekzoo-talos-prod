@@ -83,4 +83,6 @@ spec:
               cpu: "50m"
             limits:
               memory: "1Gi"
-              cpu: "1000m"
+              # Subtitle scans sustain ~1 full core — 1000m was a hard cap
+              # (77% CFS throttle); 2x observed peak so scans run unthrottled
+              cpu: "2000m"
