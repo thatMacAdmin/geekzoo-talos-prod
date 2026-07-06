@@ -83,7 +83,7 @@ Admin:         kubectl port-forward to Stalwart :8080 webadmin (not publicly exp
 ### 0.2 SES setup (us-east-2) — done via `aws sesv2` CLI
 - [x] Domain identity `macbytes.io`, **Easy DKIM RSA-2048** → **VERIFIED**, DKIM **SUCCESS**, `VerifiedForSending: true`.
 - [x] Custom MAIL FROM `bounce.macbytes.io`, on-MX-failure = use default (status PENDING → self-clears; non-blocking).
-- [x] **Production access requested** (`put-account-details`) — `ProductionAccessEnabled: false` = pending review (~1–3 days). Needed before the Phase-6 send test.
+- [x] **Production access granted** — `ProductionAccessEnabled: true`, quota 50,000/day @ 14/s (us-east-2). Unblocks Phase 6 and the SES cutover (Brevo sandbox-era fallback retired in the Stalwart plan).
 - [x] **SMTP credentials**: dedicated IAM user `ses-smtp-macbytes` (send-only), creds in SSM.
 
 ### 0.3 Secrets — all in SSM SecureString (`/k3s-geekzoo/mail/`, us-east-2)
@@ -333,7 +333,7 @@ Inbound mail delivered to Stalwart over the tunnel; mail-client ports answer wit
 ## Phase 6 — Deliverability + DMARC ramp
 
 ### 6.1 `[HUMAN]` Real send test (needs SES production access)
-- [ ] Confirm `aws sesv2 get-account --region us-east-2 --query ProductionAccessEnabled` = `true`. If pending, wait.
+- [x] Confirm `aws sesv2 get-account --region us-east-2 --query ProductionAccessEnabled` = `true` (granted; 50k/day, 14/s). Active Stalwart route flipped Brevo → SES (configmap-plan.yaml `MtaOutboundStrategy.route.else`).
 - [ ] From Bulwark (or a native client), send to a **Gmail** you control. Gmail → **Show original**: confirm **SPF pass+aligned**, **DKIM pass+aligned**, **DMARC pass**. Also run **mail-tester.com** (target 10/10).
 
 ### 6.2 `[AGENT]` Debug if needed

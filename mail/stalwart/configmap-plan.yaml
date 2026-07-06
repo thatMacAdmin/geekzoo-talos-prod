@@ -22,8 +22,10 @@ metadata:
 #       envsubst '$SES_SMTP_USERNAME $BREVO_SMTP_LOGIN' < stalwart-plan.ndjson | stalwart-cli apply ...
 #     The PASSWORD is an env ref resolved by the SERVER (SES_SMTP_PASSWORD / BREVO_SMTP_PASSWORD in
 #     the Deployment env), never stored here.
-#   - ACTIVE outbound route = 'brevo' (smtp-relay.brevo.com:587). The 'ses' route is kept for a
-#     one-line flip-back: change MtaOutboundStrategy route.else. Both stay authorized in SPF/DKIM.
+#   - ACTIVE outbound route = 'ses' (email-smtp.us-east-2.amazonaws.com:587). SES production
+#     access was approved (50k/day, 14/s) so the sandbox-era Brevo fallback is no longer needed.
+#     The 'brevo' route is kept for a one-line flip-back: change MtaOutboundStrategy route.else.
+#     Both stay authorized in SPF/DKIM.
 #   - MtaStageAuth: inbound MX must NOT require auth. Stalwart's default require expr is
 #     `local_port != 25`, but our MX listener binds 2525 (frp maps public :25 -> 2525, since the
 #     pod can't bind privileged 25), so the default demanded auth on inbound -> "503 must
@@ -49,7 +51,7 @@ data:
     {"@type":"upsert","object":"MtaRoute","matchOn":["name"],"value":{"ses":{"@type":"Relay","name":"ses","address":"email-smtp.us-east-2.amazonaws.com","port":587,"protocol":"smtp","implicitTls":false,"allowInvalidCerts":false,"authUsername":"${SES_SMTP_USERNAME}","authSecret":{"@type":"EnvironmentVariable","variableName":"SES_SMTP_PASSWORD"}}}}
     {"@type":"upsert","object":"MtaRoute","matchOn":["name"],"value":{"brevo":{"@type":"Relay","name":"brevo","address":"smtp-relay.brevo.com","port":587,"protocol":"smtp","implicitTls":false,"allowInvalidCerts":false,"authUsername":"${BREVO_SMTP_LOGIN}","authSecret":{"@type":"EnvironmentVariable","variableName":"BREVO_SMTP_PASSWORD"}}}}
     {"@type":"upsert","object":"MtaTlsStrategy","matchOn":["name"],"value":{"relay-tls":{"name":"relay-tls","dane":"disable","mtaSts":"disable","startTls":"require","allowInvalidCerts":false}}}
-    {"@type":"update","object":"MtaOutboundStrategy","value":{"route":{"else":"'brevo'","match":{"0":{"if":"is_local_domain(rcpt_domain)","then":"'local'"}}},"tls":{"else":"'relay-tls'","match":{"0":{"if":"is_local_domain(rcpt_domain)","then":"'default'"}}}}}
+    {"@type":"update","object":"MtaOutboundStrategy","value":{"route":{"else":"'ses'","match":{"0":{"if":"is_local_domain(rcpt_domain)","then":"'local'"}}},"tls":{"else":"'relay-tls'","match":{"0":{"if":"is_local_domain(rcpt_domain)","then":"'default'"}}}}}
     {"@type":"update","object":"SenderAuth","value":{"dkimSignDomain":{"else":"false","match":{}}}}
     {"@type":"update","object":"MtaStageAuth","value":{"require":{"else":"local_port != 2525","match":{}},"mustMatchSender":{"else":"true","match":{}},"waitOnFail":{"else":"5s","match":{}},"saslMechanisms":{"else":"false","match":{"0":{"then":"[plain, login, oauthbearer, xoauth2]","if":"local_port != 2525 && is_tls"},"1":{"then":"[oauthbearer, xoauth2]","if":"local_port != 2525"}}},"maxFailures":{"else":"3","match":{}}}}
     {"@type":"create","object":"Tracer","value":{"stdout-console":{"@type":"Stdout","enable":true,"level":"info","ansi":false,"buffered":false,"lossy":false,"multiline":false,"events":{},"eventsPolicy":"exclude"}}}

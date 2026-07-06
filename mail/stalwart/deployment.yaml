@@ -70,7 +70,7 @@ spec:
             - { name: imaps, containerPort: 9993 }
             - { name: http, containerPort: 8080 }
           env:
-            # --- runtime (always present): SES relay auth, resolved by the server ---
+            # --- ACTIVE outbound relay: SES (us-east-2) auth, resolved by the server ---
             - name: SES_SMTP_USERNAME
               valueFrom:
                 secretKeyRef:
@@ -81,7 +81,7 @@ spec:
                 secretKeyRef:
                   name: mail-secrets
                   key: SES_SMTP_PASSWORD
-            # --- ACTIVE outbound relay: Brevo SMTP key, resolved by the server ---
+            # --- retained for flip-back: Brevo SMTP key, resolved by the server ---
             - name: BREVO_SMTP_PASSWORD
               valueFrom:
                 secretKeyRef:
