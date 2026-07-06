@@ -12,9 +12,14 @@ Domain: `macbytes.io`. Cluster context: `geekzoo-geekzoo-prod`. Single environme
 
 **Care & review:** Review anything before suggesting or publishing it. Suggestions must be fact-based; never speculate. Confirm before destructive or irreversible operations (see cardinal rule §0).
 
+### Git workflow
+
+- **Commit as you work.** When a logical unit of work is complete and tested, commit it. Don't accumulate a large uncommitted diff across unrelated changes. One commit per logical change.
+- **Ask before pushing.** You are authorized to push to `main` (this is the live Flux source). Always ask the operator before running `git push` — say what you're about to push and why. Once the operator confirms, push.
+- **Never force-push to `main`.**
+
 ### Skill usage (always apply when applicable)
 
-- **caveman** — Use as often as possible. Default to terse, high-signal output that drops filler while keeping full technical accuracy.
 - **grill-me** — Use when asked to **diagnose** an issue, problem, or bug, to fully understand the scope of the request before acting.
 - **improve-codebase-architecture** — Use when asked to **review** the architecture or general shape of the repository, codebase, or project.
 - **grill-me** — Use when asked to **develop a new feature** or addition to the project, to nail down requirements first.
