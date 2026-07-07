@@ -1,0 +1,151 @@
+# Prometheus scrape + alert config for CloudNativePG.
+#
+# Metrics are already exposed by every CNPG instance pod (port 9187,
+# `cnpg_collector_*` and `cnpg_pg_*` series, queries from the operator-shipped
+# `cnpg-default-monitoring` ConfigMap) and the operator itself (port 8080,
+# controller-runtime `/metrics`). This file just wires Prometheus to scrape
+# them and adds alert rules.
+#
+# We deliberately do NOT set spec.monitoring.enablePodMonitor on the Cluster
+# CRs — that field is deprecated since 1.27 (cloudnative-pg#8075) and slated
+# for removal. Hand-managed PodMonitors are the forward path per the 1.30
+# monitoring docs and keep us in control of the scrape config.
+#
+# Prometheus selectors are match-everything (*SelectorNilUsesHelmValues: false
+# in kube-prometheus-stack values), so no release label is needed here —
+# same convention as infrastructure/cilium/cilium-monitoring.yaml.
+#
+# Metric names verified against a live scrape of the instance (port 9187) and
+# operator (port 8080) exporters on 2026-07-07.
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: cnpg-clusters
+  namespace: database
+  labels:
+    app.kubernetes.io/name: cloudnative-pg
+    app.kubernetes.io/component: metrics
+    app.kubernetes.io/part-of: database
+spec:
+  # cnpg.io/podRole=instance is set by the operator on every PG instance pod
+  # across all 5 clusters. One PodMonitor covers the whole data plane.
+  selector:
+    matchLabels:
+      cnpg.io/podRole: instance
+  podMetricsEndpoints:
+    - port: metrics              # named port 9187 (postgres_exporter)
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+      honorLabels: true          # keep the collector's own cluster/role labels
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_pod_label_cnpg_io_cluster]
+          targetLabel: cluster
+        - sourceLabels: [__meta_kubernetes_pod_label_cnpg_io_instanceRole]
+          targetLabel: role
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: instance
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: cnpg-operator
+  namespace: cnpg-system
+  labels:
+    app.kubernetes.io/name: cloudnative-pg
+    app.kubernetes.io/component: metrics
+    app.kubernetes.io/part-of: database
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: cloudnative-pg
+  podMetricsEndpoints:
+    - port: metrics              # named port 8080 (controller runtime metrics)
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: cnpg-alerts
+  namespace: database
+  labels:
+    app.kubernetes.io/name: cloudnative-pg
+    app.kubernetes.io/component: alerts
+    app.kubernetes.io/part-of: database
+spec:
+  groups:
+    - name: cnpg-clusters
+      interval: 30s
+      rules:
+        # cnpg_collector_up is exported by every instance pod and carries the
+        # cluster label. If it's 0 the collector itself can't talk to its own
+        # postgres — the strongest single-signal "this instance is broken".
+        - alert: CNPGCollectorDown
+          expr: cnpg_collector_up == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "CNPG collector down on {{ $labels.cluster }}"
+            description: "The metrics collector for instance {{ $labels.instance }} of cluster {{ $labels.cluster }} has been reporting down for 5 minutes. The postgres process may be unhealthy or unreachable."
+
+        # Replication lag in seconds, exposed by primaries. A stuck replica
+        # is the silent failure mode for the 3-instance HA clusters
+        # (authentik, vaultwarden, seerr): failover would lose data.
+        # Only meaningful on primaries (replica_mode == 0).
+        - alert: CNPGReplicationLagHigh
+          expr: |
+            cnpg_pg_replication_lag{cluster=~".+"} > 30
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Replication lag high on {{ $labels.cluster }}"
+            description: "Primary of {{ $labels.cluster }} reports replicas lagging by {{ $value | humanizeDuration }} for over 10 minutes. Failover safety is degraded."
+
+        # WAL archiving health. We use the barman-cloud plugin for backups, so
+        # the barman plugin metric is the source of truth (the legacy
+        # cnpg_collector last_available_backup stays 0 in plugin mode). The
+        # first_recoverability_point is when we first became able to do PITR;
+        # if it stops advancing, new WALs aren't reaching Wasabi.
+        - alert: CNPGBackupStale
+          expr: |
+            time() - barman_cloud_cloudnative_pg_io_first_recoverability_point > 129600
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "No recent backup for {{ $labels.cluster }}"
+            description: "First point of recoverability for {{ $labels.cluster }} is more than 36 hours old. Daily scheduled backups may be failing (check barman-cloud plugin / Wasabi credentials)."
+
+        # PG's own archiver (pg_stat_archiver) — WAL segments not being
+        # archived at the postgres level. failed_count is a cumulative
+        # counter; alert on a fresh burst of failures instead of the total.
+        - alert: CNPGWALArchivingFailing
+          expr: |
+            increase(cnpg_pg_stat_archiver_failed_count[10m]) > 5
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "WAL archiving failures on {{ $labels.cluster }}"
+            description: "Postgres reported {{ $value }} WAL archiving failures in the last 10 minutes on {{ $labels.instance }}."
+
+    - name: cnpg-operator
+      interval: 30s
+      rules:
+        # The single operator pod is the control plane for all 5 clusters.
+        # If it's down, reconcile/webhooks stop but running PG pods keep
+        # serving — so this is warning, not critical. The job label matches
+        # the cnpg-operator PodMonitor above.
+        - alert: CNPGOperatorDown
+          expr: |
+            up{job="cnpg-operator/cnpg-system/cnpg-operator/0",namespace="cnpg-system"} == 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "CNPG operator is down"
+            description: "The CloudNativePG controller pod has been unreachable for 5 minutes. Running clusters continue to serve, but reconciliation and webhooks are unavailable."
