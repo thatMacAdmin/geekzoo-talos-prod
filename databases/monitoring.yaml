@@ -105,20 +105,21 @@ spec:
             summary: "Replication lag high on {{ $labels.cluster }}"
             description: "Primary of {{ $labels.cluster }} reports replicas lagging by {{ $value | humanizeDuration }} for over 10 minutes. Failover safety is degraded."
 
-        # WAL archiving health. We use the barman-cloud plugin for backups, so
-        # the barman plugin metric is the source of truth (the legacy
-        # cnpg_collector last_available_backup stays 0 in plugin mode). The
-        # first_recoverability_point is when we first became able to do PITR;
-        # if it stops advancing, new WALs aren't reaching Wasabi.
+        # Backup freshness. We use the barman-cloud plugin for backups, so the
+        # barman plugin metric is the source of truth (the legacy
+        # cnpg_collector last_available_backup stays 0 in plugin mode).
+        # last_available_backup_timestamp is the epoch of the most recent
+        # successful backup; ScheduledBackups run daily (0 0 0 * * *), so 36h
+        # = one full missed scheduled run plus grace before paging.
         - alert: CNPGBackupStale
           expr: |
-            time() - barman_cloud_cloudnative_pg_io_first_recoverability_point > 129600
+            time() - barman_cloud_cloudnative_pg_io_last_available_backup_timestamp > 129600
           for: 15m
           labels:
             severity: warning
           annotations:
             summary: "No recent backup for {{ $labels.cluster }}"
-            description: "First point of recoverability for {{ $labels.cluster }} is more than 36 hours old. Daily scheduled backups may be failing (check barman-cloud plugin / Wasabi credentials)."
+            description: "Last available backup for {{ $labels.cluster }} is more than 36 hours old. Daily scheduled backups may be failing (check barman-cloud plugin / Wasabi credentials)."
 
         # PG's own archiver (pg_stat_archiver) — WAL segments not being
         # archived at the postgres level. failed_count is a cumulative
