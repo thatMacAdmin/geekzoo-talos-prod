@@ -3,3 +3,4 @@ kind: Kustomization
 resources:
   - events-dashboard.yaml
   - alloy-dashboard.yaml
+  - cnpg-cluster-dashboard.yaml
