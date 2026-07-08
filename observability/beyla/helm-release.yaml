@@ -9,8 +9,13 @@ spec:
   chart:
     spec:
       chart: beyla
-      # Semver range: minors/patches auto-upgrade, majors require a manual bump
-      version: "1.x"
+      # Pinned: the helm-controller's client rate limiter exhausts the 5m upgrade
+      # timeout when auto-bumping (rate: Wait would exceed context deadline),
+      # stalling the HelmRelease after retries. 1.16.8 is the current published
+      # latest and what's deployed; pinning makes reconcile a no-op. Re-enable
+      # auto-upgrade by returning to "1.x" once the controller rate-limit issue
+      # is resolved or the upgrade window is widened.
+      version: "1.16.8"
       sourceRef:
         kind: HelmRepository
         name: grafana
