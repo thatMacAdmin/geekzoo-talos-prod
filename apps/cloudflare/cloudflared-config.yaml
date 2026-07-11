@@ -263,4 +263,16 @@ ingress:
       noTLSVerify: true
       originServerName: autodiscover.edtheadmin.io
       httpHostHeader: autodiscover.edtheadmin.io
+  - hostname: edtheadmin.io
+    service: https://traefik.traefik.svc.cluster.local:443
+    originRequest:
+      noTLSVerify: true
+      originServerName: edtheadmin.io
+      httpHostHeader: edtheadmin.io
+  - hostname: www.edtheadmin.io
+    service: https://traefik.traefik.svc.cluster.local:443
+    originRequest:
+      noTLSVerify: true
+      originServerName: www.edtheadmin.io
+      httpHostHeader: www.edtheadmin.io
   - service: http_status:404
