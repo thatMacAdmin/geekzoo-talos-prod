@@ -1,0 +1,16 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: edtheadmin-ingressroute
+  namespace: apps
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`edtheadmin.io`) || Host(`www.edtheadmin.io`)
+      kind: Rule
+      services:
+        - name: edtheadmin-svc
+          port: 80
+  tls:
+    secretName: edtheadmin-tls-certificate

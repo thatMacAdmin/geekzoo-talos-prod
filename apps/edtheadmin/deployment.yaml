@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: edtheadmin
+  namespace: apps
+  labels:
+    app: edtheadmin
+    app.kubernetes.io/name: edtheadmin
+    app.kubernetes.io/instance: edtheadmin
+    app.kubernetes.io/component: web
+    app.kubernetes.io/part-of: apps
+    app.kubernetes.io/managed-by: kustomize
+spec:
+  selector:
+    matchLabels:
+      app: edtheadmin
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: edtheadmin
+        app.kubernetes.io/name: edtheadmin
+        app.kubernetes.io/instance: edtheadmin
+        app.kubernetes.io/component: web
+        app.kubernetes.io/part-of: apps
+        app.kubernetes.io/managed-by: kustomize
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 101
+        runAsGroup: 101
+        fsGroup: 101
+        seccompProfile:
+          type: RuntimeDefault
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        - name: cache
+          emptyDir: {}
+      containers:
+        - name: nginx
+          image: ghcr.io/thatmacadmin/edtheadmin-web:0.1.0
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          ports:
+            - name: http
+              containerPort: 8080
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: cache
+              mountPath: /var/cache/nginx
+          resources:
+            requests:
+              memory: "16Mi"
+              cpu: "10m"
+            limits:
+              memory: "64Mi"
+              cpu: "100m"
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 30
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 3
+            periodSeconds: 10
+            timeoutSeconds: 5
