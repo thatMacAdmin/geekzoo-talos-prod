@@ -391,6 +391,23 @@ Headers diagnosis: MAIL FROM alignment → recheck `bounce` records; DKIM alignm
 - [ ] DMARC → p=quarantine
 - [ ] DMARC → p=reject
 
+## Second domain: edtheadmin.io (added 2026-07-11)
+
+Scope: "minimal + autodiscovery" tier — full send/receive, native-client autodiscovery,
+shared webmail (`webmail.macbytes.io` serves both domains). No dedicated Bulwark, no
+`dav.edtheadmin.io` (future). frps/frpc/SES-creds/listeners unchanged (port-based, account-wide).
+
+- [x] Cloudflare token fix — cert-manager DNS-01 token widened to all zones (was macbytes.io-only; would have broken the cert re-issue)
+- [x] SES identity `edtheadmin.io` (us-east-2) + MAIL FROM `bounce.edtheadmin.io` — VerifiedForSending, DKIM SUCCESS, MAIL FROM SUCCESS
+- [x] DNS (via cert-manager CF token, all records): apex MX → mail.edtheadmin.io, A mail → 35.196.228.211 (grey), imap/smtp CNAMEs (grey), 3× DKIM CNAMEs, SPF apex+bounce, `_dmarc` (rua → dmarc@macbytes.io), bounce MX → feedback-smtp.us-east-2.**amazonses.com** (NOT amazonaws.com), SRV set, autoconfig/autodiscover proxied CNAMEs → tunnel
+- [x] DMARC external-report authorization: `edtheadmin.io._report._dmarc.macbytes.io TXT "v=DMARC1"` on the macbytes.io zone (required for cross-domain rua)
+- [x] Repo (commit 9065a92): +5 cert SANs, Domain upsert in configmap-plan, autodiscovery IngressRoute matchers, 2 cloudflared ingress entries
+- [x] Cert re-issued with 13 SANs; Stalwart restarted to load it; `mail.edtheadmin.io:993` presents edtheadmin SANs
+- [x] Stalwart Domain applied live via `stalwart-cli apply` (domain id `c`) — auth via `edward` account; NOTE: `/k3s-geekzoo/mail/stalwart-recovery-admin` SSM cred is STALE (401)
+- [x] Autoconfig verified end-to-end: `https://autoconfig.edtheadmin.io/mail/config-v1.1.xml` → 200 (advertises mail.macbytes.io as host — expected, defaultHostname unchanged)
+- [x] First mailbox created: ed@edtheadmin.io (2026-07-11)
+- [x] Inbound/outbound round-trip validated by operator (2026-07-11)
+
 ## Human-action summary
 1. ✅ SES (us-east-2): identity + Easy DKIM + MAIL FROM + production-access request + SMTP creds — done via CLI.
 2. ✅ DNS SES-side records (DKIM, bounce, merged SPF) — done via Cloudflare API.
