@@ -41,6 +41,7 @@ metadata:
 data:
   stalwart-plan.ndjson: |
     {"@type":"upsert","object":"Domain","matchOn":["name"],"value":{"d1":{"name":"macbytes.io"}}}
+    {"@type":"upsert","object":"Domain","matchOn":["name"],"value":{"d2":{"name":"edtheadmin.io"}}}
     {"@type":"create","object":"Certificate","value":{"mail-cert":{"certificate":{"@type":"File","filePath":"/etc/stalwart/tls/tls.crt"},"privateKey":{"@type":"File","filePath":"/etc/stalwart/tls/tls.key"}}}}
     {"@type":"update","object":"SystemSettings","value":{"defaultDomainId":"b","defaultCertificateId":"ixupxm7sabaa","defaultHostname":"mail.macbytes.io"}}
     {"@type":"upsert","object":"NetworkListener","matchOn":["name"],"value":{"mx":{"name":"mx","protocol":"smtp","bind":{"[::]:2525":true},"useTls":true,"tlsImplicit":false,"overrideProxyTrustedNetworks":{"10.244.0.0/16":true}}}}

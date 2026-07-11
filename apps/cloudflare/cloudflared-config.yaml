@@ -251,4 +251,16 @@ ingress:
       noTLSVerify: true
       originServerName: inboxzero.macbytes.io
       httpHostHeader: inboxzero.macbytes.io
+  - hostname: autoconfig.edtheadmin.io
+    service: https://traefik.traefik.svc.cluster.local:443
+    originRequest:
+      noTLSVerify: true
+      originServerName: autoconfig.edtheadmin.io
+      httpHostHeader: autoconfig.edtheadmin.io
+  - hostname: autodiscover.edtheadmin.io
+    service: https://traefik.traefik.svc.cluster.local:443
+    originRequest:
+      noTLSVerify: true
+      originServerName: autodiscover.edtheadmin.io
+      httpHostHeader: autodiscover.edtheadmin.io
   - service: http_status:404

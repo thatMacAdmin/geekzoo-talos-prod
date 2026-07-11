@@ -17,3 +17,8 @@ spec:
     - autodiscover.macbytes.io # Outlook autodiscover
     - stalwart.macbytes.io    # webadmin (Cloudflare Access-gated, behind Traefik/tunnel)
     - webmail.macbytes.io     # Bulwark webmail (behind Traefik/tunnel)
+    - mail.edtheadmin.io         # MX + raw IMAP/SMTP host (client-validated over frp)
+    - imap.edtheadmin.io         # native client name-guessing (client-validated)
+    - smtp.edtheadmin.io         # native client name-guessing (client-validated)
+    - autoconfig.edtheadmin.io   # Thunderbird autoconfig (proxied)
+    - autodiscover.edtheadmin.io # Outlook autodiscover (proxied)
