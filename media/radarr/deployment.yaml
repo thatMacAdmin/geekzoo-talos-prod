@@ -42,7 +42,7 @@ spec:
             claimName: pvc-media-nfs
       containers:
         - name: radarr-server
-          image: linuxserver/radarr:6.2.1 # {"$imagepolicy": "flux-system:radarr-image-policy"}
+          image: linuxserver/radarr:6.3.0 # {"$imagepolicy": "flux-system:radarr-image-policy"}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 7878
