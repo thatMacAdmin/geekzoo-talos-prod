@@ -35,7 +35,7 @@ spec:
         runAsGroup: 0
       containers:
         - name: adguard
-          image: adguard/adguardhome:v0.107.77 # {"$imagepolicy": "flux-system:adguardhome-image-policy"}
+          image: adguard/adguardhome:v0.107.78 # {"$imagepolicy": "flux-system:adguardhome-image-policy"}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8053
