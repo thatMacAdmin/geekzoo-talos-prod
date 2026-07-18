@@ -1,0 +1,12 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: bifrost-certificate
+  namespace: apps
+spec:
+  secretName: bifrost-tls-certificate
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+    - bifrost.macbytes.io
