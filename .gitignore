@@ -2,6 +2,7 @@
 omni/*.yaml
 omni/**/*.yaml
 !omni/patches/*.yaml
+!omni/templates/*.yaml
 *.kubeconfig
 *kubeconfig.yaml
 *talosconfig*
