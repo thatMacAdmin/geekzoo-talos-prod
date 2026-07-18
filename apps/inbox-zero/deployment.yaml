@@ -45,18 +45,21 @@ spec:
               value: "https://inboxzero.macbytes.io"
             - name: INTERNAL_API_URL
               value: "http://inbox-zero-svc.apps.svc.cluster.local:3000"
-            # LLM calls go through the Bifrost gateway → z.ai GLM-4.7-Flash
-            # ($0/token). Bifrost strips the "zai/" prefix and routes upstream.
+            # LLM calls go through the Bifrost gateway → Mac Studio LM Studio
+            # (192.168.2.4:1234). Bifrost is token-authed against LM Studio and
+            # routes by stripping the "lmstudio-local/" prefix from the model.
+            # We were on z.ai GLM-4.7-FlashX but the z.ai coding plan we have is
+            # ToS-restricted to coding tools; the Mac Studio is free + LAN-local.
             # v2.30.0 schema: DEFAULT_LLM_PROVIDER/MODEL (DEFAULT_LLMS is
             # newer-than-release; switch when we bump past 2.30).
             - name: DEFAULT_LLM_PROVIDER
               value: "openai-compatible"
             - name: DEFAULT_LLM_MODEL
-              value: "zai/glm-4.7-flash"
+              value: "lmstudio-local/qwen3.6-35b-a3b"
             - name: ECONOMY_LLM_PROVIDER
               value: "openai-compatible"
             - name: ECONOMY_LLM_MODEL
-              value: "zai/glm-4.7-flash"
+              value: "lmstudio-local/qwen3.6-35b-a3b"
             # Required by schema; Gmail push (watch) topic — created alongside
             # the OAuth client; polling works without it.
             - name: GOOGLE_PUBSUB_TOPIC_NAME
@@ -64,7 +67,7 @@ spec:
             - name: OPENAI_COMPATIBLE_BASE_URL
               value: "http://bifrost-svc.apps.svc.cluster.local:8080/v1"
             - name: OPENAI_COMPATIBLE_MODEL
-              value: "zai/glm-4.7-flash"
+              value: "lmstudio-local/qwen3.6-35b-a3b"
             # Bifrost is keyless in-cluster; the app still wants a key string.
             - name: LLM_API_KEY
               value: "bifrost-internal"
