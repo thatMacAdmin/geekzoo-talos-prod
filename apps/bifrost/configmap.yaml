@@ -9,18 +9,20 @@ data:
   # Bifrost gateway config. Source of truth lives here in git; the pod runs it
   # read-only (seeded into an emptyDir at /app/data on boot — see deployment).
   #
-  # Two providers:
-  #   lmstudio-local — Mac Studio LM Studio, keyless OpenAI-compatible custom
-  #     provider. Clients use model "lmstudio-local/<model>". Bifrost appends
-  #     the OpenAI default path /v1/chat/completions to base_url.
-  #   zai — z.ai open-platform API (general pay-per-token endpoint, NOT the
-  #     coding-plan endpoint, whose ToS is restricted to coding tools).
-  #     GLM-4.7-Flash / GLM-4.5-Flash are $0/token. z.ai's chat path is
-  #     /api/paas/v4/chat/completions, hence request_path_overrides.
-  #     Key comes from the bifrost-secrets ESO secret via env.
+  # Single provider:
+  #   lmstudio-local — Mac Studio LM Studio (192.168.2.4:1234), OpenAI-compatible
+  #     custom provider. Clients pass model "lmstudio-local/<model>"; Bifrost
+  #     appends /v1/chat/completions to base_url. LM Studio has token auth
+  #     enabled; the token is interpolated from env.LMSTUDIO_API_KEY (sourced
+  #     from the bifrost-secrets ESO secret).
+  #
+  # The z.ai provider was removed — the z.ai coding plan we were using is
+  # ToS-restricted to coding tools, and the pay-per-token endpoint offered no
+  # upside over the local Mac Studio. To restore, re-add the provider block
+  # and the ZAI_API_KEY ExternalSecret entry.
   #
   # Bifrost has no static cross-provider fallback; callers wanting failover
-  # pass a per-request "fallbacks": ["lmstudio-local/<model>"] array.
+  # pass a per-request "fallbacks": ["<provider>/<model>"] array.
   config.json: |
     {
       "providers": {
@@ -28,7 +30,7 @@ data:
           "keys": [
             {
               "name": "lmstudio-key",
-              "value": "dummy",
+              "value": "env.LMSTUDIO_API_KEY",
               "models": ["*"],
               "weight": 1.0
             }
@@ -39,31 +41,6 @@ data:
           },
           "custom_provider_config": {
             "base_provider_type": "openai",
-            "allowed_requests": {
-              "chat_completion": true,
-              "chat_completion_stream": true
-            }
-          }
-        },
-        "zai": {
-          "keys": [
-            {
-              "name": "zai-key",
-              "value": "env.ZAI_API_KEY",
-              "models": ["*"],
-              "weight": 1.0
-            }
-          ],
-          "network_config": {
-            "base_url": "https://api.z.ai",
-            "default_request_timeout_in_seconds": 120
-          },
-          "custom_provider_config": {
-            "base_provider_type": "openai",
-            "request_path_overrides": {
-              "chat_completion": "/api/paas/v4/chat/completions",
-              "chat_completion_stream": "/api/paas/v4/chat/completions"
-            },
             "allowed_requests": {
               "chat_completion": true,
               "chat_completion_stream": true
