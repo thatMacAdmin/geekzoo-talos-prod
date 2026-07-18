@@ -48,6 +48,8 @@ spec:
             # LLM calls go through the Bifrost gateway → Mac Studio LM Studio
             # (192.168.2.4:1234). Bifrost is token-authed against LM Studio and
             # routes by stripping the "lmstudio-local/" prefix from the model.
+            # The Qwen models LM Studio serves are namespaced under "qwen/", so
+            # the full client-facing model id is "lmstudio-local/qwen/<model>".
             # We were on z.ai GLM-4.7-FlashX but the z.ai coding plan we have is
             # ToS-restricted to coding tools; the Mac Studio is free + LAN-local.
             # v2.30.0 schema: DEFAULT_LLM_PROVIDER/MODEL (DEFAULT_LLMS is
@@ -55,11 +57,11 @@ spec:
             - name: DEFAULT_LLM_PROVIDER
               value: "openai-compatible"
             - name: DEFAULT_LLM_MODEL
-              value: "lmstudio-local/qwen3.6-35b-a3b"
+              value: "lmstudio-local/qwen/qwen3.6-35b-a3b"
             - name: ECONOMY_LLM_PROVIDER
               value: "openai-compatible"
             - name: ECONOMY_LLM_MODEL
-              value: "lmstudio-local/qwen3.6-35b-a3b"
+              value: "lmstudio-local/qwen/qwen3.6-35b-a3b"
             # Required by schema; Gmail push (watch) topic — created alongside
             # the OAuth client; polling works without it.
             - name: GOOGLE_PUBSUB_TOPIC_NAME
@@ -67,7 +69,7 @@ spec:
             - name: OPENAI_COMPATIBLE_BASE_URL
               value: "http://bifrost-svc.apps.svc.cluster.local:8080/v1"
             - name: OPENAI_COMPATIBLE_MODEL
-              value: "lmstudio-local/qwen3.6-35b-a3b"
+              value: "lmstudio-local/qwen/qwen3.6-35b-a3b"
             # Bifrost is keyless in-cluster; the app still wants a key string.
             - name: LLM_API_KEY
               value: "bifrost-internal"
