@@ -13,13 +13,11 @@
 
 image:
   repository: docker.io/maximhq/bifrost
-  tag: "v1.6.2" # {"$imagepolicy": "flux-system:bifrost-image-policy"}
+  tag: "maximhq/bifrost:v1.6.4" # {"$imagepolicy": "flux-system:bifrost-image-policy"}
   pullPolicy: IfNotPresent
-
 replicaCount: 1
 strategy:
   type: Recreate
-
 # Resource profile: prior SQLite deployment ran 64Mi/50m → 256Mi/1000m. With
 # Postgres backend, 4 providers, and initialPoolSize 5000, headroom is needed
 # for connection buffers + request batching. Chart default is 512Mi/500m req.
@@ -30,7 +28,6 @@ resources:
   limits:
     cpu: 1000m
     memory: 1Gi
-
 # PodSecurity: match the cluster's restricted posture (AGENTS.md §3.3).
 # Bifrost image USER is non-numeric (`appuser`); kubelet needs a numeric
 # runAsUser to verify runAsNonRoot, hence UID 1000 (chart default).
@@ -49,7 +46,6 @@ securityContext:
   runAsUser: 1000
   capabilities:
     drop: [ALL]
-
 # Writable emptyDirs so readOnlyRootFilesystem: true works. With storage.mode
 # postgres there is no PVC; /app/data holds ephemeral runtime files only
 # (real state lives in the CNPG cluster).
@@ -63,7 +59,6 @@ volumeMounts:
     mountPath: /tmp
   - name: app-data
     mountPath: /app/data
-
 # Single replica; cluster mode (bifrost.cluster.enabled) is Enterprise-only.
 # RBAC/pod-discovery is only needed for cluster mode, so disabled here.
 serviceAccount:
@@ -71,19 +66,16 @@ serviceAccount:
 rbac:
   podDiscovery:
     enabled: false
-
 # Chart-managed ingress disabled — we keep the Traefik IngressRoute + cert-manager
 # Certificate as standalone manifests in this kustomization (§3.4).
 ingress:
   enabled: false
-
 # Storage: postgres only for both config + logs stores. No SQLite → no PVC →
 # the chart deploys a Deployment (not a StatefulSet).
 storage:
   mode: postgres
   persistence:
     enabled: false
-
 # External CNPG cluster (databases/bifrost-pg/, 3 instances, ceph-block).
 # In-cluster traffic — no TLS needed (ssl_mode: disable).
 postgresql:
@@ -97,14 +89,12 @@ postgresql:
     sslMode: disable
     existingSecret: bifrost-db-config
     passwordKey: password
-
 bifrost:
   appDir: /app/data
   port: 8080
   host: 0.0.0.0
   logLevel: info
   logStyle: json
-
   # Encryption key for VK values + provider keys at rest. Chart injects
   # BIFROST_ENCRYPTION_KEY env var from this Secret and writes
   # `encryption_key: "env.BIFROST_ENCRYPTION_KEY"` to the rendered config.json.
@@ -113,7 +103,6 @@ bifrost:
   encryptionKeySecret:
     name: bifrost-encryption-key
     key: encryption-key
-
   # Dashboard auth — strong admin password (SSO via Authentik is not supported
   # in OSS; see migration plan). Password policy enforced on v1.6.0+.
   authConfig:
@@ -121,14 +110,13 @@ bifrost:
     existingSecret: bifrost-admin-credentials
     usernameKey: username
     passwordKey: password
-
   client:
     # Security hardening per https://docs.getbifrost.ai/deployment-guides/how-to/security-best-practices.
     # The chart already defaults enforceAuthOnInference: true; we make it explicit.
     enforceAuthOnInference: true
-    allowDirectKeys: false           # callers can't bypass the key pool
-    disableContentLogging: true      # strip prompt/response content from logs
-    enableLogging: true              # keep metadata-level logging
+    allowDirectKeys: false # callers can't bypass the key pool
+    disableContentLogging: true # strip prompt/response content from logs
+    enableLogging: true # keep metadata-level logging
     logRetentionDays: 365
     allowedOrigins:
       - "https://bifrost.macbytes.io" # no wildcard in production
@@ -136,7 +124,6 @@ bifrost:
     initialPoolSize: 5000
     dropExcessRequests: false
     maxRequestBodySizeMb: 100
-
   # All four providers codified from the pre-migration live state. Provider
   # names match the dashboard exactly so model IDs (e.g.
   # "Claude Subscription/claude-sonnet-5") are unchanged for callers.
@@ -158,7 +145,6 @@ bifrost:
         allowed_requests:
           chat_completion: true
           chat_completion_stream: true
-
     # Mac Studio anthropic-protocol proxy @ 192.168.2.4:3456 — exposes Claude
     # Subscription models. Auth is a single static token ("x") enforced by the proxy.
     Claude Subscription:
@@ -182,13 +168,12 @@ bifrost:
           chat_completion_stream: true
           list_models: true
           count_tokens: true
-
     # Mac Studio openai-protocol proxy @ 192.168.2.4:8000 — exposes OpenAI
     # Subscription models. Proxy is keyless on the LAN.
     OpenAI Subscription:
       keys:
         - name: openai-subscription-key
-          value: "keyless"  # proxy ignores Authorization; schema requires a key entry
+          value: "keyless" # proxy ignores Authorization; schema requires a key entry
           models: ["*"]
           weight: 1.0
       network_config:
@@ -206,7 +191,6 @@ bifrost:
           chat_completion_stream: true
           list_models: true
           count_tokens: true
-
     # z.ai Coding Plan @ https://api.z.ai/api/anthropic (anthropic protocol).
     z.ai Coding Plan:
       keys:
@@ -228,7 +212,6 @@ bifrost:
           chat_completion_stream: true
           list_models: true
           count_tokens: true
-
 # Bulk-load all provider API keys (LMSTUDIO_API_KEY, CLAUDE_SUBSCRIPTION_API_KEY,
 # ZAI_API_KEY) as env vars. Referenced above via env.<NAME>.
 envFrom:
