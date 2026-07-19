@@ -10,7 +10,7 @@ spec:
     - match: Host(`bifrost.macbytes.io`)
       kind: Rule
       services:
-        - name: bifrost-svc
+        - name: bifrost
           port: 8080
   tls:
     secretName: bifrost-tls-certificate
