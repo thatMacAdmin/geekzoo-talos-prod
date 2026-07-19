@@ -1,0 +1,236 @@
+# Bifrost Helm values — rendered into a ConfigMap (apps/bifrost/kustomization.yaml)
+# and consumed by the HelmRelease via valuesFrom. The chart then writes the
+# canonical /app/data/config.json from these values on every boot.
+#
+# Source of truth for provider topology: live /api/providers capture from the
+# pre-migration dashboard-only instance (2026-07-19). All four providers are
+# codified here so future pod restarts can never silently drop them (the prior
+# SQLite/emptyDir deployment lost 3 of 4 providers on every restart).
+#
+# Image is pinned to v1.6.2 with the imagepolicy marker — Flux image automation
+# bumps the tag in this file when new versions are released (chart appVersion is
+# 1.5.x but the chart templates are forward-compatible with 1.6.x images).
+
+image:
+  repository: docker.io/maximhq/bifrost
+  tag: "v1.6.2" # {"$imagepolicy": "flux-system:bifrost-image-policy"}
+  pullPolicy: IfNotPresent
+
+replicaCount: 1
+strategy:
+  type: Recreate
+
+# Resource profile: prior SQLite deployment ran 64Mi/50m → 256Mi/1000m. With
+# Postgres backend, 4 providers, and initialPoolSize 5000, headroom is needed
+# for connection buffers + request batching. Chart default is 512Mi/500m req.
+resources:
+  requests:
+    cpu: 250m
+    memory: 384Mi
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+
+# PodSecurity: match the cluster's restricted posture (AGENTS.md §3.3).
+# Bifrost image USER is non-numeric (`appuser`); kubelet needs a numeric
+# runAsUser to verify runAsNonRoot, hence UID 1000 (chart default).
+# readOnlyRootFilesystem works because /tmp and /app/data are mounted below.
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+  seccompProfile:
+    type: RuntimeDefault
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 1000
+  capabilities:
+    drop: [ALL]
+
+# Writable emptyDirs so readOnlyRootFilesystem: true works. With storage.mode
+# postgres there is no PVC; /app/data holds ephemeral runtime files only
+# (real state lives in the CNPG cluster).
+volumes:
+  - name: tmp
+    emptyDir: {}
+  - name: app-data
+    emptyDir: {}
+volumeMounts:
+  - name: tmp
+    mountPath: /tmp
+  - name: app-data
+    mountPath: /app/data
+
+# Single replica; cluster mode (bifrost.cluster.enabled) is Enterprise-only.
+# RBAC/pod-discovery is only needed for cluster mode, so disabled here.
+serviceAccount:
+  create: false
+rbac:
+  podDiscovery:
+    enabled: false
+
+# Chart-managed ingress disabled — we keep the Traefik IngressRoute + cert-manager
+# Certificate as standalone manifests in this kustomization (§3.4).
+ingress:
+  enabled: false
+
+# Storage: postgres only for both config + logs stores. No SQLite → no PVC →
+# the chart deploys a Deployment (not a StatefulSet).
+storage:
+  mode: postgres
+  persistence:
+    enabled: false
+
+# External CNPG cluster (databases/bifrost-pg/, 3 instances, ceph-block).
+# In-cluster traffic — no TLS needed (ssl_mode: disable).
+postgresql:
+  enabled: false
+  external:
+    enabled: true
+    host: bifrost-pg-cluster-rw.database.svc.cluster.local
+    port: 5432
+    user: bifrost
+    database: bifrost
+    sslMode: disable
+    existingSecret: bifrost-db-config
+    passwordKey: password
+
+bifrost:
+  appDir: /app/data
+  port: 8080
+  host: 0.0.0.0
+  logLevel: info
+  logStyle: json
+
+  # Encryption key for VK values + provider keys at rest. Chart injects
+  # BIFROST_ENCRYPTION_KEY env var from this Secret and writes
+  # `encryption_key: "env.BIFROST_ENCRYPTION_KEY"` to the rendered config.json.
+  # IRREVERSIBLE — once data is encrypted under this key it cannot be recovered
+  # if the key is lost (see secrets/external-secrets/bifrost-encryption-key.yaml).
+  encryptionKeySecret:
+    name: bifrost-encryption-key
+    key: encryption-key
+
+  # Dashboard auth — strong admin password (SSO via Authentik is not supported
+  # in OSS; see migration plan). Password policy enforced on v1.6.0+.
+  authConfig:
+    isEnabled: true
+    existingSecret: bifrost-admin-credentials
+    usernameKey: username
+    passwordKey: password
+
+  client:
+    # Security hardening per https://docs.getbifrost.ai/deployment-guides/how-to/security-best-practices.
+    # The chart already defaults enforceAuthOnInference: true; we make it explicit.
+    enforceAuthOnInference: true
+    allowDirectKeys: false           # callers can't bypass the key pool
+    disableContentLogging: true      # strip prompt/response content from logs
+    enableLogging: true              # keep metadata-level logging
+    logRetentionDays: 365
+    allowedOrigins:
+      - "https://bifrost.macbytes.io" # no wildcard in production
+    # Preserve the prior runtime tuning: 5000 pre-allocated workers per queue.
+    initialPoolSize: 5000
+    dropExcessRequests: false
+    maxRequestBodySizeMb: 100
+
+  # All four providers codified from the pre-migration live state. Provider
+  # names match the dashboard exactly so model IDs (e.g.
+  # "Claude Subscription/claude-sonnet-5") are unchanged for callers.
+  providers:
+    # Mac Studio LM Studio @ 192.168.2.4:1234 — LAN-local OpenAI-compatible gateway.
+    lmstudio-local:
+      keys:
+        - name: lmstudio-key
+          value: "env.LMSTUDIO_API_KEY"
+          models: ["*"]
+          weight: 1.0
+      network_config:
+        base_url: "http://192.168.2.4:1234"
+        default_request_timeout_in_seconds: 120
+        # Required since Bifrost v1.5.9+ blocks RFC1918 destinations by default (SSRF).
+        allow_private_network: true
+      custom_provider_config:
+        base_provider_type: openai
+        allowed_requests:
+          chat_completion: true
+          chat_completion_stream: true
+
+    # Mac Studio anthropic-protocol proxy @ 192.168.2.4:3456 — exposes Claude
+    # Subscription models. Auth is a single static token ("x") enforced by the proxy.
+    Claude Subscription:
+      keys:
+        - name: claude-subscription-key
+          value: "env.CLAUDE_SUBSCRIPTION_API_KEY"
+          models: ["*"]
+          weight: 1.0
+      network_config:
+        base_url: "http://192.168.2.4:3456"
+        default_request_timeout_in_seconds: 300
+        max_retries: 0
+        allow_private_network: true
+      concurrency_and_buffer_size:
+        concurrency: 1000
+        buffer_size: 5000
+      custom_provider_config:
+        base_provider_type: anthropic
+        allowed_requests:
+          chat_completion: true
+          chat_completion_stream: true
+          list_models: true
+          count_tokens: true
+
+    # Mac Studio openai-protocol proxy @ 192.168.2.4:8000 — exposes OpenAI
+    # Subscription models. Proxy is keyless on the LAN.
+    OpenAI Subscription:
+      keys:
+        - name: openai-subscription-key
+          value: "keyless"  # proxy ignores Authorization; schema requires a key entry
+          models: ["*"]
+          weight: 1.0
+      network_config:
+        base_url: "http://192.168.2.4:8000"
+        default_request_timeout_in_seconds: 300
+        max_retries: 0
+        allow_private_network: true
+      concurrency_and_buffer_size:
+        concurrency: 1000
+        buffer_size: 5000
+      custom_provider_config:
+        base_provider_type: openai
+        allowed_requests:
+          chat_completion: true
+          chat_completion_stream: true
+          list_models: true
+          count_tokens: true
+
+    # z.ai Coding Plan @ https://api.z.ai/api/anthropic (anthropic protocol).
+    z.ai Coding Plan:
+      keys:
+        - name: zai-key
+          value: "env.ZAI_API_KEY"
+          models: ["*"]
+          weight: 1.0
+      network_config:
+        base_url: "https://api.z.ai/api/anthropic"
+        default_request_timeout_in_seconds: 300
+        max_retries: 0
+      concurrency_and_buffer_size:
+        concurrency: 1000
+        buffer_size: 5000
+      custom_provider_config:
+        base_provider_type: anthropic
+        allowed_requests:
+          chat_completion: true
+          chat_completion_stream: true
+          list_models: true
+          count_tokens: true
+
+# Bulk-load all provider API keys (LMSTUDIO_API_KEY, CLAUDE_SUBSCRIPTION_API_KEY,
+# ZAI_API_KEY) as env vars. Referenced above via env.<NAME>.
+envFrom:
+  - secretRef:
+      name: bifrost-secrets

@@ -67,7 +67,7 @@ spec:
             - name: GOOGLE_PUBSUB_TOPIC_NAME
               value: "projects/macbytes-mail/topics/inbox-zero-gmail"
             - name: OPENAI_COMPATIBLE_BASE_URL
-              value: "http://bifrost-svc.apps.svc.cluster.local:8080/v1"
+              value: "http://bifrost.apps.svc.cluster.local:8080/v1"
             - name: OPENAI_COMPATIBLE_MODEL
               value: "lmstudio-local/qwen/qwen3.6-35b-a3b"
             # Bifrost is keyless in-cluster; the app still wants a key string.

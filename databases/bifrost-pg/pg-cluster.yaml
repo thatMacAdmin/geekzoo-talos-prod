@@ -1,0 +1,31 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: bifrost-pg-cluster
+  namespace: database
+spec:
+  imageName: ghcr.io/cloudnative-pg/postgresql:17.6-system-trixie
+  instances: 3
+  # Bifrost config + logs stores share this DB; footprint is small (providers,
+  # virtual keys, governance rows, request logs). Baseline matches the other
+  # app-pg clusters in this namespace.
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+  enableSuperuserAccess: true
+  plugins:
+    - name: barman-cloud.cloudnative-pg.io
+      isWALArchiver: true
+      parameters:
+        barmanObjectName: wasabi-object-store
+        serverName: bifrost-pg-cluster-geekzoo-prod
+  bootstrap:
+    initdb:
+      database: bifrost
+      owner: bifrost
+      secret:
+        name: pg-app-user-bifrost
+  storage:
+    storageClass: ceph-block
+    size: 10Gi

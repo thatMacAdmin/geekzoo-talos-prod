@@ -1,0 +1,12 @@
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: bifrost-image-policy
+  namespace: flux-system
+spec:
+  imageRepositoryRef:
+    name: bifrost
+  policy:
+    semver:
+      # Bifrost tags are v1.x.y — track the 1.x major line.
+      range: ">=1.0.0 <2.0.0"
