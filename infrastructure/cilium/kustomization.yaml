@@ -3,6 +3,8 @@ kind: Kustomization
 
 resources:
   - cilium.yaml
+  - lb-ip-pool.yaml
+  - l2-announcement-policy.yaml
   - cilium-monitoring.yaml
   - hubble-ui-certificate.yaml
   - hubble-ui-ingressroute.yaml

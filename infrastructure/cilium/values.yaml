@@ -1,0 +1,117 @@
+# Cilium runs kube-proxy-free on Talos and talks to the local KubePrism
+# endpoint. Keep this file as the source for the generated cilium.yaml.
+k8sServiceHost: localhost
+k8sServicePort: 7445
+kubeProxyReplacement: true
+
+debug:
+  verbose: ""
+policyCIDRMatchMode: []
+nodePort:
+  addresses: []
+
+ipv4:
+  enabled: true
+ipv6:
+  enabled: true
+
+ipam:
+  mode: kubernetes
+
+k8s:
+  requireIPv6PodCIDR: true
+
+cgroup:
+  autoMount:
+    enabled: false
+  hostRoot: /sys/fs/cgroup
+
+bpf:
+  distributedLRU:
+    enabled: true
+  masquerade: true
+bpfClockProbe: true
+
+bandwidthManager:
+  enabled: true
+  bbr: true
+
+l2announcements:
+  enabled: true
+
+k8sClientRateLimit:
+  qps: 100
+  burst: 400
+
+prometheus:
+  enabled: true
+
+operator:
+  replicas: 1
+  rollOutPods: true
+  prometheus:
+    enabled: true
+  resources:
+    limits:
+      cpu: 250m
+      memory: 256Mi
+    requests:
+      cpu: 50m
+      memory: 100Mi
+
+envoy:
+  prometheus:
+    enabled: true
+
+hubble:
+  enabled: true
+  tls:
+    enabled: false
+  metrics:
+    enabled:
+      - dns
+      - drop
+      - tcp
+      - flow
+      - port-distribution
+      - icmp
+      - httpV2
+  relay:
+    enabled: true
+    rollOutPods: true
+  ui:
+    enabled: true
+
+resources:
+  requests:
+    cpu: 300m
+    memory: 512Mi
+
+rollOutCiliumPods: true
+
+# Talos provides the required kernel modules; retain the reduced capability
+# sets from the currently deployed manifest.
+securityContext:
+  capabilities:
+    ciliumAgent:
+      - CHOWN
+      - KILL
+      - NET_ADMIN
+      - NET_RAW
+      - IPC_LOCK
+      - SYS_ADMIN
+      - SYS_RESOURCE
+      - DAC_OVERRIDE
+      - FOWNER
+      - SETGID
+      - SETUID
+    cleanCiliumState:
+      - NET_ADMIN
+      - SYS_ADMIN
+      - SYS_RESOURCE
+
+# This is a three-node converged control-plane/workload cluster. Restart only
+# one dataplane agent at a time so two-thirds of the nodes retain their agent.
+updateStrategy:
+  rollingUpdate:
+    maxUnavailable: 1
