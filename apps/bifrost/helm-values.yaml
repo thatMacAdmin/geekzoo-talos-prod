@@ -146,6 +146,7 @@ bifrost:
         allowed_requests:
           chat_completion: true
           chat_completion_stream: true
+          list_models: true
     # Mac Studio anthropic-protocol proxy @ 192.168.2.4:3456 — exposes Claude
     # Subscription models. Auth is a single static token ("x") enforced by the proxy.
     Claude Subscription:
