@@ -16,7 +16,6 @@ resources:
   - image-repository-unpackerr.yaml
   - image-repository-vaultwarden.yaml
   - image-repository-open-webui.yaml
-  - image-repository-bifrost.yaml
   - image-policy-gluetun.yaml
   - image-policy-adguardhome.yaml
   - image-policy-bazarr.yaml
@@ -31,7 +30,6 @@ resources:
   - image-policy-unpackerr.yaml
   - image-policy-vaultwarden.yaml
   - image-policy-open-webui.yaml
-  - image-policy-bifrost.yaml
   - image-update-automation.yaml
   - image-update-automation-apps.yaml
   - image-repository-bulwark.yaml

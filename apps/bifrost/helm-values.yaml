@@ -7,13 +7,14 @@
 # codified here so future pod restarts can never silently drop them (the prior
 # SQLite/emptyDir deployment lost 3 of 4 providers on every restart).
 #
-# Image is pinned to v1.6.2 with the imagepolicy marker — Flux image automation
-# bumps the tag in this file when new versions are released (chart appVersion is
-# 1.5.x but the chart templates are forward-compatible with 1.6.x images).
+# Image is pinned manually — Flux image-automation's $imagepolicy marker
+# substitutes the full image ref (repo:tag), which doesn't fit the chart's
+# split repository/tag schema. Bump the tag here by hand when upgrading,
+# consistent with the cloudflared / Stalwart pinning pattern (AGENTS.md §3.6).
 
 image:
   repository: docker.io/maximhq/bifrost
-  tag: "maximhq/bifrost:v1.6.4" # {"$imagepolicy": "flux-system:bifrost-image-policy"}
+  tag: "v1.6.4"
   pullPolicy: IfNotPresent
 replicaCount: 1
 strategy:
