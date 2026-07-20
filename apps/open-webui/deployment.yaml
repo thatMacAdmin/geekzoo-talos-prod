@@ -43,7 +43,25 @@ spec:
             - name: CORS_ALLOW_ORIGIN
               value: "https://chat.macbytes.io"
             - name: ENABLE_OLLAMA_API
-              value: "true"
+              value: "false"
+            # Bifrost is the LLM gateway (apps/bifrost). Open WebUI talks to it
+            # in-cluster over the chart-managed Service (no Traefik/cloudflared
+            # hop, no bandwidth cap, no TLS to manage). Base path must include
+            # /v1 so Open WebUI appends /models, /chat/completions, etc.
+            - name: OPENAI_API_BASE_URL
+              value: "http://bifrost.apps.svc.cluster.local:8080/v1"
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: bifrost-open-webui-vk
+                  key: virtual-key
+            # Bifrost enforces a virtual key on /v1/* (enforceAuthOnInference).
+            # Send it as a bearer token so Bifrost accepts the request.
+            - name: OPENAI_API_KEYS
+              valueFrom:
+                secretKeyRef:
+                  name: bifrost-open-webui-vk
+                  key: virtual-key
             - name: ENABLE_LOGIN_FORM
               value: "false"
             - name: ENABLE_PERSISTENT_CONFIG
