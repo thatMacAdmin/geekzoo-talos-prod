@@ -251,6 +251,12 @@ ingress:
       noTLSVerify: true
       originServerName: inboxzero.macbytes.io
       httpHostHeader: inboxzero.macbytes.io
+  - hostname: bifrost.macbytes.io
+    service: https://traefik.traefik.svc.cluster.local:443
+    originRequest:
+      noTLSVerify: true
+      originServerName: bifrost.macbytes.io
+      httpHostHeader: bifrost.macbytes.io
   - hostname: autoconfig.edtheadmin.io
     service: https://traefik.traefik.svc.cluster.local:443
     originRequest:
