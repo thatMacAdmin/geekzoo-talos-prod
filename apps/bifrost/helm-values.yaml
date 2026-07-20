@@ -116,7 +116,7 @@ bifrost:
     # The chart already defaults enforceAuthOnInference: true; we make it explicit.
     enforceAuthOnInference: true
     allowDirectKeys: false # callers can't bypass the key pool
-    disableContentLogging: true # strip prompt/response content from logs
+    disableContentLogging: false # retain prompt/response content for inspection
     enableLogging: true # keep metadata-level logging
     logRetentionDays: 365
     allowedOrigins:
