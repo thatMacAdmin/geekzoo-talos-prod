@@ -23,6 +23,14 @@ spec:
       owner: artifactsctl
       secret:
         name: pg-app-user-artifactsctl
+  managed:
+    roles:
+      - name: artifactsctl
+        ensure: present
+        login: true
+        superuser: false
+        passwordSecret:
+          name: pg-app-user-artifactsctl
   storage:
     storageClass: ceph-block
     size: 10Gi
