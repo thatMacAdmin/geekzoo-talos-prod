@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: artifactsctl-migrate-9a94fef
+  name: artifactsctl-migrate-9a94fef-r2
   namespace: artifactsctl
   labels:
     app: artifactsctl-migrate
