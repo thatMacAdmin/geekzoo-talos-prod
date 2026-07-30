@@ -1,0 +1,25 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: artifactsctl
+  namespace: flux-system
+  labels:
+    artifactsctl.macbytes.io/release: 9a94feff72b1de8648da76fac163aca4bc24a27d
+spec:
+  dependsOn:
+    - name: apps
+    - name: artifactsctl-migrate
+      readyExpr: >
+        dep.metadata.labels['artifactsctl.macbytes.io/release'] == self.metadata.labels['artifactsctl.macbytes.io/release'] &&
+        dep.status.conditions.filter(e, e.type == 'Ready').all(e, e.status == 'True') &&
+        dep.metadata.generation == dep.status.observedGeneration
+  interval: 10m
+  retryInterval: 2m
+  timeout: 10m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  path: ./apps/artifactsctl
+  prune: true
+  wait: true

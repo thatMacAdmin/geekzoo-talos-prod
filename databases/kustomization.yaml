@@ -3,6 +3,7 @@ kind: Kustomization
 
 resources:
   - monitoring.yaml
+  - artifactsctl-pg
   - authentik-pg
   - bifrost-pg
   - inbox-zero-pg

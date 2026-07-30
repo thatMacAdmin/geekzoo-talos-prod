@@ -1,0 +1,16 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: artifactsctl-ingressroute
+  namespace: artifactsctl
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`artifactsctl.macbytes.io`)
+      kind: Rule
+      services:
+        - name: artifactsctl
+          port: 3000
+  tls:
+    secretName: artifactsctl-tls-certificate

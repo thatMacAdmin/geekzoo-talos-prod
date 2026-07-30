@@ -281,4 +281,10 @@ ingress:
       noTLSVerify: true
       originServerName: www.edtheadmin.io
       httpHostHeader: www.edtheadmin.io
+  - hostname: artifactsctl.macbytes.io
+    service: https://traefik.traefik.svc.cluster.local:443
+    originRequest:
+      noTLSVerify: true
+      originServerName: artifactsctl.macbytes.io
+      httpHostHeader: artifactsctl.macbytes.io
   - service: http_status:404

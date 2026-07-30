@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: artifactsctl-runner
+  namespace: artifactsctl
+  labels:
+    app: artifactsctl-runner
+    app.kubernetes.io/name: artifactsctl
+    app.kubernetes.io/instance: artifactsctl
+    app.kubernetes.io/component: runner
+    app.kubernetes.io/part-of: apps
+    app.kubernetes.io/managed-by: kustomize
+spec:
+  selector:
+    matchLabels:
+      app: artifactsctl-runner
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: artifactsctl-runner
+        app.kubernetes.io/name: artifactsctl
+        app.kubernetes.io/instance: artifactsctl
+        app.kubernetes.io/component: runner
+        app.kubernetes.io/part-of: apps
+        app.kubernetes.io/managed-by: kustomize
+    spec:
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 60
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      imagePullSecrets:
+        - name: ghcr-pull-secret
+      containers:
+        - name: runner
+          image: ghcr.io/thatmacadmin/artifactsctl:9a94feff72b1de8648da76fac163aca4bc24a27d
+          imagePullPolicy: IfNotPresent
+          args:
+            - build/runner.js
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: artifactsctl
+                  key: database-url
+            - name: ARTIFACTS_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: artifactsctl
+                  key: artifacts-api-key
+            # Fresh installations remain disarmed. Once an operator arms the
+            # runner, that choice is durable in Postgres across pod restarts.
+            - name: RUNNER_AUTOSTART
+              value: "false"
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi

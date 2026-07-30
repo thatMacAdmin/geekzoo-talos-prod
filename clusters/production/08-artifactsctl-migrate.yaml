@@ -1,0 +1,21 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: artifactsctl-migrate
+  namespace: flux-system
+  labels:
+    artifactsctl.macbytes.io/release: 9a94feff72b1de8648da76fac163aca4bc24a27d
+spec:
+  dependsOn:
+    - name: databases
+    - name: secrets
+  interval: 10m
+  retryInterval: 2m
+  timeout: 10m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  path: ./apps/artifactsctl/migration
+  prune: true
+  wait: true

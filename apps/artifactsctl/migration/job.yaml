@@ -1,0 +1,60 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: artifactsctl-migrate-9a94fef
+  namespace: artifactsctl
+  labels:
+    app: artifactsctl-migrate
+    app.kubernetes.io/name: artifactsctl
+    app.kubernetes.io/instance: artifactsctl
+    app.kubernetes.io/component: migration
+    app.kubernetes.io/part-of: apps
+    app.kubernetes.io/managed-by: kustomize
+spec:
+  backoffLimit: 3
+  activeDeadlineSeconds: 300
+  ttlSecondsAfterFinished: 86400
+  template:
+    metadata:
+      labels:
+        app: artifactsctl-migrate
+        app.kubernetes.io/name: artifactsctl
+        app.kubernetes.io/instance: artifactsctl
+        app.kubernetes.io/component: migration
+        app.kubernetes.io/part-of: apps
+        app.kubernetes.io/managed-by: kustomize
+    spec:
+      automountServiceAccountToken: false
+      restartPolicy: OnFailure
+      imagePullSecrets:
+        - name: ghcr-pull-secret
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: migrate
+          image: ghcr.io/thatmacadmin/artifactsctl:9a94feff72b1de8648da76fac163aca4bc24a27d
+          imagePullPolicy: IfNotPresent
+          args: ["scripts/migrate.js"]
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: artifactsctl
+                  key: database-url
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi

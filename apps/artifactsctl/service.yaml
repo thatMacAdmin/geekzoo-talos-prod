@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: artifactsctl
+  namespace: artifactsctl
+  labels:
+    app: artifactsctl
+spec:
+  type: ClusterIP
+  selector:
+    app: artifactsctl
+  ports:
+    - name: http
+      port: 3000
+      targetPort: http
