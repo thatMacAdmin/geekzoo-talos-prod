@@ -1,0 +1,16 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: audiobookshelf-ingressroute
+  namespace: media
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`audiobooks.macbytes.io`)
+      kind: Rule
+      services:
+        - name: audiobookshelf-svc
+          port: 8080
+  tls:
+    secretName: audiobookshelf-tls-certificate

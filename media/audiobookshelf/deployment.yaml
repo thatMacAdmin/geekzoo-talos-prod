@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: audiobookshelf
+  namespace: media
+  labels:
+    app: audiobookshelf
+    app.kubernetes.io/name: audiobookshelf
+    app.kubernetes.io/instance: audiobookshelf
+    app.kubernetes.io/component: audiobooks
+    app.kubernetes.io/part-of: media
+    app.kubernetes.io/managed-by: kustomize
+spec:
+  selector:
+    matchLabels:
+      app: audiobookshelf
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: audiobookshelf
+        app.kubernetes.io/name: audiobookshelf
+        app.kubernetes.io/instance: audiobookshelf
+        app.kubernetes.io/component: audiobooks
+        app.kubernetes.io/part-of: media
+        app.kubernetes.io/managed-by: kustomize
+      annotations:
+        backup.velero.io/backup-volumes-excludes: audiobookshelf-media
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+        fsGroup: 65534
+        seccompProfile:
+          type: RuntimeDefault
+      volumes:
+        - name: audiobookshelf-config
+          persistentVolumeClaim:
+            claimName: audiobookshelf-config-pvc
+        - name: audiobookshelf-metadata
+          persistentVolumeClaim:
+            claimName: audiobookshelf-metadata-pvc
+        - name: audiobookshelf-media
+          persistentVolumeClaim:
+            claimName: pvc-media-nfs
+      containers:
+        - name: audiobookshelf
+          image: ghcr.io/advplyr/audiobookshelf:2.36.0 # {"$imagepolicy": "flux-system:audiobookshelf-image-policy"}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          env:
+            - name: PORT
+              value: "8080"
+            - name: TZ
+              value: "America/New_York"
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: audiobookshelf-config
+              mountPath: /config
+            - name: audiobookshelf-metadata
+              mountPath: /metadata
+            - name: audiobookshelf-media
+              mountPath: /audiobooks
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "2Gi"
+              cpu: "2000m"
