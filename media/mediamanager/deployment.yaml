@@ -58,6 +58,8 @@ spec:
           env:
             - name: CONFIG_DIR
               value: /app/config
+            - name: UV_CACHE_DIR
+              value: /tmp/uv-cache
           envFrom:
             - secretRef:
                 name: mediamanager-secrets
