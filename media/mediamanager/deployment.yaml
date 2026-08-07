@@ -1,0 +1,90 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mediamanager
+  namespace: media
+  labels:
+    app: mediamanager
+    app.kubernetes.io/name: mediamanager
+    app.kubernetes.io/instance: mediamanager
+    app.kubernetes.io/component: media-manager
+    app.kubernetes.io/part-of: media
+    app.kubernetes.io/managed-by: kustomize
+spec:
+  selector:
+    matchLabels:
+      app: mediamanager
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: mediamanager
+        app.kubernetes.io/name: mediamanager
+        app.kubernetes.io/instance: mediamanager
+        app.kubernetes.io/component: media-manager
+        app.kubernetes.io/part-of: media
+        app.kubernetes.io/managed-by: kustomize
+      annotations:
+        backup.velero.io/backup-volumes-excludes: mediamanager-media
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65533
+        fsGroup: 65533
+        seccompProfile:
+          type: RuntimeDefault
+      volumes:
+        - name: mediamanager-media
+          persistentVolumeClaim:
+            claimName: pvc-media-nfs
+        - name: mediamanager-config
+          persistentVolumeClaim:
+            claimName: mediamanager-config-pvc
+      containers:
+        - name: mediamanager
+          image: quay.io/maxdorninger/mediamanager:latest
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          ports:
+            - containerPort: 8000
+              name: http
+          env:
+            - name: CONFIG_DIR
+              value: /app/config
+          envFrom:
+            - secretRef:
+                name: mediamanager-secrets
+          volumeMounts:
+            - name: mediamanager-media
+              mountPath: /data/media
+              subPath: mediamanager
+            - name: mediamanager-config
+              mountPath: /app/config
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 5

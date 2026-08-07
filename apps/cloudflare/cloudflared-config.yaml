@@ -102,6 +102,12 @@ ingress:
       noTLSVerify: true
       originServerName: downloader.macbytes.io
       httpHostHeader: downloader.macbytes.io
+  - hostname: mediamanager.macbytes.io
+    service: https://traefik.traefik.svc.cluster.local:443
+    originRequest:
+      noTLSVerify: true
+      originServerName: mediamanager.macbytes.io
+      httpHostHeader: mediamanager.macbytes.io
   - hostname: passwords.macbytes.io
     service: https://traefik.traefik.svc.cluster.local:443
     originRequest:
