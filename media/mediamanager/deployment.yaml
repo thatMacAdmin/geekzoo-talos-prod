@@ -32,8 +32,8 @@ spec:
       securityContext:
         runAsNonRoot: true
         runAsUser: 65534
-        runAsGroup: 65533
-        fsGroup: 65533
+        runAsGroup: 3000
+        fsGroup: 3000
         seccompProfile:
           type: RuntimeDefault
       volumes:
