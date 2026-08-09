@@ -69,7 +69,6 @@ spec:
           volumeMounts:
             - name: mediamanager-media
               mountPath: /data
-              subPath: mediamanager
             - name: mediamanager-config
               mountPath: /app/config
             - name: mediamanager-data
