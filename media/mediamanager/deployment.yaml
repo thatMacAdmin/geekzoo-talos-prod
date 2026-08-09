@@ -65,7 +65,7 @@ spec:
                 name: mediamanager-secrets
           volumeMounts:
             - name: mediamanager-media
-              mountPath: /data/media
+              mountPath: /data
               subPath: mediamanager
             - name: mediamanager-config
               mountPath: /app/config
