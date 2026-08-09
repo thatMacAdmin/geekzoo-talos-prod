@@ -31,9 +31,9 @@ spec:
     spec:
       securityContext:
         runAsNonRoot: true
-        runAsUser: 65534
-        runAsGroup: 3000
-        fsGroup: 3000
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
         seccompProfile:
           type: RuntimeDefault
       volumes:
@@ -43,6 +43,9 @@ spec:
         - name: mediamanager-config
           persistentVolumeClaim:
             claimName: mediamanager-config-pvc
+        - name: mediamanager-data
+          persistentVolumeClaim:
+            claimName: mediamanager-data-pvc
       containers:
         - name: mediamanager
           image: quay.io/maxdorninger/mediamanager:latest
@@ -69,6 +72,8 @@ spec:
               subPath: mediamanager
             - name: mediamanager-config
               mountPath: /app/config
+            - name: mediamanager-data
+              mountPath: /app/data
           resources:
             requests:
               memory: "256Mi"
