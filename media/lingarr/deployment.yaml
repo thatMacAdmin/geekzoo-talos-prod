@@ -42,7 +42,7 @@ spec:
             claimName: pvc-media-nfs
       containers:
         - name: lingarr-server
-          image: lingarr/lingarr:1.2.4 # {"$imagepolicy": "flux-system:lingarr-image-policy"}
+          image: lingarr/lingarr:1.3.0 # {"$imagepolicy": "flux-system:lingarr-image-policy"}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 9876
