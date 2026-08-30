@@ -45,7 +45,7 @@ spec:
             claimName: pvc-media-nfs
       containers:
         - name: unpackerr
-          image: golift/unpackerr:0.15.2 # {"$imagepolicy": "flux-system:unpackerr-image-policy"}
+          image: golift/unpackerr:0.16.0 # {"$imagepolicy": "flux-system:unpackerr-image-policy"}
           imagePullPolicy: IfNotPresent
           env:
             - name: TZ
