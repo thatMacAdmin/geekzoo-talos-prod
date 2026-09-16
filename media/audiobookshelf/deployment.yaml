@@ -48,7 +48,7 @@ spec:
             claimName: pvc-media-nfs
       containers:
         - name: audiobookshelf
-          image: ghcr.io/advplyr/audiobookshelf:2.36.0 # {"$imagepolicy": "flux-system:audiobookshelf-image-policy"}
+          image: ghcr.io/advplyr/audiobookshelf:2.36.1 # {"$imagepolicy": "flux-system:audiobookshelf-image-policy"}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
