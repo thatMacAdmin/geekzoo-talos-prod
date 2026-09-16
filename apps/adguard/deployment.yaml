@@ -22,6 +22,8 @@ spec:
       maxSurge: 0
   template:
     metadata:
+      annotations:
+        macbytes.io/pvc-resize: "adguard-pvc-20Gi"
       labels:
         app: adguard
         app.kubernetes.io/name: adguard
