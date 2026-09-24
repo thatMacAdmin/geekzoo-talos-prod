@@ -9,5 +9,4 @@ resources:
   - seerr-pg
   - vaultwarden-pg
   - vikunja-pg
-  - mediamanager-pg
   - redis
