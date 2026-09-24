@@ -5,7 +5,7 @@ metadata:
   namespace: database
 spec:
   imageName: ghcr.io/cloudnative-pg/postgresql:17.6-system-trixie
-  instances: 1
+  instances: 3
   # Baseline scheduling reservation (observed ~15-40m per instance)
   resources:
     requests:
