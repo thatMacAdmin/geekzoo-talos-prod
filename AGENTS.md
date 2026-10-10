@@ -88,7 +88,7 @@ Note: there is **no `01-*.yaml`** in `clusters/production/` — the gap is inten
 | `apps/` | User-facing apps in namespace `apps` (Vaultwarden, AdGuard, Authentik, Open-WebUI, Home Assistant, Vikunja, Minecraft, Bifrost, Website) **plus** Cloudflared tunnel (in namespace `system`). |
 | `media/` | Arr-stack + Jellyfin + Seerr + qBittorrent in namespace `media`. |
 | `mail/` | Stalwart mail server, frpc tunnel client, Bulwark webmail (namespace `mail`). |
-| `databases/` | One CNPG `Cluster` per consuming app (`authentik-pg`, `seerr-pg`, `vaultwarden-pg`, `vikunja-pg`) + `redis` (Bitnami Helm) + `blocky-pg`. Each PG cluster has a sibling `ScheduledBackup` to Wasabi via the barman-cloud plugin. |
+| `databases/` | One CNPG `Cluster` per consuming app (`authentik-pg`, `bifrost-pg`, `inbox-zero-pg`, `seerr-pg`, `vaultwarden-pg`, `vikunja-pg`) + `redis` (Bitnami Helm) + `blocky-pg`. Each PG cluster has a sibling `ScheduledBackup` to Wasabi via the barman-cloud plugin. |
 | `observability/` | MikroTik CRS518 syslog gateway, plus the Grafana stack (kube-prometheus-stack + Loki + Promtail) for cluster-wide metrics and log aggregation. |
 | `omni/` | Talos/Omni configs. **Only `omni/patches/*.yaml` is tracked** — everything else is gitignored. Per-node patches are named `400-cm-<machine-uuid>.yaml`, `410-resolvers-<machine-uuid>.yaml`. |
 | `cert-manager/` | Top-level ClusterIssuers (also referenced from `infrastructure/configs/cert-manager/`). |
