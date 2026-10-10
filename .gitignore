@@ -16,6 +16,9 @@ omni/**/*.yaml
 
 # AI tooling
 .claude/
+.agents/skills/
+.zcode/plans/
+crush.json
 
 # Jsonnet dependencies
 monitoring/mixins/vendor/
