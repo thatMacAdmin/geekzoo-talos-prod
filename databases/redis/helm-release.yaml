@@ -39,6 +39,11 @@ spec:
         enabled: false
     replica:
       replicaCount: 3
+      # Decommission: delete the three replica PVCs when this release is removed.
+      persistentVolumeClaimRetentionPolicy:
+        enabled: true
+        whenDeleted: Delete
+        whenScaled: Retain
       resources:
         requests:
           cpu: 125m
