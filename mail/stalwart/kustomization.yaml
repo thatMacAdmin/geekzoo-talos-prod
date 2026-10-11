@@ -14,3 +14,13 @@ resources:
   # apply-job.yaml — provisioning (stalwart-cli apply) is run LIVE during bootstrap
   # (--dry-run, then real) and codified as a Job only after the plan schema is
   # confirmed against the running v0.16.10 binary.
+
+configMapGenerator:
+  - name: stalwart-tls-sync-script
+    namespace: mail
+    files:
+      - sync-stalwart-certificate.py
+
+# Script changes roll the pod; renewed certificates and credentials do not.
+generatorOptions:
+  disableNameSuffixHash: false

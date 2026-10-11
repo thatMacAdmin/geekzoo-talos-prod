@@ -8,10 +8,11 @@ metadata:
 #   - NetworkListener.bind is a SET serialized as an object: {"[::]:2525": true}
 #   - Expression.match is an OBJECT keyed by "0","1",... (NOT an array); empty match = {}
 #   - is_local_domain(rcpt_domain) takes ONE arg
-#   - Certificate has NO `name` field -> use `create`. The `#id` cross-ref did NOT resolve
-#     for SystemSettings.defaultCertificateId, so it uses LITERAL server-assigned ids from
-#     THIS datastore (Domain=b, Certificate=ixupxm7sabaa) — env-specific; on a fresh rebuild,
-#     set SystemSettings AFTER Domain+Certificate are created (read their ids via `query`).
+#   - SystemSettings.defaultDomainId uses THIS datastore's literal id `b`; the `#id`
+#     cross-ref did not resolve. On a fresh rebuild, set defaultDomainId AFTER
+#     Domains are created (read their ids via `query`). The TLS synchronizer owns
+#     Certificate creation/renewal and SystemSettings.defaultCertificateId; provision
+#     listeners + its API credentials before expecting it to select/reload TLS.
 #   - authUsername is a PLAIN STRING in Stalwart v0.16 (verified in source: used verbatim, NO env
 #     or macro expansion — only authSecret supports {"@type":"EnvironmentVariable"}). To keep relay
 #     LOGINS out of git, both route usernames are committed as ${VAR} placeholders and substituted
@@ -42,8 +43,7 @@ data:
   stalwart-plan.ndjson: |
     {"@type":"upsert","object":"Domain","matchOn":["name"],"value":{"d1":{"name":"macbytes.io"}}}
     {"@type":"upsert","object":"Domain","matchOn":["name"],"value":{"d2":{"name":"edtheadmin.io"}}}
-    {"@type":"create","object":"Certificate","value":{"mail-cert":{"certificate":{"@type":"File","filePath":"/etc/stalwart/tls/tls.crt"},"privateKey":{"@type":"File","filePath":"/etc/stalwart/tls/tls.key"}}}}
-    {"@type":"update","object":"SystemSettings","value":{"defaultDomainId":"b","defaultCertificateId":"ixupxm7sabaa","defaultHostname":"mail.macbytes.io"}}
+    {"@type":"update","object":"SystemSettings","value":{"defaultDomainId":"b","defaultHostname":"mail.macbytes.io"}}
     {"@type":"upsert","object":"NetworkListener","matchOn":["name"],"value":{"mx":{"name":"mx","protocol":"smtp","bind":{"[::]:2525":true},"useTls":true,"tlsImplicit":false,"overrideProxyTrustedNetworks":{"10.244.0.0/16":true}}}}
     {"@type":"upsert","object":"NetworkListener","matchOn":["name"],"value":{"submission":{"name":"submission","protocol":"smtp","bind":{"[::]:5587":true},"useTls":true,"tlsImplicit":false,"overrideProxyTrustedNetworks":{"10.244.0.0/16":true}}}}
     {"@type":"upsert","object":"NetworkListener","matchOn":["name"],"value":{"submissions":{"name":"submissions","protocol":"smtp","bind":{"[::]:5465":true},"useTls":true,"tlsImplicit":true,"overrideProxyTrustedNetworks":{"10.244.0.0/16":true}}}}

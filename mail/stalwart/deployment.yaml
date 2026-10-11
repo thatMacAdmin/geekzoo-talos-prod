@@ -27,6 +27,7 @@ spec:
         app.kubernetes.io/part-of: mail
         app.kubernetes.io/managed-by: kustomize
     spec:
+      automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true
         runAsUser: 2000        # image user (uid=gid=2000)
@@ -44,6 +45,33 @@ spec:
         - name: tls
           secret:
             secretName: stalwart-tls-certificate
+        # Restrict the sidecar projection to the public chain, never tls.key.
+        - name: tls-public
+          projected:
+            defaultMode: 0444
+            sources:
+              - secret:
+                  name: stalwart-tls-certificate
+                  items:
+                    - key: tls.crt
+                      path: tls.crt
+        - name: tls-sync-credentials
+          secret:
+            secretName: stalwart-tls-sync
+            defaultMode: 0440
+            items:
+              - key: api-key
+                path: api-key
+              - key: account-id
+                path: account-id
+        - name: tls-sync-script
+          configMap:
+            name: stalwart-tls-sync-script
+            defaultMode: 0444
+        - name: tls-sync-tmp
+          emptyDir:
+            medium: Memory
+            sizeLimit: 1Mi
         - name: tmp
           emptyDir: {}
       containers:
@@ -130,3 +158,55 @@ spec:
             limits:
               memory: "1Gi"
               cpu: "1000m"
+        - name: tls-sync
+          image: docker.io/library/python:3.14.7-alpine3.23@sha256:218761489de417a6eb0808e264cbdd7043ec6659fe5a61898815e9848536541d
+          imagePullPolicy: IfNotPresent
+          command:
+            - python
+            - -B
+            - /opt/stalwart-tls-sync/sync-stalwart-certificate.py
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 2000
+            runAsGroup: 2000
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          env:
+            - name: STALWART_URL
+              value: http://127.0.0.1:8080
+            - name: STALWART_TLS_HOST
+              value: mail.macbytes.io
+            - name: STALWART_TLS_PORT
+              value: "9993"
+            - name: STALWART_CERT_PATH
+              value: /etc/stalwart/public-tls/tls.crt
+            # This path is interpreted by Stalwart; the sidecar does not mount it.
+            - name: STALWART_KEY_PATH
+              value: /etc/stalwart/tls/tls.key
+            - name: STALWART_CREDENTIAL_DIR
+              value: /run/stalwart-tls-sync
+            - name: STALWART_SYNC_INTERVAL
+              value: "60"
+          volumeMounts:
+            # Whole directories preserve kubelet's atomic Secret projection updates.
+            - name: tls-public
+              mountPath: /etc/stalwart/public-tls
+              readOnly: true
+            - name: tls-sync-credentials
+              mountPath: /run/stalwart-tls-sync
+              readOnly: true
+            - name: tls-sync-script
+              mountPath: /opt/stalwart-tls-sync
+              readOnly: true
+            - name: tls-sync-tmp
+              mountPath: /tmp
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "10m"
+            limits:
+              memory: "64Mi"
+              cpu: "100m"
