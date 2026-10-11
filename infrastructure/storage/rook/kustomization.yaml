@@ -1,4 +1,4 @@
-# Kustomize overlay for Rook/Ceph (operator + cluster).
+# Kustomize overlay for Rook/Ceph (operator + CSI drivers + cluster).
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
@@ -11,6 +11,8 @@ resources:
   - ceph-dashboard-serverstransport.yaml
   - ceph-rgw-certificate.yaml
   - ceph-rgw-ingressroute.yaml
+  - csi-legacy-migration.yaml
+  - storage-upgrade-smoke.yaml
 
 configMapGenerator:
   - name: rook-ceph-cluster-values

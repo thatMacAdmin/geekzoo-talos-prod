@@ -23,6 +23,17 @@ spec:
   # is dropped to 50m (observed usage 1-4m per container; the defaults
   # reserved ~4.5 cores of pure headroom across plugins + provisioners).
   # Memory and limits untouched.
+  # Retain active CSI permissions until the v1.20 drivers release replaces them.
+  postRenderers:
+    - kustomize:
+        patches:
+          - target:
+              name: ceph-csi-(rbd|cephfs)-(ctrlplugin|nodeplugin)-(sa|cr|crb|r|rb)
+            patch: |
+              - op: add
+                path: /metadata/annotations
+                value:
+                  helm.sh/resource-policy: keep
   values:
     monitoring:
       enabled: true
