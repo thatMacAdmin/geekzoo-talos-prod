@@ -86,7 +86,7 @@ Note: there is **no `01-*.yaml`** in `clusters/production/` — the gap is inten
 | `infrastructure/image-automation/` | One `ImageRepository` + `ImagePolicy` per auto-updated image, plus `ImageUpdateAutomation` per top-level area (`apps`, `mail`, scanning `./apps`, `./mail` respectively). |
 | `secrets/external-secrets-operator/` | `ClusterSecretStore` (duplicate of the infra one — applied at the secrets layer for ordering). |
 | `secrets/external-secrets/` | One `ExternalSecret` per app-level secret, all pulling from `/k3s-geekzoo/...`. |
-| `apps/` | User-facing apps in namespace `apps` (Vaultwarden, AdGuard, Authentik, Open-WebUI, Home Assistant, Vikunja, Minecraft, Bifrost, Website) **plus** Cloudflared tunnel (in namespace `system`). |
+| `apps/` | User-facing apps in namespace `apps` (Vaultwarden, AdGuard, Authentik, Open-WebUI, Home Assistant, Vikunja, Bifrost, Website) **plus** Cloudflared tunnel (in namespace `system`). |
 | `media/` | Arr-stack + Jellyfin + Seerr + qBittorrent in namespace `media`. |
 | `mail/` | Stalwart mail server, frpc tunnel client, Bulwark webmail (namespace `mail`). |
 | `databases/` | One CNPG `Cluster` per consuming app (`authentik-pg`, `bifrost-pg`, `inbox-zero-pg`, `seerr-pg`, `vaultwarden-pg`, `vikunja-pg`) + `redis` (Bitnami Helm) + `blocky-pg`. Each PG cluster has a sibling `ScheduledBackup` to Wasabi via the barman-cloud plugin. |
@@ -254,6 +254,7 @@ kustomize build apps/<name> | kubectl --dry-run=client apply -f -
 - **Loki runs in single-binary mode** (1 replica, filesystem storage) because this is a small cluster. Don't switch to distributed mode (backend/read/write replicas) without also configuring object storage and bumping resources.
 - **Authentik requires sequential minor-version upgrades.** See `apps/authentik/UPGRADE.md` — never jump more than one minor version at a time (e.g., 2025.10 → 2025.12 → 2026.2), and back up PostgreSQL before each hop.
 - **Grafana admin password requires an SSM parameter.** The `grafana-admin` ExternalSecret reads `/k3s-geekzoo/grafana-admin` (properties: `username`, `password`). Create it in AWS SSM out-of-band or Grafana won't start.
+- **Minecraft is decommissioned.** Its Helm release, world PVC/Ceph volume, values, chart source, and RCON ExternalSecret are removed. The shared `pvc-apps-nfs` / `pv-apps-nfs` and existing backup files are retained; the TrueNAS export path `/mnt/geekzoo/minecraft` is intentionally unchanged.
 
 ---
 

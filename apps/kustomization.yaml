@@ -9,7 +9,6 @@ resources:
   - open-webui
   - home-assistant
   - vikunja
-  - minecraft
   - bifrost
   - inbox-zero
   - website
