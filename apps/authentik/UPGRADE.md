@@ -76,10 +76,11 @@ Database restoration and production connection cutover require operator approval
 | Application | Helm chart | Pre-upgrade Wasabi backup ID |
 |---|---|---|
 | `2026.2.7` | `2026.2.3` | `20261011T220112` |
+| `2026.5.7` | `2026.5.6` | `20261011T223442` |
 
 For each recorded hop, the backup data archive and both boundary WAL segments were verified in Wasabi before deployment. Runtime checks covered migrations, worker health and completed tasks, the custom blueprint, public readiness, and all 11 configured OIDC discovery/JWKS endpoints. Providers without an asymmetric signing key intentionally publish no public signing keys.
 
-The operator confirmed fresh login, admin access, and critical SSO checks for `2026.2.7`. No recovery key was created.
+The operator confirmed fresh login, admin access, and critical SSO checks for `2026.2.7` and `2026.5.7`. No recovery key was created.
 The registered Jellyfin LDAP provider has no registered LDAP outpost; LDAP login was not asserted as verified.
 
 ## 5) Redis decommission

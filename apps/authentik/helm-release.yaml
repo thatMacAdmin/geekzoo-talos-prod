@@ -14,16 +14,13 @@ spec:
   chart:
     spec:
       chart: authentik
-      version: "2026.5.6"
+      version: "2026.8.3"
       sourceRef:
         kind: HelmRepository
         name: authentik
         namespace: identity
   values:
     global:
-      image:
-        # The latest 2026.5 application patch has no matching Helm chart.
-        tag: "2026.5.7"
       env:
         - name: AUTHENTIK_SECRET_KEY
           valueFrom:
@@ -86,6 +83,4 @@ spec:
       configMaps:
         - authentik-macbytes-login-flow-blueprint
     postgresql:
-      enabled: false
-    redis:
       enabled: false
