@@ -1,0 +1,210 @@
+# Rook v1.20.8 bundles ceph-csi-operator 1.0.4 and supplies CSI v3.17.1
+# through rook-csi-operator-image-set-configmap. Keep the drivers chart aligned.
+# https://rook.io/docs/rook/v1.20/Helm-Charts/csi-drivers-chart/
+# Preserve the pre-upgrade Driver/OperatorConfig settings, not upstream chart
+# defaults (which change replica counts, snapshots, priorities and networking).
+cephConnections: []
+clientProfiles: []
+
+operatorConfig:
+  create: true
+  name: ceph-csi-operator-config
+  namespace: rook-ceph
+  driverSpecDefaults:
+    clusterName: rook-ceph
+    imageSet:
+      name: rook-csi-operator-image-set-configmap
+    cephFsClientType: kernel
+    enableMetadata: false
+    deployCsiAddons: false
+    generateOMapInfo: false
+    fsGroupPolicy: File
+    # Preserve the effective sidecar timeout; the drivers chart defaults to 30s.
+    grpcTimeout: 150
+    # Existing log:{} does not enable the chart's additional log-rotation sidecar.
+    log: null
+    nodePlugin:
+      affinity:
+        nodeAffinity: {}
+      enableSeLinuxHostMount: false
+      imagePullPolicy: IfNotPresent
+      kubeletDirPath: /var/lib/kubelet
+      priorityClassName: system-cluster-critical
+      resources: {}
+    controllerPlugin:
+      affinity:
+        nodeAffinity: {}
+      deploymentStrategy:
+        type: Recreate
+      hostNetwork: true
+      imagePullPolicy: IfNotPresent
+      priorityClassName: system-node-critical
+      replicas: 2
+      resources: {}
+
+drivers:
+  rbd:
+    enabled: true
+    name: rook-ceph.rbd.csi.ceph.com
+    clusterName: rook-ceph
+    imageSet:
+      name: rook-csi-operator-image-set-configmap
+    cephFsClientType: kernel
+    enableMetadata: false
+    deployCsiAddons: false
+    generateOMapInfo: false
+    fsGroupPolicy: File
+    grpcTimeout: 150
+    # RBD already runs csi-snapshotter; the chart's "none" default removes it.
+    snapshotPolicy: volumeSnapshot
+    log: null
+    nodePlugin:
+      affinity:
+        nodeAffinity: {}
+      enableSeLinuxHostMount: false
+      imagePullPolicy: IfNotPresent
+      kubeletDirPath: /var/lib/kubelet
+      priorityClassName: system-cluster-critical
+      updateStrategy:
+        type: RollingUpdate
+      resources:
+        plugin:
+          requests:
+            cpu: 50m
+            memory: 512Mi
+          limits:
+            memory: 1Gi
+        registrar:
+          requests:
+            cpu: 50m
+            memory: 128Mi
+          limits:
+            memory: 256Mi
+    controllerPlugin:
+      affinity:
+        nodeAffinity: {}
+      deploymentStrategy:
+        type: Recreate
+      # Preserve effective networking: Driver false overrides OperatorConfig true.
+      hostNetwork: false
+      imagePullPolicy: IfNotPresent
+      priorityClassName: system-node-critical
+      replicas: 2
+      resources:
+        plugin:
+          requests:
+            memory: 512Mi
+          limits:
+            memory: 1Gi
+        attacher:
+          requests:
+            cpu: 50m
+            memory: 128Mi
+          limits:
+            memory: 256Mi
+        provisioner:
+          requests:
+            cpu: 50m
+            memory: 128Mi
+          limits:
+            memory: 256Mi
+        resizer:
+          requests:
+            cpu: 50m
+            memory: 128Mi
+          limits:
+            memory: 256Mi
+        snapshotter:
+          requests:
+            cpu: 50m
+            memory: 128Mi
+          limits:
+            memory: 256Mi
+        omapGenerator:
+          requests:
+            cpu: 50m
+            memory: 512Mi
+          limits:
+            memory: 1Gi
+  cephfs:
+    enabled: true
+    name: rook-ceph.cephfs.csi.ceph.com
+    clusterName: rook-ceph
+    imageSet:
+      name: rook-csi-operator-image-set-configmap
+    cephFsClientType: kernel
+    enableMetadata: false
+    deployCsiAddons: false
+    generateOMapInfo: false
+    fsGroupPolicy: File
+    grpcTimeout: 150
+    snapshotPolicy: volumeGroupSnapshot
+    log: null
+    nodePlugin:
+      affinity:
+        nodeAffinity: {}
+      enableSeLinuxHostMount: false
+      imagePullPolicy: IfNotPresent
+      kubeletDirPath: /var/lib/kubelet
+      priorityClassName: system-cluster-critical
+      updateStrategy:
+        type: RollingUpdate
+      resources:
+        plugin:
+          requests:
+            cpu: 50m
+            memory: 512Mi
+          limits:
+            memory: 1Gi
+        registrar:
+          requests:
+            cpu: 50m
+            memory: 128Mi
+          limits:
+            memory: 256Mi
+    controllerPlugin:
+      affinity:
+        nodeAffinity: {}
+      deploymentStrategy:
+        type: Recreate
+      hostNetwork: false
+      imagePullPolicy: IfNotPresent
+      priorityClassName: system-node-critical
+      replicas: 2
+      resources:
+        plugin:
+          requests:
+            cpu: 50m
+            memory: 512Mi
+          limits:
+            memory: 1Gi
+        attacher:
+          requests:
+            cpu: 50m
+            memory: 128Mi
+          limits:
+            memory: 256Mi
+        provisioner:
+          requests:
+            cpu: 50m
+            memory: 128Mi
+          limits:
+            memory: 256Mi
+        resizer:
+          requests:
+            cpu: 50m
+            memory: 128Mi
+          limits:
+            memory: 256Mi
+        snapshotter:
+          requests:
+            cpu: 50m
+            memory: 128Mi
+          limits:
+            memory: 256Mi
+  nfs:
+    enabled: false
+    name: rook-ceph.nfs.csi.ceph.com
+  nvmeof:
+    enabled: false
+    name: rook-ceph.nvmeof.csi.ceph.com

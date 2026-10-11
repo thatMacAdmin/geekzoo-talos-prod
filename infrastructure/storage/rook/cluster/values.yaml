@@ -1,4 +1,8 @@
 operatorNamespace: rook-ceph
+# Keep the current Ceph image during the Rook/CSI management-layer upgrade.
+cephImage:
+  repository: quay.io/ceph/ceph
+  tag: v19.2.3
 configOverride: |
   [global]
   debug_default = 0/5
@@ -100,3 +104,4 @@ monitoring:
   createPrometheusRules: true
 toolbox:
   enabled: true
+  image: quay.io/ceph/ceph:v19.2.3
