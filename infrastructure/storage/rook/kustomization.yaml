@@ -15,6 +15,7 @@ resources:
   - ceph-rgw-ingressroute.yaml
   - csi-legacy-migration.yaml
   - storage-upgrade-smoke.yaml
+  - storage-upgrade-fresh-smoke.yaml
 
 configMapGenerator:
   - name: rook-ceph-cluster-values

@@ -14,11 +14,11 @@ spec:
 apiVersion: v1
 kind: Pod
 metadata:
-  name: storage-upgrade-smoke-rbd
+  name: storage-upgrade-smoke-rbd-remount
   namespace: rook-ceph
 spec:
   nodeSelector:
-    kubernetes.io/hostname: talos-node-01
+    kubernetes.io/hostname: talos-node-02
   securityContext:
     runAsNonRoot: true
     runAsUser: 65534
@@ -68,11 +68,11 @@ spec:
 apiVersion: v1
 kind: Pod
 metadata:
-  name: storage-upgrade-smoke-cephfs
+  name: storage-upgrade-smoke-cephfs-remount
   namespace: rook-ceph
 spec:
   nodeSelector:
-    kubernetes.io/hostname: talos-node-01
+    kubernetes.io/hostname: talos-node-02
   securityContext:
     runAsNonRoot: true
     runAsUser: 65534
