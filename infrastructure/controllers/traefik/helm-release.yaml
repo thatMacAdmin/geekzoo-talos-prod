@@ -9,11 +9,16 @@ spec:
   chart:
     spec:
       chart: traefik
-      version: "37.2.0"
+      version: "41.7.1"
       sourceRef:
         kind: HelmRepository
         name: traefik
         namespace: traefik
+  # Flux updates chart-bundled CRDs before the Helm action, without deleting CRs.
+  install:
+    crds: CreateReplace
+  upgrade:
+    crds: CreateReplace
   valuesFrom:
     - kind: ConfigMap
       name: traefik-values

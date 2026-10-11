@@ -1,12 +1,12 @@
-# Traefik v3.5.0 Configuration
+# Traefik v3.7.14 Configuration
 # Pin the exact version for stability
 image:
-  tag: "v3.5.0"
+  tag: "v3.7.14"
 
 # Service configuration - Cilium LB
 service:
-  type: LoadBalancer
   spec:
+    type: LoadBalancer
     ipFamilyPolicy: PreferDualStack
     ipFamilies:
       - IPv4
@@ -45,6 +45,8 @@ providers:
   file:
     enabled: true
     watch: true
+    # Chart 41 requires object content; retain the empty dynamic configuration.
+    content: {}
   kubernetesIngress:
     enabled: true
     publishedService:
@@ -72,7 +74,6 @@ metrics:
       interval: 30s
     service:
       enabled: true
-      type: ClusterIP
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9100"
@@ -81,21 +82,19 @@ metrics:
         monitoring: "true"
     entryPoint: metrics
 
-# Logs configuration
-logs:
-  general:
-    level: INFO
+# Logs configuration (chart 41 uses the upstream Traefik schema)
+log:
+  level: INFO
 
-  access:
-    enabled: true
-    format: json
-    fields:
-      general:
-        defaultmode: keep
-      headers:
-        defaultmode: keep
+accessLog:
+  enabled: true
+  format: json
+  fields:
+    defaultMode: keep
+    headers:
+      defaultMode: keep
 
-# Deploy as DaemonSet to run on all nodes for externalTrafficPolicy: Local
+# Deploy as DaemonSet to run an ingress instance on every node.
 deployment:
   kind: DaemonSet
   podLabels:
