@@ -3,6 +3,7 @@
 ## Release sequence
 
 Starting production baseline on 2026-10-11: application and Helm chart `2026.2.2`.
+Final verified production version: application and Helm chart `2026.8.3`; no image override or obsolete Redis values remain.
 Use sequential release lines, with the latest application patch in each line:
 
 | Stage | Application | Helm chart | `values.global.image.tag` |
@@ -77,15 +78,17 @@ Database restoration and production connection cutover require operator approval
 |---|---|---|
 | `2026.2.7` | `2026.2.3` | `20261011T220112` |
 | `2026.5.7` | `2026.5.6` | `20261011T223442` |
+| `2026.8.3` | `2026.8.3` | `20261011T224926` |
 
 For each recorded hop, the backup data archive and both boundary WAL segments were verified in Wasabi before deployment. Runtime checks covered migrations, worker health and completed tasks, the custom blueprint, public readiness, and all 11 configured OIDC discovery/JWKS endpoints. Providers without an asymmetric signing key intentionally publish no public signing keys.
 
-The operator confirmed fresh login, admin access, and critical SSO checks for `2026.2.7` and `2026.5.7`. No recovery key was created.
+The operator confirmed fresh login, admin access, and critical SSO checks after all three recorded hops. No recovery key was created.
+Final checks also confirmed HTTP 200 and HTTPS OIDC issuers over explicit LAN and Cloudflare routes, unchanged Cloudflare SAML metadata, an established embedded-outpost WebSocket, and the rendered S3-hosted branding image.
 The registered Jellyfin LDAP provider has no registered LDAP outpost; LDAP login was not asserted as verified.
 
-## 5) Redis decommission
+## Redis decommission (completed)
 
 - Authentik's Redis wiring was removed during the PostgreSQL-backed task migration.
-- Remove the unused Bitnami Redis release and both Redis ExternalSecrets after confirming no other consumers. The operator remains available for future instances.
-- Apply `replica.persistentVolumeClaimRetentionPolicy` with `enabled: true`, `whenDeleted: Delete`, and `whenScaled: Retain` before removing the release. Confirm all three replica PVCs have StatefulSet owner references before uninstalling.
-- The remaining Redis keys and all three 10Gi Ceph-backed replica PVCs are approved for disposal without a backup. Keep the AWS SSM parameter untouched.
+- The unused Bitnami Redis release and both Redis ExternalSecrets were removed. The operator remains available for future instances.
+- PVC retention was changed to `whenDeleted: Delete` / `whenScaled: Retain`, and all three replica PVC owner references were confirmed before uninstalling.
+- Redis keys and all three 10Gi Ceph-backed replica PVCs were discarded with operator approval, without a backup. The AWS SSM parameter was retained.
