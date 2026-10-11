@@ -11,9 +11,9 @@ spec:
   chart:
     spec:
       chart: bifrost
-      # Chart appVersion is 1.5.x; we pin the image tag explicitly below to v1.6.2
-      # (newer than the chart's appVersion — chart templates are compatible).
-      version: "2.1.29"
+      # Chart appVersion lags the stable HTTP release; helm-values.yaml pins
+      # the application image separately and enables same-major tag automation.
+      version: "2.1.43"
       sourceRef:
         kind: HelmRepository
         name: bifrost

@@ -7,14 +7,16 @@
 # codified here so future pod restarts can never silently drop them (the prior
 # SQLite/emptyDir deployment lost 3 of 4 providers on every restart).
 #
-# Image is pinned manually — Flux image-automation's $imagepolicy marker
-# substitutes the full image ref (repo:tag), which doesn't fit the chart's
-# split repository/tag schema. Bump the tag here by hand when upgrading,
-# consistent with the cloudflared / Stalwart pinning pattern (AGENTS.md §3.6).
+# Flux image automation updates only the tag via the policy's :tag selector;
+# chart upgrades remain explicit in helm-release.yaml.
+# Policy admits stable 2.x minor/patch releases only. Review migrations before
+# changing majors: https://docs.getbifrost.ai/migration-guides/v2.0.0
+# v1 -> v2 mutates PostgreSQL schemas; retain a pre-upgrade backup and encryption
+# key. Rollback requires restoring that database, not only reverting the image.
 
 image:
   repository: docker.io/maximhq/bifrost
-  tag: "v1.6.4"
+  tag: "v2.2.6" # {"$imagepolicy": "flux-system:bifrost-image-policy:tag"}
   pullPolicy: IfNotPresent
 replicaCount: 1
 strategy:
@@ -132,6 +134,8 @@ bifrost:
     # Mac Studio LM Studio @ 192.168.2.4:1234 — LAN-local OpenAI-compatible gateway.
     # Self-hosted models are not in Bifrost's pricing catalog, so aliases here
     # are for display/routing clarity only (no pricing data will resolve).
+    # model_family is intentionally omitted: chart/runtime enums exclude qwen;
+    # base_provider_type below retains OpenAI-compatible routing.
     lmstudio-local:
       keys:
         - name: lmstudio-key
@@ -142,7 +146,6 @@ bifrost:
             "qwen3.6-fable":
               model_id: "qwen3.6-fable"
               model_name: "qwen3.6-fable"
-              model_family: "qwen"
               description: "Mac Studio local — Qwen 3.6 Fable (self-hosted, no pricing data)"
       network_config:
         base_url: "http://192.168.2.4:1234"
