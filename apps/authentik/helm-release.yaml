@@ -5,17 +5,25 @@ metadata:
   namespace: identity
 spec:
   interval: 30m
+  timeout: 15m
+  upgrade:
+    strategy:
+      # Database migrations cannot be undone by a Helm rollback.
+      name: RetryOnFailure
   releaseName: authentik
   chart:
     spec:
       chart: authentik
-      version: "2026.2.2"
+      version: "2026.2.3"
       sourceRef:
         kind: HelmRepository
         name: authentik
         namespace: identity
   values:
     global:
+      image:
+        # The latest 2026.2 application patch has no matching Helm chart.
+        tag: "2026.2.7"
       env:
         - name: AUTHENTIK_SECRET_KEY
           valueFrom:

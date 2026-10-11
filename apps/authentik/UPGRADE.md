@@ -1,56 +1,75 @@
 # Authentik upgrade runbook (GitOps)
 
-Last verified baseline in this repo:
-`apps/authentik/helm-release.yaml` -> chart `2025.10.1`
+## Release sequence
 
-Current manifest target after this change:
-`apps/authentik/helm-release.yaml` -> chart `2025.12.2`
+Verified production baseline on 2026-10-11: application and Helm chart `2026.2.2`.
+Use sequential release lines, with the latest application patch in each line:
 
-**Why staged:** Authentik requires sequential minor upgrades.
+| Stage | Application | Helm chart | `values.global.image.tag` |
+|---|---|---|---|
+| 1 | `2026.2.7` | `2026.2.3` | `"2026.2.7"` |
+| 2 | `2026.5.7` | `2026.5.6` | `"2026.5.7"` |
+| 3 | `2026.8.3` | `2026.8.3` | Remove the override; the chart defaults to the matching image. |
 
-## 1) Preflight checklist
+The intermediate application patches have no matching published Helm chart.
+Keep exact versions throughout the upgrade; do not enable automatic release-line upgrades.
+Server, worker, and embedded outpost must run the same application version.
 
-1. Backup PostgreSQL before every hop.
-2. Snapshot namespace objects:
-   - `kubectl -n identity get all,secret,cm,sa,sa -o yaml > /tmp/identity-pre-upgrade.yaml`
-3. Verify outposts inventory and ensure any outposts are upgraded in the same release window.
-4. Confirm no duplicate Authentik group names exist before upgrading to 2025.12.x.
-5. Review custom property mappings/flows for `User.ak_groups` usage before entering 2026.2.x.
-6. Remove any Authentik-specific Redis env wiring from the manifest:
-   - `AUTHENTIK_REDIS__PASSWORD` removed.
-   - `values.authentik.redis.host` removed.
+Sources:
+- [Upgrade requirements](https://docs.goauthentik.io/install-config/upgrade/)
+- [2026.5 release notes](https://docs.goauthentik.io/releases/2026.5/)
+- [2026.8 release notes](https://docs.goauthentik.io/releases/2026.8/)
+- [Helm chart index](https://charts.goauthentik.io/index.yaml)
 
-## 2) Staged upgrade sequence
+## Preflight
 
-### Step A: 2025.10.x -> latest 2025.12.x
-1. Temporarily set chart version to the latest `2025.12.x` in `apps/authentik/helm-release.yaml`.
-2. Push/apply change and wait for `ak-server` and `ak-worker` to become healthy.
-3. Run smoke checks:
-   - login to admin
-   - basic SSO flow
-   - outpost connectivity (if any)
-4. Re-run database backup after successful validation.
+- Use the explicit service-account kubeconfig for every cluster-connected command:
+  `--kubeconfig /Users/edward/.kube/omni-sa-config.yaml`.
+- Reserve a maintenance window: one server and one worker do not guarantee uninterrupted login.
+- Confirm independent cluster access, PostgreSQL health, and a working normal admin/passkey/password login before the first hop.
+- Inventory providers and outposts. The verified inventory has only the embedded proxy outpost; Grafana and Open WebUI are configured OIDC consumers.
+- Preserve `authentik-secret-key`, `authentik-database-config`, `authentik-s3-storage`, the `authentik-storage` bucket, and the passkey-first login blueprint.
+- Never export Secret values into Git, logs, or an unencrypted namespace snapshot.
 
-### Step B: 2025.12.x -> latest 2026.2.x
-1. Set chart version to latest `2026.2.x` (`2026.2.2` at time of this change).
-2. Push/apply change and wait for health.
-3. Re-run smoke checks + SCIM/SSO checks.
-4. Verify logs for migration/completion warnings.
+## Backup and deploy each stage
 
-## 3) Post-upgrade validation
+1. Add a uniquely named `postgresql.cnpg.io/v1` Backup to `databases/authentik-pg/upgrade-backups.yaml`, using `method: plugin` and `barman-cloud.cloudnative-pg.io`. Annotate it with the currently deployed application version.
+2. Commit and obtain operator approval before pushing. Reconcile the `databases` Kustomization through Flux; do not apply application or backup manifests directly.
+3. Wait for `status.phase: completed`. Record the backup ID, timestamps, beginning/ending LSN and WAL names.
+4. Verify Wasabi contains the backup's `backup.info` with `status=DONE`, its data archive, and both required boundary WAL segments. A Backup CR marked completed alone is not sufficient proof.
+5. Preserve the existing archive server name `authentik-pg-cluster-geekzoo-prod-20260401`. The older bootstrap recovery source is not the source for these new pre-upgrade backups.
+6. Render the full Authentik chart using the proposed HelmRelease values and preview its server-side diff. Verify server/worker images, readiness probes, database references, RBAC, and disabled bundled PostgreSQL.
+7. Set the stage's chart/image pair in `apps/authentik/helm-release.yaml`. Use a `15m` timeout and `upgrade.strategy.name: RetryOnFailure` so a timeout does not automatically downgrade a migrated database.
+8. Commit, obtain push approval, and reconcile the `apps` Kustomization and Authentik HelmRelease through Flux.
+9. Watch rollout and migration progress. Investigate a stalled rollout rather than waiting silently for the timeout.
+10. Pass every verification gate below before creating the next stage's fresh backup or pushing its upgrade.
 
-1. Confirm no Redis settings remain in Authentik container env.
-2. Validate auth endpoints, SCIM where enabled, OAuth/OIDC, and SAML flows.
-3. Confirm storage paths/served content are working.
-4. Verify worker/task queues and background jobs are processing.
+Backup CRs are audit records, not indefinite recovery guarantees. The Wasabi ObjectStore retains backups for 30 days; verify the selected backup and WAL still exist before any restore.
 
-## 4) Rollback
+## Verification gates
 
-If a stage fails:
+- HelmRelease Ready; server and worker Ready on the intended application image.
+- Migrations completed; no pending migrations or new unexplained migration failures.
+- PostgreSQL remains healthy with three ready instances and continuous WAL archiving.
+- `https://authentik.macbytes.io/-/health/ready/` returns HTTP 200.
+- Fresh normal login verifies the passkey-first flow, password fallback, and configured MFA. A recovery key or retained browser session does not prove this.
+- Admin interface loads, and critical SSO consumers complete authorization and callback flows. Exercise each active protocol, including proxy/SAML where configured.
+- Embedded outpost connects, WebSockets work, worker tasks run, the login blueprint reconciles, and S3 branding/assets load.
+- Compare task errors with the baseline: 2026.8 exposes errors that older releases could hide.
 
-1. Revert the HelmRelease chart version to the previously working value.
-2. Force reconcile to rollback the deployment.
-3. Confirm pods return to steady state and run smoke checks again.
+For 2026.5, verify effective listener bindings and IPv4 reachability; the upstream default changes to `[::]` and the worker entrypoint changes to Rust.
+For 2026.8, verify Traefik's direct peer addresses are trusted and forwarded headers preserve HTTPS, redirects and client addresses over both LAN and Cloudflare paths. Never trust `0.0.0.0/0` to suppress proxy errors.
+
+## Recovery: no Helm-only rollback after migrations
+
+1. Stop the sequence if any verification gate fails. Suspend the Authentik HelmRelease while investigating; do not automatically revert its image.
+2. Quiesce Authentik writers before a database cutover. Prevent GitOps from restarting them during recovery.
+3. Restore the immediately preceding stage's verified backup into an isolated CNPG cluster, reading from the existing Wasabi archive server name. Use a distinct archive destination/server name for the restored cluster's new WAL so recovery cannot overwrite the original backup chain.
+4. Verify the restored database, then update Authentik's GitOps/ESO-managed database connection to the restored service.
+5. Deploy the application and outpost versions matching that backup. Retain the original secret key and S3 credentials.
+6. Resume reconciliation and repeat all verification gates before restoring normal service or considering another upgrade.
+
+Database restoration and production connection cutover require operator approval. Do not delete the original PostgreSQL cluster, PVCs, secrets, or backups as part of an upgrade.
 
 ## 5) Redis decommission
 
