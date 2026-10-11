@@ -34,6 +34,8 @@ resources:
   - image-policy-open-webui.yaml
   - image-policy-audiobookshelf.yaml
   - image-policy-bifrost.yaml
+  - image-repository-cloudflared.yaml
+  - image-policy-cloudflared.yaml
   - image-update-automation.yaml
   - image-update-automation-apps.yaml
   - image-repository-bulwark.yaml

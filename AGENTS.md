@@ -142,7 +142,7 @@ Two paths, both terminating at Traefik:
 ### 3.6 Image automation
 - Pin a real tag in `image: foo/bar:1.2.3`.
 - Append `# {"$imagepolicy": "flux-system:<name>-image-policy"}` on the same line if you want Flux to auto-bump it. The matching `ImagePolicy` + `ImageRepository` go in `infrastructure/image-automation/`.
-- **Convention:** cloudflared and Stalwart are pinned *without* the marker (no auto-update). Most other workloads use the marker with a semver range policy.
+- **Convention:** Stalwart remains pinned *without* an image-policy marker (no auto-update). Cloudflared uses `cloudflared-image-policy` through `apps-image-updates`: stable numeric `YYYY.M.P` tags at or above `2026.10.0`, including future years; `latest`, prereleases, and variant tags are excluded. Keep Cloudflared's `no-autoupdate: true` so the binary does not self-update outside GitOps. Its one steady-state replica and 25 Mbit/s per-pod cap remain unchanged; the existing RollingUpdate can temporarily run two pods. To roll back, first suspend `apps-image-updates` or constrain the Cloudflared policy before reverting its image, otherwise automation can reapply the upgrade. Most other workloads use semver range policies.
 - The `apps-image-updates` and `mail-image-updates` `ImageUpdateAutomation`s push directly to `main` as `flux-image-automation@macbytes.io`. Don't be surprised by commits with subjects like `chore(images): update app container images` appearing without a PR.
 
 ### 3.7 Helm via Flux

@@ -1,0 +1,14 @@
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: cloudflared-image-policy
+  namespace: flux-system
+spec:
+  imageRepositoryRef:
+    name: cloudflared
+  filterTags:
+    pattern: '^[0-9]{4}\.[0-9]+\.[0-9]+$'
+  policy:
+    semver:
+      # Calendar versioning: allow stable releases, including future years.
+      range: ">=2026.10.0"
