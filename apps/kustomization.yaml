@@ -10,6 +10,5 @@ resources:
   - home-assistant
   - vikunja
   - bifrost
-  - inbox-zero
   - website
   - edtheadmin

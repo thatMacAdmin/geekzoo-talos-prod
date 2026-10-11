@@ -5,7 +5,6 @@ resources:
   - monitoring.yaml
   - authentik-pg
   - bifrost-pg
-  - inbox-zero-pg
   - seerr-pg
   - vaultwarden-pg
   - vikunja-pg
