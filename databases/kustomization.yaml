@@ -9,3 +9,4 @@ resources:
   - vaultwarden-pg
   - vikunja-pg
   - redis
+  - upgrade-backup-smoke.yaml
