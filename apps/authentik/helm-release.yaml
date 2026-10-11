@@ -14,7 +14,7 @@ spec:
   chart:
     spec:
       chart: authentik
-      version: "2026.2.3"
+      version: "2026.5.6"
       sourceRef:
         kind: HelmRepository
         name: authentik
@@ -22,8 +22,8 @@ spec:
   values:
     global:
       image:
-        # The latest 2026.2 application patch has no matching Helm chart.
-        tag: "2026.2.7"
+        # The latest 2026.5 application patch has no matching Helm chart.
+        tag: "2026.5.7"
       env:
         - name: AUTHENTIK_SECRET_KEY
           valueFrom:

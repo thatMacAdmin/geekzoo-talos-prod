@@ -2,7 +2,7 @@
 
 ## Release sequence
 
-Verified production baseline on 2026-10-11: application and Helm chart `2026.2.2`.
+Starting production baseline on 2026-10-11: application and Helm chart `2026.2.2`.
 Use sequential release lines, with the latest application patch in each line:
 
 | Stage | Application | Helm chart | `values.global.image.tag` |
@@ -70,6 +70,17 @@ For 2026.8, verify Traefik's direct peer addresses are trusted and forwarded hea
 6. Resume reconciliation and repeat all verification gates before restoring normal service or considering another upgrade.
 
 Database restoration and production connection cutover require operator approval. Do not delete the original PostgreSQL cluster, PVCs, secrets, or backups as part of an upgrade.
+
+## Verified execution (2026-10-11)
+
+| Application | Helm chart | Pre-upgrade Wasabi backup ID |
+|---|---|---|
+| `2026.2.7` | `2026.2.3` | `20261011T220112` |
+
+For each recorded hop, the backup data archive and both boundary WAL segments were verified in Wasabi before deployment. Runtime checks covered migrations, worker health and completed tasks, the custom blueprint, public readiness, and all 11 configured OIDC discovery/JWKS endpoints. Providers without an asymmetric signing key intentionally publish no public signing keys.
+
+The operator confirmed fresh login, admin access, and critical SSO checks for `2026.2.7`. No recovery key was created.
+The registered Jellyfin LDAP provider has no registered LDAP outpost; LDAP login was not asserted as verified.
 
 ## 5) Redis decommission
 
