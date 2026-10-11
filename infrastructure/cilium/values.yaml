@@ -4,6 +4,10 @@ k8sServiceHost: localhost
 k8sServicePort: 7445
 kubeProxyReplacement: true
 
+# Preserve the 1.19 datapath defaults across the 1.20 minor upgrade.
+# The earliest Flux-managed installation in this repository was 1.19.1.
+upgradeCompatibility: "1.19"
+
 debug:
   verbose: ""
 policyCIDRMatchMode: []

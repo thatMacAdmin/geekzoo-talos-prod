@@ -3,7 +3,6 @@ kind: Kustomization
 
 resources:
   - cilium.yaml
-  - preflight.yaml
   - lb-ip-pool.yaml
   - l2-announcement-policy.yaml
   - cilium-monitoring.yaml
