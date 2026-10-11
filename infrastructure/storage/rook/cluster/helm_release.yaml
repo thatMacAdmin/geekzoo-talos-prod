@@ -5,6 +5,8 @@ metadata:
   namespace: rook-ceph
 spec:
   interval: 30m
+  # Daemon upgrades exceed Helm's five-minute default; retain Rook's safety gates.
+  timeout: 20m
   releaseName: rook-ceph-cluster
   dependsOn:
     - name: ceph-csi-drivers
