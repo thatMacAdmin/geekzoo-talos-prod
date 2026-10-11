@@ -21,6 +21,19 @@ cephClusterSpec:
       csi:
         # AES256K kernel mounts require Linux 7.0; Talos currently runs 6.18.
         keyType: aes
+  # Talos 6.18 kernels require AES CSI keys until the Talos 1.15 / Linux 7.x
+  # migration. Unmute after client keys and existing mounts migrate to AES256K.
+  # Core authentication errors and unrelated storage warnings remain visible.
+  healthCheck:
+    muteHealthWarning:
+      AUTH_INSECURE_CLIENT_KEY_TYPE:
+        policy: mute
+      AUTH_INSECURE_KEYS_ALLOWED:
+        policy: mute
+      AUTH_INSECURE_KEYS_CREATABLE:
+        policy: mute
+      AUTH_INSECURE_ROTATING_SERVICE_KEY_TYPE:
+        policy: mute
   # Node clocks oscillate ±40ms under NTP (loose WAN sync); relative mon skew
   # occasionally brushes the 50ms default and flaps MON_CLOCK_SKEW warnings.
   # 150ms is still warn-only and far below quorum-relevant timescales
