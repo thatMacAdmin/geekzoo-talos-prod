@@ -13,15 +13,15 @@ resources:
   - ceph-dashboard-serverstransport.yaml
   - ceph-rgw-certificate.yaml
   - ceph-rgw-ingressroute.yaml
-  - csi-legacy-migration.yaml
-  - storage-upgrade-smoke.yaml
-  - storage-upgrade-fresh-smoke.yaml
 
 configMapGenerator:
   - name: rook-ceph-cluster-values
     namespace: rook-ceph
     files:
       - values.yaml=cluster/values.yaml
+    options:
+      labels:
+        reconcile.fluxcd.io/watch: Enabled
   - name: ceph-csi-drivers-values
     namespace: rook-ceph
     files:

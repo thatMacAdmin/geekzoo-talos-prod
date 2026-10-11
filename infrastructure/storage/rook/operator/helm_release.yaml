@@ -19,26 +19,6 @@ spec:
     crds: CreateReplace
   upgrade:
     crds: CreateReplace
-  # Retain active CSI permissions until the v1.20 drivers release replaces them.
-  postRenderers:
-    - kustomize:
-        patches:
-          - target:
-              name: ceph-csi-(rbd|cephfs)-(ctrlplugin|nodeplugin)-(sa|cr|crb|r|rb)
-            patch: |
-              - op: add
-                path: /metadata/annotations
-                value:
-                  helm.sh/resource-policy: keep
-          # Reconcile drivers after restoring the image-set ConfigMap.
-          - target:
-              kind: Deployment
-              name: ceph-csi-controller-manager
-            patch: |
-              - op: add
-                path: /spec/template/metadata/annotations
-                value:
-                  macbytes.io/csi-image-set-refresh: v3.17.1
   values:
     monitoring:
       enabled: true
