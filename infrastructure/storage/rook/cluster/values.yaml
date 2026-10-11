@@ -21,8 +21,11 @@ cephClusterSpec:
       csi:
         # AES256K kernel mounts require Linux 7.0; Talos currently runs 6.18.
         keyType: aes
-  # Talos 6.18 kernels require AES CSI keys until the Talos 1.15 / Linux 7.x
-  # migration. Unmute after client keys and existing mounts migrate to AES256K.
+  # CHORE: After all nodes run Talos 1.15 / Linux 7.x, migrate CSI and remaining
+  # client keys to AES256K, retaining prior CSI keys until existing volumes are
+  # remounted. Retire old AES keys, restrict allowed ciphers, then unmute the
+  # compatibility warnings below. Remove the rotating-service-key mute after
+  # its post-rotation expiry (normally 2-3 hours); it need not wait for Talos 1.15.
   # Core authentication errors and unrelated storage warnings remain visible.
   healthCheck:
     muteHealthWarning:
