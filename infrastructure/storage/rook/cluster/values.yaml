@@ -1,8 +1,8 @@
 operatorNamespace: rook-ceph
-# Keep the current Ceph image during the Rook/CSI management-layer upgrade.
+# Pin the Squid security release and rotate core keys in the same daemon rollout.
 cephImage:
   repository: quay.io/ceph/ceph
-  tag: v19.2.3
+  tag: v19.2.6-20260818
 configOverride: |
   [global]
   debug_default = 0/5
@@ -15,6 +15,9 @@ cephClusterSpec:
   removeOSDsIfOutAndSafeToRemove: true
   security:
     cephx:
+      daemon:
+        keyRotationPolicy: KeyGeneration
+        keyGeneration: 2
       csi:
         # AES256K kernel mounts require Linux 7.0; Talos currently runs 6.18.
         keyType: aes
@@ -109,4 +112,4 @@ monitoring:
   createPrometheusRules: true
 toolbox:
   enabled: true
-  image: quay.io/ceph/ceph:v19.2.3
+  image: quay.io/ceph/ceph:v19.2.6-20260818
