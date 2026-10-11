@@ -154,6 +154,8 @@ Pattern is always:
 
 Don't switch to `spec.values:` for non-trivial charts — keep the ConfigMap pattern for diff-ability.
 
+- **NVIDIA GPU Operator:** pinned to `v26.3.3` for Kubernetes 1.36 support (introduced in 26.3.2). Talos supplies the driver and toolkit: preserve `driver.enabled: false`, `toolkit.enabled: false`, and `hostPaths.driverInstallDir: /usr/local`. Keep the chart's pre-upgrade CRD hook enabled; verify ClusterPolicy readiness, GPU allocatable resources, and a real GPU workload after upgrades.
+
 ### 3.8 Databases (CNPG)
 - Cluster name embeds a date suffix (`-20260401`) — that's an artifact of the in-place restore-from-Wasabi rebuild done on that date. **Don't rename it** without also re-pointing the `barman-cloud` `serverName` and migrating WAL prefixes.
 - `bootstrap.recovery.source` points at an `externalClusters` entry that reads from the *old* `serverName` (no date suffix). This is the live-cluster-from-prior-backup pattern; preserve it when standing up new PG clusters from a prior incarnation.
