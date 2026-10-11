@@ -52,7 +52,9 @@ If a stage fails:
 2. Force reconcile to rollback the deployment.
 3. Confirm pods return to steady state and run smoke checks again.
 
-## 5) Optional cleanup
+## 5) Redis decommission
 
-- If Redis is no longer used by Authentik, keep it for other workloads until verified, then remove associated Authentik references only.
-- If Redis persistence exists only for Authentik, remove it after the 2025.10 migration is proven stable.
+- Authentik's Redis wiring was removed during the PostgreSQL-backed task migration.
+- Remove the unused Bitnami Redis release and both Redis ExternalSecrets after confirming no other consumers. The operator remains available for future instances.
+- Apply `replica.persistentVolumeClaimRetentionPolicy` with `enabled: true`, `whenDeleted: Delete`, and `whenScaled: Retain` before removing the release. Confirm all three replica PVCs have StatefulSet owner references before uninstalling.
+- The remaining Redis keys and all three 10Gi Ceph-backed replica PVCs are approved for disposal without a backup. Keep the AWS SSM parameter untouched.

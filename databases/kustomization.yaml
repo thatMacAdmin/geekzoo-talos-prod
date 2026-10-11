@@ -8,4 +8,3 @@ resources:
   - seerr-pg
   - vaultwarden-pg
   - vikunja-pg
-  - redis
