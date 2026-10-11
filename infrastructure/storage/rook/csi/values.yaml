@@ -1,6 +1,6 @@
-# Rook v1.20.8 bundles ceph-csi-operator 1.0.4 and supplies CSI v3.17.1
-# through rook-csi-operator-image-set-configmap. Keep the drivers chart aligned.
-# https://rook.io/docs/rook/v1.20/Helm-Charts/csi-drivers-chart/
+# Rook v1.21.0 bundles ceph-csi-operator 1.1.0. The operator release explicitly
+# pins CSI v3.17.1 through rook-csi-operator-image-set-configmap.
+# https://rook.io/docs/rook/v1.21/Helm-Charts/csi-drivers-chart/
 # Preserve the pre-upgrade Driver/OperatorConfig settings, not upstream chart
 # defaults (which change replica counts, snapshots, priorities and networking).
 cephConnections: []

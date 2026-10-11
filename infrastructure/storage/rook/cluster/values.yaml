@@ -13,6 +13,11 @@ configOverride: |
   mon_cluster_log_level = info
 cephClusterSpec:
   removeOSDsIfOutAndSafeToRemove: true
+  security:
+    cephx:
+      csi:
+        # AES256K kernel mounts require Linux 7.0; Talos currently runs 6.18.
+        keyType: aes
   # Node clocks oscillate ±40ms under NTP (loose WAN sync); relative mon skew
   # occasionally brushes the 50ms default and flaps MON_CLOCK_SKEW warnings.
   # 150ms is still warn-only and far below quorum-relevant timescales

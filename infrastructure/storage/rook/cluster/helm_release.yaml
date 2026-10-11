@@ -13,7 +13,7 @@ spec:
   chart:
     spec:
       chart: rook-ceph-cluster
-      version: "1.20.8"
+      version: "1.21.0"
       sourceRef:
         kind: HelmRepository
         name: rook-operator
@@ -22,6 +22,23 @@ spec:
     crds: CreateReplace
   upgrade:
     crds: CreateReplace
+  # Chart 1.21 adds optional CSI parameters; existing StorageClasses are immutable.
+  # Preserve ceph-block rather than delete/recreate the class used by live PVCs.
+  postRenderers:
+    - kustomize:
+        patches:
+          - target:
+              kind: StorageClass
+              name: ceph-block
+            patch: |
+              - op: remove
+                path: /parameters/csi.storage.k8s.io~1controller-modify-secret-name
+              - op: remove
+                path: /parameters/csi.storage.k8s.io~1controller-modify-secret-namespace
+              - op: remove
+                path: /parameters/csi.storage.k8s.io~1node-publish-secret-name
+              - op: remove
+                path: /parameters/csi.storage.k8s.io~1node-publish-secret-namespace
   valuesFrom:
     - kind: ConfigMap
       name: rook-ceph-cluster-values
