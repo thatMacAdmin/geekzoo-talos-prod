@@ -30,6 +30,15 @@ spec:
                 path: /metadata/annotations
                 value:
                   helm.sh/resource-policy: keep
+          # Reconcile drivers after restoring the image-set ConfigMap.
+          - target:
+              kind: Deployment
+              name: ceph-csi-controller-manager
+            patch: |
+              - op: add
+                path: /spec/template/metadata/annotations
+                value:
+                  macbytes.io/csi-image-set-refresh: v3.17.1
   values:
     monitoring:
       enabled: true
