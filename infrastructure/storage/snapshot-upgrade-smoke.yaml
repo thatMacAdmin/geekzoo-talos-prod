@@ -153,3 +153,27 @@ spec:
       - name: data
         persistentVolumeClaim:
           claimName: snapshot-upgrade-smoke-cephfs-source
+---
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshot
+metadata:
+  name: snapshot-upgrade-smoke-rbd
+  namespace: apps
+  labels:
+    app: snapshot-upgrade-smoke
+spec:
+  volumeSnapshotClassName: snapshot-upgrade-smoke-rbd
+  source:
+    persistentVolumeClaimName: snapshot-upgrade-smoke-rbd-source
+---
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshot
+metadata:
+  name: snapshot-upgrade-smoke-cephfs
+  namespace: apps
+  labels:
+    app: snapshot-upgrade-smoke
+spec:
+  volumeSnapshotClassName: snapshot-upgrade-smoke-cephfs
+  source:
+    persistentVolumeClaimName: snapshot-upgrade-smoke-cephfs-source
