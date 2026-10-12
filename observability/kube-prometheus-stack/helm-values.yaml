@@ -232,6 +232,11 @@ kubeEtcd:
 kubeScheduler:
   enabled: false
 
+# Upgrade kube-state-metrics independently of the stack and Prometheus Operator.
+kube-state-metrics:
+  image:
+    tag: v2.20.0
+
 nodeExporter:
   enabled: true
 
