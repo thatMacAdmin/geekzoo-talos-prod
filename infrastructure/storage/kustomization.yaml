@@ -5,3 +5,4 @@ resources:
   - snapshot-controller
   - rook
   - nfs
+  - snapshot-upgrade-smoke.yaml

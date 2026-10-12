@@ -19,6 +19,26 @@ spec:
     crds: CreateReplace
   upgrade:
     crds: CreateReplace
+  # CSI operator 1.1.0 does not reload this image-set ConfigMap on update.
+  # Bump this annotation with image-set upgrades to reconcile existing Drivers.
+  postRenderers:
+    - kustomize:
+        patches:
+          - target:
+              group: apps
+              version: v1
+              kind: Deployment
+              name: ceph-csi-controller-manager
+            patch: |
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: ceph-csi-controller-manager
+              spec:
+                template:
+                  metadata:
+                    annotations:
+                      macbytes.io/csi-image-set-version: "snapshotter-v8.6.0"
   values:
     monitoring:
       enabled: true
