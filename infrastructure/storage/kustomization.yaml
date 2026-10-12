@@ -6,3 +6,4 @@ resources:
   - rook
   - nfs
   - snapshot-upgrade-smoke.yaml
+  - snapshot-upgrade-restore-smoke.yaml
