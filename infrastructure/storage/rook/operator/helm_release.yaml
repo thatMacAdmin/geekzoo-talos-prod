@@ -35,7 +35,7 @@ spec:
         tag: v6.2.0
       snapshotter:
         repository: registry.k8s.io/sig-storage/csi-snapshotter
-        tag: v8.5.0
+        tag: v8.6.0
       attacher:
         repository: registry.k8s.io/sig-storage/csi-attacher
         tag: v4.12.0
