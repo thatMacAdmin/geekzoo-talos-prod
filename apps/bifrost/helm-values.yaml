@@ -16,7 +16,7 @@
 
 image:
   repository: docker.io/maximhq/bifrost
-  tag: "v2.3.0" # {"$imagepolicy": "flux-system:bifrost-image-policy:tag"}
+  tag: "v2.3.1" # {"$imagepolicy": "flux-system:bifrost-image-policy:tag"}
   pullPolicy: IfNotPresent
 replicaCount: 1
 strategy:
