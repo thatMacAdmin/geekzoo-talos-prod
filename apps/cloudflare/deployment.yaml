@@ -41,7 +41,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: cloudflared
-          image: docker.io/cloudflare/cloudflared:2026.10.1 # {"$imagepolicy": "flux-system:cloudflared-image-policy"}
+          image: docker.io/cloudflare/cloudflared:2026.10.2 # {"$imagepolicy": "flux-system:cloudflared-image-policy"}
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
