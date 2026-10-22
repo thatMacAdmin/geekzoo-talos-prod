@@ -126,6 +126,11 @@ ingress:
 monitoring:
   enabled: true
   createPrometheusRules: true
+  prometheusRuleOverrides:
+    # Temporarily disable repeated packet-error alerts (2026-10-21); cause unresolved.
+    # Remove this override to re-enable. Other Ceph and network alerts stay enabled.
+    CephNodeNetworkPacketErrors:
+      disabled: true
 toolbox:
   enabled: true
   image: quay.io/ceph/ceph:v19.2.6-20260818
