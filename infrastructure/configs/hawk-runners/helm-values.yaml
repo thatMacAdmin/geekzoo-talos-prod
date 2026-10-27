@@ -32,11 +32,22 @@ template:
       - name: dind
         image: docker:29.9.2-dind
         restartPolicy: Always
+        command: [sh, -ec]
         args:
-          - dockerd
-          - --host=unix:///var/run/docker.sock
-          - --group=1001
-          - --tls=false
+          - |
+            # Privileged DinD sees the host cgroup tree. Docker's default
+            # /docker parent escapes Kubernetes' CPU/memory accounting.
+            # Keep all child containers below this pod's bounded cgroup.
+            read -r cgroup < /proc/self/cgroup
+            container_cgroup="${cgroup#0::}"
+            pod_cgroup="${container_cgroup%/*}"
+            test -n "$pod_cgroup"
+            test "$pod_cgroup" != /
+            exec /usr/local/bin/dockerd-entrypoint.sh dockerd \
+              --host=unix:///var/run/docker.sock \
+              --group=1001 \
+              --tls=false \
+              --cgroup-parent="$pod_cgroup"
         env:
           - name: DOCKER_TLS_CERTDIR
             value: ""
