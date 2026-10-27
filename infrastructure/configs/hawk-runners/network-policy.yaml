@@ -22,6 +22,16 @@ spec:
           port: 53
         - protocol: TCP
           port: 53
+    # DinD must not forward nested kind DNS into the outer cluster's
+    # overlapping service network. Only this public resolver gets DNS egress.
+    - to:
+        - ipBlock:
+            cidr: 1.1.1.1/32
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
     # Public downloads only. Exclude LAN, pods, services, link-local,
     # metadata endpoints, and other non-public IPv4 space.
     - to:

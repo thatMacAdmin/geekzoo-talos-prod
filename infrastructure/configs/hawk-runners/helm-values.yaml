@@ -1,7 +1,7 @@
 githubConfigUrl: https://github.com/thatMacAdmin/hawk
 githubConfigSecret: hawk-runner-github
 runnerScaleSetName: hawk-runners
-minRunners: 0
+minRunners: 1
 maxRunners: 2
 
 controllerServiceAccount:
@@ -48,6 +48,7 @@ template:
               --host=unix:///var/run/docker.sock \
               --group=1001 \
               --tls=false \
+              --dns=1.1.1.1 \
               --cgroup-parent="$pod_cgroup"
         env:
           - name: DOCKER_TLS_CERTDIR
