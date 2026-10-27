@@ -43,6 +43,7 @@ template:
             pod_cgroup="${container_cgroup%/*}"
             test -n "$pod_cgroup"
             test "$pod_cgroup" != /
+            printf '%s\n' "$pod_cgroup" > /var/run/docker-cgroup-parent
             exec /usr/local/bin/dockerd-entrypoint.sh dockerd \
               --host=unix:///var/run/docker.sock \
               --group=1001 \
