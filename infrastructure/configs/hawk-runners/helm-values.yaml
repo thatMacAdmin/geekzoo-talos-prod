@@ -1,7 +1,7 @@
 githubConfigUrl: https://github.com/thatMacAdmin/hawk
 githubConfigSecret: hawk-runner-github
 runnerScaleSetName: hawk-runners
-minRunners: 1
+minRunners: 0
 maxRunners: 2
 
 controllerServiceAccount:
