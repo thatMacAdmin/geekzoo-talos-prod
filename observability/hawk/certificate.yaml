@@ -1,0 +1,12 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: hawk-ui-certificate
+  namespace: hawk-system
+spec:
+  secretName: hawk-ui-tls-certificate
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+    - hawk.macbytes.io

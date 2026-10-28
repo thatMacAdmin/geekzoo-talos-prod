@@ -4,6 +4,9 @@ kind: Kustomization
 resources:
   - helm-repository.yaml
   - helm-release.yaml
+  - rbac.yaml
+  - certificate.yaml
+  - ingress.yaml
 
 configMapGenerator:
   - name: hawk-values

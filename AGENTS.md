@@ -205,6 +205,9 @@ Grafana is exposed at `grafana.macbytes.io` via Traefik IngressRoute + cert-mana
 ### 3.11 Hawk GitHub Actions runners
 Hawk's CI no longer runs in this cluster. It moved on 2026-10-28 to self-hosted runner VMs outside it (two Proxmox VMs and an OrbStack VM on the Mac Studio; see `build/ci-runner/` in the Hawk repo), and the ARC controller, scale set, `arc-system` and `hawk-runners` namespaces and their ExternalSecret were removed through GitOps. Privileged Docker-in-Docker CI should not come back to these nodes. Left behind on purpose: ARC's CRDs (Helm does not delete CRDs), SSM parameter `/k3s-geekzoo/hawk-runner-github`, and the `geekzoo-actions-runners` GitHub App.
 
+
+### 3.12 Hawk UI and its sign-in
+The Hawk chart (`observability/hawk/`) runs the web UI at `hawk.macbytes.io` (cloudflared tunnel → Traefik → `hawk-ui:3000`). People sign in through the Authentik application `hawk` (OAuth2/OpenID provider with a generated client ID, in `helm-values.yaml`), and the UI sends the Inventory API their own ID token. `ui.oidc` and `api.oidc` in `helm-values.yaml` must name the same issuer and client ID exactly; the chart refuses otherwise, and the API cannot start while Authentik's discovery document for that issuer is unreachable. The client secret and session-cookie key are SSM `/k3s-geekzoo/hawk-ui-oidc` (JSON keys `client-secret`, `session-secret`). Rotating `session-secret` signs everyone out. Access is Kubernetes RBAC on `oidc:`-prefixed Authentik groups (`observability/hawk/rbac.yaml`): `hawk-viewers` read every namespace, `hawk-admins` also get the audit trail and Refresh Requests. The API server does not trust Authentik, so those bindings only answer Hawk's SubjectAccessReviews.
 ---
 
 ## 4. Commands

@@ -1,0 +1,51 @@
+# Who sees what in Hawk. The Inventory API asks Kubernetes (SubjectAccessReview)
+# whether the signed-in Authentik user may `get pods` in a namespace, and treats
+# anyone allowed everything as a cluster-admin (all namespaces, the audit trail,
+# Refresh Requests). The subjects carry the "oidc:" prefix from helm-values.yaml.
+# The API server does not trust Authentik, so nobody can use these bindings to
+# reach the cluster itself; they only answer Hawk's questions.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: hawk-viewer
+  labels:
+    app.kubernetes.io/name: hawk
+    app.kubernetes.io/part-of: observability
+rules:
+  - apiGroups: [""]
+    resources: [pods]
+    verbs: [get]
+---
+# Authentik group hawk-viewers: every namespace's inventory.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: hawk-viewers
+  labels:
+    app.kubernetes.io/name: hawk
+    app.kubernetes.io/part-of: observability
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: hawk-viewer
+subjects:
+  - apiGroup: rbac.authorization.k8s.io
+    kind: Group
+    name: oidc:hawk-viewers
+---
+# Authentik group hawk-admins: also the audit trail and Refresh Requests.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: hawk-admins
+  labels:
+    app.kubernetes.io/name: hawk
+    app.kubernetes.io/part-of: observability
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+  - apiGroup: rbac.authorization.k8s.io
+    kind: Group
+    name: oidc:hawk-admins

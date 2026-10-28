@@ -195,6 +195,12 @@ ingress:
       noTLSVerify: true
       originServerName: grafana.macbytes.io
       httpHostHeader: grafana.macbytes.io
+  - hostname: hawk.macbytes.io
+    service: https://traefik.traefik.svc.cluster.local:443
+    originRequest:
+      noTLSVerify: true
+      originServerName: hawk.macbytes.io
+      httpHostHeader: hawk.macbytes.io
   - hostname: vikunja.macbytes.io
     service: https://traefik.traefik.svc.cluster.local:443
     originRequest:
