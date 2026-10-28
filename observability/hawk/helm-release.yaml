@@ -19,10 +19,15 @@ spec:
         kind: HelmRepository
         name: hawk
         namespace: hawk-system
+  # Hawk's CRDs live in the chart's crds/ directory. Flux skips them on upgrade by
+  # default, so a new HawkPolicy field (such as volumeExemptions) would never reach
+  # the cluster and the API server would prune it from the policy.
   install:
+    crds: CreateReplace
     remediation:
       retries: 3
   upgrade:
+    crds: CreateReplace
     remediation:
       retries: 3
   valuesFrom:
