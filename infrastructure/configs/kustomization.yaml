@@ -4,5 +4,4 @@ kind: Kustomization
 resources:
   - cert-manager
   - cnpg
-  - hawk-runners
   - traefik
