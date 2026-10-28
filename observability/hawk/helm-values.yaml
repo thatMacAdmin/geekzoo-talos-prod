@@ -1,0 +1,17 @@
+clusterID: geekzoo-prod
+
+# The namespace (privileged, for the agent) is in infrastructure/namespaces/.
+namespace:
+  create: false
+
+image:
+  pullSecrets:
+    - ghcr-pull-secret
+
+# Single-node ClickHouse for the Store, run by the chart. Its generated passwords
+# live in the Secret hawk-store, which the chart keeps across upgrades and uninstall.
+clickhouse:
+  enabled: true
+  storage:
+    size: 20Gi
+    storageClass: ceph-block

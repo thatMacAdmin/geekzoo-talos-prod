@@ -1,0 +1,12 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: hawk
+  namespace: hawk-system
+spec:
+  type: oci
+  url: oci://ghcr.io/thatmacadmin/charts
+  interval: 10m
+  # The chart is private; same GHCR token as the images (secrets/external-secrets/hawk-ghcr-pull-secret.yaml).
+  secretRef:
+    name: ghcr-pull-secret
