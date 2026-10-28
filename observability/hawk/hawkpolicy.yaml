@@ -1,0 +1,17 @@
+# How Hawk behaves cluster-wide (docs/hawkpolicy.md in the Hawk repo). Hawk reads
+# only the policy named "default"; anything left out keeps the agents' flags.
+apiVersion: hawk.dev/v1alpha1
+kind: HawkPolicy
+metadata:
+  name: default
+  labels:
+    app.kubernetes.io/name: hawk
+    app.kubernetes.io/part-of: observability
+spec:
+  relevantChanges:
+    # The media apps mount the TrueNAS media library (NFS) at /media, and it changes
+    # all day by design. Nothing written, run or loaded there counts as drift.
+    # Stopgap until Hawk has volume exemptions: a refresh caused by some other change
+    # in one of these containers would still scan the volume.
+    maskPaths:
+      - /media/
