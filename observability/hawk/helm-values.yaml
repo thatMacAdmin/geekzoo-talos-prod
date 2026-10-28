@@ -15,3 +15,26 @@ clickhouse:
   storage:
     size: 20Gi
     storageClass: ceph-block
+
+# Inventory API sign-in: it accepts ID tokens from the UI's Authentik client.
+# Names in RBAC get an "oidc:" prefix so they cannot collide with real cluster
+# identities (see rbac.yaml). The issuer is exact, trailing slash included.
+api:
+  oidc:
+    issuer: https://authentik.macbytes.io/application/o/hawk/
+    clientID: RNaFone5zgIb1tiav2sr8mjDnYMHFUVb16yEKNve
+    usernameClaim: preferred_username
+    groupsClaim: groups
+    usernamePrefix: "oidc:"
+    groupsPrefix: "oidc:"
+
+# Web UI at hawk.macbytes.io. People sign in with Authentik and read as
+# themselves. Client secret and session secret: secrets/external-secrets/hawk-ui-oidc.yaml.
+ui:
+  enabled: true
+  publicURL: https://hawk.macbytes.io
+  oidc:
+    issuer: https://authentik.macbytes.io/application/o/hawk/
+    clientID: RNaFone5zgIb1tiav2sr8mjDnYMHFUVb16yEKNve
+    providerName: Authentik
+    existingSecret: hawk-ui-oidc
