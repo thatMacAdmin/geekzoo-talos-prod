@@ -4,6 +4,7 @@ kind: Kustomization
 resources:
   - helm-repository.yaml
   - helm-release.yaml
+  - hawkpolicy.yaml
   - rbac.yaml
   - certificate.yaml
   - ingress.yaml
