@@ -12,5 +12,6 @@ resources:
   - alloy-logs
   - alloy-events
   - dashboards
+  - hawk
   - grafana-certificate.yaml
   - grafana-ingressroute.yaml

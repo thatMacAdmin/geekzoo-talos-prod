@@ -47,6 +47,18 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
+  name: hawk-system
+  labels:
+    name: hawk-system
+    # The Hawk agent runs privileged with hostPID to watch other containers.
+    pod-security.kubernetes.io/enforce: privileged
+    pod-security.kubernetes.io/audit: privileged
+    pod-security.kubernetes.io/warn: privileged
+    pod-security.kubernetes.io/enforce-version: latest
+---
+apiVersion: v1
+kind: Namespace
+metadata:
   name: identity
   labels:
     name: identity
