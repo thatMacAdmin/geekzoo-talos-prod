@@ -15,3 +15,10 @@ clickhouse:
   storage:
     size: 20Gi
     storageClass: ceph-block
+
+agent:
+  # Temporary: Go profiling on the agent's pod-local loopback, to find why agents
+  # stop discovering new containers on this cluster. Reach it with
+  # kubectl port-forward. Remove once that is fixed.
+  extraArgs:
+    - --pprof-addr=127.0.0.1:6060
