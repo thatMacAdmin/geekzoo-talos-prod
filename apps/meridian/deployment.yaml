@@ -39,7 +39,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: meridian
-          image: ghcr.io/rynfar/meridian:1.79.0 # {"$imagepolicy": "flux-system:meridian-image-policy"}
+          image: ghcr.io/rynfar/meridian:1.87.0 # {"$imagepolicy": "flux-system:meridian-image-policy"}
           imagePullPolicy: IfNotPresent
           # Let Kubernetes supervise Node and deliver SIGTERM directly.
           command: ["node", "/app/dist/cli.js"]
