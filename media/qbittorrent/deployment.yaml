@@ -166,13 +166,18 @@ spec:
                 - SETGID
                 - SETUID
         - name: mousehole
-          image: tmmrtn/mousehole:0 # {"$imagepolicy": "flux-system:mousehole-image-policy"}
+          image: tmmrtn/mousehole:0.5.0 # {"$imagepolicy": "flux-system:mousehole-image-policy"}
           imagePullPolicy: IfNotPresent
           env:
             - name: TZ
               value: America/New_York
             - name: MOUSEHOLE_PORT
               value: "5010"
+            - name: MOUSEHOLE_AUTH_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mousehole-auth
+                  key: MOUSEHOLE_AUTH_PASSWORD
           ports:
             - name: mousehole-http
               containerPort: 5010
