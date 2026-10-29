@@ -4,5 +4,5 @@ metadata:
   name: qbittorrent
   namespace: flux-system
 spec:
-  image: lscr.io/linuxserver/qbittorrent
+  image: linuxserver/qbittorrent
   interval: 1h
