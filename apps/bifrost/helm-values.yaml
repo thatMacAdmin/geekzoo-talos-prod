@@ -128,8 +128,8 @@ bifrost:
     dropExcessRequests: false
     maxRequestBodySizeMb: 100
   # All four providers codified from the pre-migration live state. Provider
-  # names match the dashboard exactly so model IDs (e.g.
-  # "Claude Subscription/claude-sonnet-5") are unchanged for callers.
+  # display names match the dashboard; runtime provider prefixes are lowercase
+  # (e.g. "claude subscription/claude-sonnet-5") and unchanged for callers.
   providers:
     # Mac Studio LM Studio @ 192.168.2.4:1234 — LAN-local OpenAI-compatible gateway.
     # Self-hosted models are not in Bifrost's pricing catalog, so aliases here
@@ -181,16 +181,18 @@ bifrost:
           chat_completion_stream: true
           list_models: true
           count_tokens: true
-    # Mac Studio openai-protocol proxy @ 192.168.2.4:8000 — exposes OpenAI
-    # Subscription models. Proxy is keyless on the LAN.
+    # In-cluster Meridian — ChatGPT Pro OAuth via the OpenAI Responses API.
+    # API key shares Meridian's /k3s-geekzoo/meridian source, as Claude does.
     OpenAI Subscription:
       keys:
         - name: openai-subscription-key
-          value: "keyless" # proxy ignores Authorization; schema requires a key entry
-          models: ["*"]
+          value: "env.OPENAI_SUBSCRIPTION_API_KEY"
+          # Match Meridian's OpenAI classifier; exclude Claude from the shared
+          # /v1/models response and inference. Bifrost regex: entries are full RE2 matches.
+          models: ["regex:^(?:gpt-|chatgpt-|codex(?:-|$)|o[0-9]+(?:-|$)).*$"]
           weight: 1.0
       network_config:
-        base_url: "http://192.168.2.4:8000"
+        base_url: "http://meridian.apps.svc.cluster.local:3456"
         default_request_timeout_in_seconds: 300
         max_retries: 0
         allow_private_network: true
@@ -199,11 +201,15 @@ bifrost:
         buffer_size: 5000
       custom_provider_config:
         base_provider_type: openai
+        # Bifrost v2.3.2 names; Meridian 1.87.0 has no ChatGPT chat/token-count
+        # or Responses retrieve/delete/cancel/input-items/compact routes.
+        # Images: generation is JSON; edits require JSON at Meridian but
+        # Bifrost sends multipart. Meridian images do not stream.
         allowed_requests:
-          chat_completion: true
-          chat_completion_stream: true
+          responses: true
+          responses_stream: true
           list_models: true
-          count_tokens: true
+          image_generation: true
     # z.ai Coding Plan @ https://api.z.ai/api/anthropic (anthropic protocol).
     # The z.ai API exposes models as bare IDs (e.g. "glm-5.2"), but Bifrost's
     # pricing catalog keys them under the "zai/" prefix (e.g. "zai/glm-5.2"
@@ -258,7 +264,7 @@ bifrost:
           list_models: true
           count_tokens: true
 # Bulk-load all provider API keys (LMSTUDIO_API_KEY, CLAUDE_SUBSCRIPTION_API_KEY,
-# ZAI_API_KEY) as env vars. Referenced above via env.<NAME>.
+# OPENAI_SUBSCRIPTION_API_KEY, ZAI_API_KEY) as env vars. Referenced above via env.<NAME>.
 envFrom:
   - secretRef:
       name: bifrost-secrets

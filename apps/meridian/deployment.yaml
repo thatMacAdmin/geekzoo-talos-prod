@@ -68,6 +68,10 @@ spec:
               value: meridian-geekzoo-prod
             - name: MERIDIAN_DEFAULT_PROFILE
               value: personal
+            - name: MERIDIAN_CHATGPT_CREDENTIALS
+              value: owned
+            - name: MERIDIAN_CHATGPT_STORE_PATH
+              value: /home/claude/.config/meridian/chatgpt-accounts.json
             - name: MERIDIAN_SHUTDOWN_GRACE_MS
               value: "30000"
             - name: MERIDIAN_NO_UPDATE_CHECK
