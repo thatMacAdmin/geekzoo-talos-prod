@@ -14,7 +14,7 @@ spec:
   selector:
     matchLabels:
       app: lingarr
-  replicas: 0
+  replicas: 1
   strategy:
     type: Recreate
   template:

@@ -14,7 +14,7 @@ spec:
   selector:
     matchLabels:
       app: sonarr
-  replicas: 0
+  replicas: 1
   strategy:
     type: Recreate
   template:
