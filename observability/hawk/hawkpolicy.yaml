@@ -8,10 +8,12 @@ metadata:
     app.kubernetes.io/name: hawk
     app.kubernetes.io/part-of: observability
 spec:
-  relevantChanges:
-    # The media apps mount the TrueNAS media library (NFS) at /media, and it changes
-    # all day by design. Nothing written, run or loaded there counts as drift.
-    # Stopgap until Hawk has volume exemptions: a refresh caused by some other change
-    # in one of these containers would still scan the volume.
-    maskPaths:
-      - /media/
+  volumeExemptions:
+    # The TrueNAS media library (NFS, 203 TiB, infrastructure/storage/nfs/media_nfs_*),
+    # mounted by the media apps at /media (audiobookshelf at /audiobooks). It is
+    # neither watched nor scanned; each mount shows as a Coverage Gap
+    # exempt-volume:<mount point> and in hawk_exempted_volumes.
+    - name: media-library
+      reason: The TrueNAS media library changes all day by design and is too large to scan.
+      claims:
+        - media/pvc-media-nfs
