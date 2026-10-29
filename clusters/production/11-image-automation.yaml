@@ -15,4 +15,4 @@ spec:
     namespace: flux-system
   path: ./infrastructure/image-automation
   prune: true
-  wait: true
+  wait: false
