@@ -5,7 +5,7 @@ metadata:
   namespace: flux-system
 spec:
   distribution:
-    version: "2.9.x"
+    version: "2.10.x"
     registry: "ghcr.io/fluxcd"
     artifact: "oci://ghcr.io/controlplaneio-fluxcd/flux-operator-manifests"
   components:
@@ -41,3 +41,12 @@ spec:
         target:
           kind: Kustomization
           name: flux-sync
+      # Cancel an in-progress health check when a new source revision
+      # arrives, so a fix pushed during a wait applies immediately.
+      - patch: |
+          - op: add
+            path: /spec/template/spec/containers/0/args/-
+            value: --feature-gates=CancelHealthCheckOnNewRevision=true
+        target:
+          kind: Deployment
+          name: kustomize-controller
