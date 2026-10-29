@@ -10,5 +10,6 @@ resources:
   - home-assistant
   - vikunja
   - bifrost
+  - meridian
   - website
   - edtheadmin

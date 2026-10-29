@@ -1,0 +1,114 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: meridian
+  namespace: apps
+  labels:
+    app: meridian
+    app.kubernetes.io/name: meridian
+    app.kubernetes.io/instance: meridian
+    app.kubernetes.io/component: llm-gateway
+    app.kubernetes.io/part-of: apps
+    app.kubernetes.io/managed-by: kustomize
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: meridian
+  template:
+    metadata:
+      labels:
+        app: meridian
+        app.kubernetes.io/name: meridian
+        app.kubernetes.io/instance: meridian
+        app.kubernetes.io/component: llm-gateway
+        app.kubernetes.io/part-of: apps
+        app.kubernetes.io/managed-by: kustomize
+    spec:
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 45
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: meridian
+          image: ghcr.io/rynfar/meridian:1.79.0 # {"$imagepolicy": "flux-system:meridian-image-policy"}
+          imagePullPolicy: IfNotPresent
+          # Let Kubernetes supervise Node and deliver SIGTERM directly.
+          command: ["node", "/app/dist/cli.js"]
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          ports:
+            - name: http
+              containerPort: 3456
+          env:
+            - name: HOME
+              value: /home/claude
+            - name: MERIDIAN_HOST
+              value: "0.0.0.0"
+            - name: MERIDIAN_PORT
+              value: "3456"
+            - name: MERIDIAN_BACKEND
+              value: claude
+            - name: MERIDIAN_PASSTHROUGH
+              value: "1"
+            - name: MERIDIAN_WORKDIR
+              value: /home/claude
+            - name: MERIDIAN_HOST_ID
+              value: meridian-geekzoo-prod
+            - name: MERIDIAN_DEFAULT_PROFILE
+              value: personal
+            - name: MERIDIAN_SHUTDOWN_GRACE_MS
+              value: "30000"
+            - name: MERIDIAN_NO_UPDATE_CHECK
+              value: "1"
+          envFrom:
+            - secretRef:
+                name: meridian-secrets
+          startupProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 5
+            failureThreshold: 24
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: http
+            periodSeconds: 10
+            timeoutSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 30
+            timeoutSeconds: 5
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: "2"
+              memory: 2Gi
+          volumeMounts:
+            # Persist settings, session maps, and SDK transcripts together.
+            - name: home
+              mountPath: /home/claude
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: home
+          persistentVolumeClaim:
+            claimName: meridian-data-pvc
+        - name: tmp
+          emptyDir: {}

@@ -158,8 +158,8 @@ bifrost:
           chat_completion: true
           chat_completion_stream: true
           list_models: true
-    # Mac Studio anthropic-protocol proxy @ 192.168.2.4:3456 — exposes Claude
-    # Subscription models. Auth is a single static token ("x") enforced by the proxy.
+    # In-cluster Meridian — Claude Subscription via the Anthropic protocol.
+    # API key shares the /k3s-geekzoo/meridian source with Meridian's ExternalSecret.
     Claude Subscription:
       keys:
         - name: claude-subscription-key
@@ -167,7 +167,7 @@ bifrost:
           models: ["*"]
           weight: 1.0
       network_config:
-        base_url: "http://192.168.2.4:3456"
+        base_url: "http://meridian.apps.svc.cluster.local:3456"
         default_request_timeout_in_seconds: 300
         max_retries: 0
         allow_private_network: true
