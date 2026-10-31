@@ -40,7 +40,7 @@ spec:
             claimName: vikunja-files-pvc
       containers:
         - name: vikunja
-          image: vikunja/vikunja:2.3.0 # {"$imagepolicy": "flux-system:vikunja-image-policy"}
+          image: vikunja/vikunja:2.7.1 # {"$imagepolicy": "flux-system:vikunja-image-policy"}
           imagePullPolicy: IfNotPresent
           securityContext:
             allowPrivilegeEscalation: false
