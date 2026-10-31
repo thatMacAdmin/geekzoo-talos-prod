@@ -1,0 +1,13 @@
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: chrony-image-policy
+  namespace: flux-system
+spec:
+  imageRepositoryRef:
+    name: chrony
+  filterTags:
+    pattern: '^\d+\.\d+(\.\d+)?$'
+  policy:
+    semver:
+      range: ">=4.6.1 <5.0.0"
