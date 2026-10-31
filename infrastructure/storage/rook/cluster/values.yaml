@@ -24,8 +24,7 @@ cephClusterSpec:
   # CHORE: After all nodes run Talos 1.15 / Linux 7.x, migrate CSI and remaining
   # client keys to AES256K, retaining prior CSI keys until existing volumes are
   # remounted. Retire old AES keys, restrict allowed ciphers, then unmute the
-  # compatibility warnings below. Remove the rotating-service-key mute after
-  # its post-rotation expiry (normally 2-3 hours); it need not wait for Talos 1.15.
+  # compatibility warnings below.
   # Core authentication errors and unrelated storage warnings remain visible.
   healthCheck:
     muteHealthWarning:
@@ -34,8 +33,6 @@ cephClusterSpec:
       AUTH_INSECURE_KEYS_ALLOWED:
         policy: mute
       AUTH_INSECURE_KEYS_CREATABLE:
-        policy: mute
-      AUTH_INSECURE_ROTATING_SERVICE_KEY_TYPE:
         policy: mute
   # Node clocks oscillate ±40ms under NTP (loose WAN sync); relative mon skew
   # occasionally brushes the 50ms default and flaps MON_CLOCK_SKEW warnings.
