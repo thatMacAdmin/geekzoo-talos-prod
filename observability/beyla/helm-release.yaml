@@ -6,13 +6,14 @@ metadata:
 spec:
   interval: 30m
   releaseName: beyla
-  timeout: 15m
+  # Old pods can take many minutes to stop (container kills hit the runtime
+  # deadline) and the DaemonSet replaces one at a time. A 15m timeout was too
+  # short for three nodes and triggered a rollback on 2026-10-31.
+  timeout: 45m
   chart:
     spec:
       chart: beyla
-      # Range, floor 1.16.8 (the deployed version). Upgrades previously stalled
-      # on the default 5m timeout (helm-controller client rate limiter: rate: Wait
-      # would exceed context deadline), so spec.timeout is widened to 15m.
+      # Range, floor 1.16.8. Upgrades previously stalled on the default 5m timeout.
       version: ">=1.16.8 <2.0.0"
       sourceRef:
         kind: HelmRepository

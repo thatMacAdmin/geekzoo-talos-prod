@@ -7,7 +7,9 @@ spec:
   imageRepositoryRef:
     name: chrony
   filterTags:
-    pattern: '^\d+\.\d+(\.\d+)?$'
+    # dockurr/chrony publishes X.Y tags, which Flux semver rejects, so compare as X.Y.0.
+    pattern: '^(?P<version>\d+\.\d+)$'
+    extract: '$version.0'
   policy:
     semver:
-      range: ">=4.6.1 <5.0.0"
+      range: ">=4.7.0 <5.0.0"
