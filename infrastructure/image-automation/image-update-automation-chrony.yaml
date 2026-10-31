@@ -1,0 +1,25 @@
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageUpdateAutomation
+metadata:
+  name: chrony-image-updates
+  namespace: flux-system
+spec:
+  interval: 30m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  git:
+    checkout:
+      ref:
+        branch: main
+    commit:
+      author:
+        email: flux-image-automation@macbytes.io
+        name: flux-image-automation
+      messageTemplate: 'chore(images): update chrony container image'
+    push:
+      branch: main
+  update:
+    path: ./infrastructure/controllers/chrony
+    strategy: Setters

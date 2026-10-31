@@ -43,3 +43,10 @@ resources:
   - image-repository-bulwark.yaml
   - image-policy-bulwark.yaml
   - image-update-automation-mail.yaml
+  - image-repository-vikunja.yaml
+  - image-policy-vikunja.yaml
+  - image-repository-frpc.yaml
+  - image-policy-frpc.yaml
+  - image-repository-chrony.yaml
+  - image-policy-chrony.yaml
+  - image-update-automation-chrony.yaml

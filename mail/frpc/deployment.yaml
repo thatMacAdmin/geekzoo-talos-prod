@@ -48,7 +48,7 @@ spec:
           emptyDir: {}
       containers:
         - name: frpc
-          image: snowdreamtech/frpc:0.69.1
+          image: snowdreamtech/frpc:0.71.1-alpine # {"$imagepolicy": "flux-system:frpc-image-policy"}
           imagePullPolicy: IfNotPresent
           # Bypass the image's su-exec ENTRYPOINT (which needs SETUID/SETGID + root to
           # drop privileges) and run the binary directly as our non-root uid 65534.

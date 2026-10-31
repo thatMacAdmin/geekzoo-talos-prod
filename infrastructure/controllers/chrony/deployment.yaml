@@ -26,7 +26,7 @@ spec:
       # it wants the dir owned by itself and not world-writable.
       initContainers:
         - name: fix-perms
-          image: docker.io/dockurr/chrony:4.6.1
+          image: docker.io/dockurr/chrony:4.6.1 # {"$imagepolicy": "flux-system:chrony-image-policy"}
           command:
             - sh
             - -c
@@ -42,7 +42,7 @@ spec:
               mountPath: /var/run/chrony
       containers:
         - name: chrony
-          image: docker.io/dockurr/chrony:4.6.1
+          image: docker.io/dockurr/chrony:4.6.1 # {"$imagepolicy": "flux-system:chrony-image-policy"}
           # -x: serve time WITHOUT disciplining the host clock — Talos timed
           # owns the node clock; chrony tracks upstream offset in software and
           # serves corrected time. -d: foreground, logs to stderr.
