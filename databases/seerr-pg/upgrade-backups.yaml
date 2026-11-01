@@ -1,0 +1,13 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Backup
+metadata:
+  name: seerr-post-17-11-20261101
+  namespace: database
+  annotations:
+    macbytes.io/postgresql-image: "17.11-standard-trixie"
+spec:
+  cluster:
+    name: seerr-pg-cluster
+  method: plugin
+  pluginConfiguration:
+    name: barman-cloud.cloudnative-pg.io
