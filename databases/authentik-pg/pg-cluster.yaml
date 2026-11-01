@@ -4,7 +4,7 @@ metadata:
   name: authentik-pg-cluster
   namespace: database
 spec:
-  imageName: ghcr.io/cloudnative-pg/postgresql:17.6-system-trixie
+  imageName: ghcr.io/cloudnative-pg/postgresql:17.11-standard-trixie
   instances: 3
   # Baseline scheduling reservation (observed ~15-40m per instance)
   resources:
