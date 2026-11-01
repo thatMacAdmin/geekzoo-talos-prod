@@ -24,6 +24,9 @@ spec:
   values:
     global:
       env:
+        # Only seeds an unset tenant Base URL; the database value wins afterwards.
+        - name: AUTHENTIK_WEB__BASE_URL
+          value: https://authentik.macbytes.io
         - name: AUTHENTIK_SECRET_KEY
           valueFrom:
             secretKeyRef:
