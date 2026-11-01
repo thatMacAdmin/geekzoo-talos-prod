@@ -39,3 +39,17 @@ spec:
   method: plugin
   pluginConfiguration:
     name: barman-cloud.cloudnative-pg.io
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Backup
+metadata:
+  name: authentik-pre-2026-8-5-20261101
+  namespace: database
+  annotations:
+    macbytes.io/authentik-version: "2026.8.3"
+spec:
+  cluster:
+    name: authentik-pg-cluster
+  method: plugin
+  pluginConfiguration:
+    name: barman-cloud.cloudnative-pg.io
