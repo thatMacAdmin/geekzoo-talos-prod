@@ -4,3 +4,4 @@ kind: Kustomization
 resources:
   - pg-cluster.yaml
   - backup.yaml
+  - upgrade-backups.yaml

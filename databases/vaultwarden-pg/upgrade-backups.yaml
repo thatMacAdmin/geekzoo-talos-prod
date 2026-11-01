@@ -1,0 +1,13 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Backup
+metadata:
+  name: vaultwarden-pre-pg-17-11-20261101
+  namespace: database
+  annotations:
+    macbytes.io/postgresql-image: "17.6-system-trixie"
+spec:
+  cluster:
+    name: vaultwarden-pg-cluster-20260401
+  method: plugin
+  pluginConfiguration:
+    name: barman-cloud.cloudnative-pg.io
