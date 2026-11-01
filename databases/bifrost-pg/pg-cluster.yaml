@@ -4,7 +4,7 @@ metadata:
   name: bifrost-pg-cluster
   namespace: database
 spec:
-  imageName: ghcr.io/cloudnative-pg/postgresql:17.6-system-trixie
+  imageName: ghcr.io/cloudnative-pg/postgresql:17.11-standard-trixie
   instances: 3
   # Bifrost config + logs stores share this DB; footprint is small (providers,
   # virtual keys, governance rows, request logs). Baseline matches the other
