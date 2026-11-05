@@ -9,8 +9,9 @@ spec:
   # linuxserver build tags: <qbittorrent>_v<libtorrent>-ls<build>. The ls build
   # number rises with every rebuild (version bumps and base-image patches), so
   # track the newest build. Excludes libtorrentv1-*, arch-prefixed and floating tags.
+  # Pinned to the 5.2 line: 5.3.x is not yet approved by MyAnonamouse. Widen the pattern once it is.
   filterTags:
-    pattern: '^[0-9]+\.[0-9]+\.[0-9]+_v[0-9]+\.[0-9]+\.[0-9]+-ls(?P<build>[0-9]+)$'
+    pattern: '^5\.2\.[0-9]+_v[0-9]+\.[0-9]+\.[0-9]+-ls(?P<build>[0-9]+)$'
     extract: '$build'
   policy:
     numerical:
