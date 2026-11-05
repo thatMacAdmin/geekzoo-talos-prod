@@ -80,6 +80,8 @@ spec:
                   key: OPENVPN_PASSWORD
             - name: SERVER_REGIONS
               value: "ca montreal"
+            - name: SERVER_NAMES
+              value: "montreal435"
             - name: PORT_FORWARD_ONLY
               value: "true"
             - name: VPN_PORT_FORWARDING
