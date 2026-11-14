@@ -107,7 +107,9 @@ spec:
             - name: LOG_LEVEL
               value: "info"
           securityContext:
-            privileged: true
+            allowPrivilegeEscalation: false
+            seccompProfile:
+              type: RuntimeDefault
             capabilities:
               add:
                 - NET_ADMIN
@@ -157,14 +159,19 @@ spec:
               mountPath: /gluetun
               readOnly: true
           securityContext:
-            privileged: true
             runAsUser: 0
             runAsGroup: 0
-            allowPrivilegeEscalation: true
+            allowPrivilegeEscalation: false
+            seccompProfile:
+              type: RuntimeDefault
             capabilities:
+              drop:
+                - ALL
               add:
                 - CHOWN
+                - DAC_OVERRIDE
                 - FOWNER
+                - KILL
                 - SETGID
                 - SETUID
         - name: mousehole
