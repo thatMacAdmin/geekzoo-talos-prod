@@ -13,7 +13,7 @@ Use sequential release lines, with the latest application patch in each line:
 | 3 | `2026.8.3` | `2026.8.3` | Remove the override; the chart defaults to the matching image. |
 
 The intermediate application patches have no matching published Helm chart.
-Keep exact versions throughout the upgrade; do not enable automatic release-line upgrades.
+Production floats the chart version (`>=2026.8.5 <2028.0.0`), so patch and minor releases deploy automatically without a pre-upgrade backup. The exact-version, sequential procedure below applies when you pin manually (e.g. after a failed or skipped hop).
 Server, worker, and embedded outpost must run the same application version.
 
 Sources:

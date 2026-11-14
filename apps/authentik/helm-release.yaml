@@ -14,7 +14,9 @@ spec:
   chart:
     spec:
       chart: authentik
-      version: "2026.8.3"
+      # Floats to the newest 2026.x/2027.x chart: patch and minor bumps apply automatically.
+      # No automated pre-upgrade backup; see UPGRADE.md.
+      version: ">=2026.8.5 <2028.0.0"
       sourceRef:
         kind: HelmRepository
         name: authentik
