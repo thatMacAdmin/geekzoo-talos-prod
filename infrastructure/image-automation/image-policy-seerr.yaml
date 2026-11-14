@@ -1,0 +1,14 @@
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: seerr-image-policy
+  namespace: flux-system
+spec:
+  imageRepositoryRef:
+    name: seerr
+  filterTags:
+    pattern: '^v(?P<ver>\d+\.\d+\.\d+)$'
+    extract: '$ver'
+  policy:
+    semver:
+      range: ">=3.5.1 <4.0.0"

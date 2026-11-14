@@ -50,3 +50,5 @@ resources:
   - image-repository-chrony.yaml
   - image-policy-chrony.yaml
   - image-update-automation-chrony.yaml
+  - image-repository-seerr.yaml
+  - image-policy-seerr.yaml

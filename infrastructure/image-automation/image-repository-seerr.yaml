@@ -1,0 +1,8 @@
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: seerr
+  namespace: flux-system
+spec:
+  image: ghcr.io/seerr-team/seerr
+  interval: 1h
