@@ -294,7 +294,8 @@ data:
             }
 
             .pf-c-login__main-header.pf-c-brand:not(#gz)::before {
-              content: ">_";
+              /* authentik rewrites a literal greater-than sign in brand CSS, so use a CSS escape */
+              content: "\3E_";
               display: grid;
               place-items: center;
               width: 1.75rem;
