@@ -76,14 +76,14 @@ spec:
       enabled: true
       replicas: 1
       podAnnotations:
-        macbytes.io/authentik-blueprint-revision: "2026-11-15-geekzoo-shadcn-v2"
+        macbytes.io/authentik-blueprint-revision: "2026-11-15-geekzoo-monokai-pro-v1"
       service:
         type: ClusterIP
     worker:
       enabled: true
       replicas: 1
       podAnnotations:
-        macbytes.io/authentik-blueprint-revision: "2026-11-15-geekzoo-shadcn-v2"
+        macbytes.io/authentik-blueprint-revision: "2026-11-15-geekzoo-monokai-pro-v1"
     blueprints:
       configMaps:
         - authentik-macbytes-login-flow-blueprint

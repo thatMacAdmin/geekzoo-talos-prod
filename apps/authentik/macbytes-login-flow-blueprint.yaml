@@ -204,41 +204,51 @@ data:
         attrs:
           branding_title: Macbytes
           branding_custom_css: |
-            /* GeekZoo sign-in: neutral, shadcn-like dark theme.
+            /* GeekZoo sign-in: neutral, shadcn-like layout in Monokai Pro colours
+               (dark: Monokai Pro, light: Monokai Pro Sun), following the page theme.
                Scoped to the flow (login) interface through ak-flow-executor, .pf-c-login and
                ak-flow-card, so the admin and user interfaces keep authentik's stock theme.
                :not(#gz) only raises specificity: in compatibility mode component styles are
-               scoped document styles that would otherwise win. */
+               scoped document styles that would otherwise win.
+               Two colours are nudged off-palette for WCAG contrast: the dark input border
+               and the light error text. */
 
             body:has(ak-flow-executor) {
               --ak-global--background-image: none;
-              --ak-global--background-color: #09090b;
-              background-color: #09090b;
+              --ak-global--background-color: #221f22;
+              background-color: #221f22;
+            }
+
+            [data-theme="light"] body:has(ak-flow-executor) {
+              --ak-global--background-color: #faf4f2;
+              background-color: #faf4f2;
             }
 
             ak-flow-executor {
               color-scheme: dark;
 
-              --gz-background: #09090b;
-              --gz-card: #0c0c0e;
-              --gz-foreground: #fafafa;
-              --gz-muted: #a1a1aa;
-              --gz-border: #27272a;
-              --gz-input: #63636b;
-              --gz-ring: #71717a;
-              --gz-primary: #fafafa;
-              --gz-primary-hover: #e4e4e7;
-              --gz-primary-foreground: #18181b;
-              --gz-secondary: #27272a;
+              --gz-background: #221f22;
+              --gz-card: #2d2a2e;
+              --gz-foreground: #fcfcfa;
+              --gz-muted: #c1c0c0;
+              --gz-placeholder: #939293;
+              --gz-border: #403e41;
+              --gz-input: #7a787a;
+              --gz-ring: #ffd866;
+              --gz-ring-soft: rgba(255, 216, 102, 0.25);
+              --gz-primary: #fcfcfa;
+              --gz-primary-foreground: #2d2a2e;
+              --gz-secondary: #403e41;
               --gz-accent: #a9dc76;
-              --gz-destructive: #f87171;
+              --gz-destructive: #ff6188;
+              --gz-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
               --gz-radius: 0.5rem;
               --gz-radius-lg: 0.75rem;
               --gz-font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
               --gz-font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
 
               --pf-global--primary-color--100: var(--gz-primary);
-              --pf-global--primary-color--200: var(--gz-primary-hover);
+              --pf-global--primary-color--200: var(--gz-primary);
               --pf-global--link--Color: var(--gz-foreground);
               --pf-global--link--Color--hover: var(--gz-foreground);
               --pf-global--Color--100: var(--gz-foreground);
@@ -251,10 +261,32 @@ data:
               --pf-global--FontFamily--heading--sans-serif: var(--gz-font);
               --ak-font-family-sans-serif: var(--gz-font);
               --ak-font-family-heading: var(--gz-font);
+              /* stock drop-shadow that keeps text legible over a background image */
+              --ak-global--BackgroundContrastFilter: none;
 
               font-family: var(--gz-font);
               color: var(--gz-foreground);
               -webkit-font-smoothing: antialiased;
+            }
+
+            [data-theme="light"] ak-flow-executor {
+              color-scheme: light;
+
+              --gz-background: #faf4f2;
+              --gz-card: #fefaf9;
+              --gz-foreground: #29242a;
+              --gz-muted: #706b6e;
+              --gz-placeholder: #706b6e;
+              --gz-border: #e0dad9;
+              --gz-input: #918c8e;
+              --gz-ring: #e14775;
+              --gz-ring-soft: rgba(225, 71, 117, 0.2);
+              --gz-primary: #29242a;
+              --gz-primary-foreground: #fefaf9;
+              --gz-secondary: #ede7e5;
+              --gz-accent: #269d69;
+              --gz-destructive: #c7305f;
+              --gz-shadow: 0 1px 2px rgba(41, 36, 42, 0.08);
             }
 
             /* Page */
@@ -276,7 +308,7 @@ data:
               border-radius: var(--gz-radius-lg);
               background: var(--gz-card);
               color: var(--gz-foreground);
-              box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+              box-shadow: var(--gz-shadow);
               overflow: hidden;
             }
 
@@ -364,7 +396,7 @@ data:
             }
 
             ak-flow-card:not(#gz) .pf-c-form-control::placeholder {
-              color: #8b8b94;
+              color: var(--gz-placeholder);
               font-style: normal;
               opacity: 1;
             }
@@ -372,7 +404,7 @@ data:
             ak-flow-card:not(#gz) .pf-c-form-control:focus,
             ak-flow-card:not(#gz) .pf-c-form-control:focus-visible {
               border-color: var(--gz-ring);
-              box-shadow: 0 0 0 3px rgba(113, 113, 122, 0.35);
+              box-shadow: 0 0 0 3px var(--gz-ring-soft);
             }
 
             /* Buttons */
@@ -391,11 +423,12 @@ data:
               background: var(--gz-primary);
               color: var(--gz-primary-foreground);
               box-shadow: none;
-              transition: background-color 0.15s;
+              transition: opacity 0.15s;
             }
 
             ak-flow-card:not(#gz) .pf-c-button.pf-m-primary:hover {
-              background: var(--gz-primary-hover);
+              background: var(--gz-primary);
+              opacity: 0.9;
             }
 
             ak-flow-card:not(#gz) .pf-c-button:focus-visible {
@@ -463,6 +496,7 @@ data:
 
             ak-locale-select:not(#gz) {
               --ak-c-locale-select--Color: var(--gz-muted);
+              --ak-c-locale-select--label--Color: var(--gz-muted);
               font-size: 0.8125rem;
             }
 
@@ -484,5 +518,6 @@ data:
           attributes:
             settings:
               theme:
-                base: dark
+                # Follow the visitor's system light/dark preference (all interfaces).
+                base: automatic
           flow_authentication: !KeyOf macbytes-authentication-flow
