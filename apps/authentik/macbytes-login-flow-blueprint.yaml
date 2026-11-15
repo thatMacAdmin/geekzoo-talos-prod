@@ -27,8 +27,10 @@ data:
         attrs:
           designation: authentication
           name: Macbytes Friendly Login
-          title: Welcome back to Macbytes
+          title: Sign in to GeekZoo
           authentication: none
+          # Renders a regular DOM instead of shadow DOM so password managers find the fields.
+          compatibility_mode: true
 
       - model: authentik_stages_password.passwordstage
         id: macbytes-password
@@ -202,305 +204,280 @@ data:
         attrs:
           branding_title: Macbytes
           branding_custom_css: |
-            :root {
+            /* GeekZoo sign-in: neutral, shadcn-like dark theme.
+               Scoped to the flow (login) interface through ak-flow-executor, .pf-c-login and
+               ak-flow-card, so the admin and user interfaces keep authentik's stock theme.
+               :not(#gz) only raises specificity: in compatibility mode component styles are
+               scoped document styles that would otherwise win. */
+
+            body:has(ak-flow-executor) {
+              --ak-global--background-image: none;
+              --ak-global--background-color: #09090b;
+              background-color: #09090b;
+            }
+
+            ak-flow-executor {
               color-scheme: dark;
 
-              --macbytes-font-family: ui-rounded, "SF Pro Rounded", "Nunito Sans", "Avenir Next", "Segoe UI", sans-serif;
+              --gz-background: #09090b;
+              --gz-card: #0c0c0e;
+              --gz-foreground: #fafafa;
+              --gz-muted: #a1a1aa;
+              --gz-border: #27272a;
+              --gz-input: #63636b;
+              --gz-ring: #71717a;
+              --gz-primary: #fafafa;
+              --gz-primary-hover: #e4e4e7;
+              --gz-primary-foreground: #18181b;
+              --gz-secondary: #27272a;
+              --gz-accent: #a9dc76;
+              --gz-destructive: #f87171;
+              --gz-radius: 0.5rem;
+              --gz-radius-lg: 0.75rem;
+              --gz-font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+              --gz-font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
 
-              --macbytes-bg: #2d2a2e;
-              --macbytes-bg-elevated: #3a363d;
-              --macbytes-panel: rgba(45, 42, 46, 0.84);
-              --macbytes-panel-strong: rgba(45, 42, 46, 0.94);
-              --macbytes-border: rgba(255, 216, 102, 0.22);
-              --macbytes-text: #fcfcfa;
-              --macbytes-muted: #c5c2c8;
-              --macbytes-yellow: #ffd866;
-              --macbytes-orange: #fc9867;
-              --macbytes-green: #a9dc76;
-              --macbytes-cyan: #78dce8;
-              --macbytes-purple: #ab9df2;
-              --macbytes-pink: #ff6188;
+              --pf-global--primary-color--100: var(--gz-primary);
+              --pf-global--primary-color--200: var(--gz-primary-hover);
+              --pf-global--link--Color: var(--gz-foreground);
+              --pf-global--link--Color--hover: var(--gz-foreground);
+              --pf-global--Color--100: var(--gz-foreground);
+              --pf-global--Color--200: var(--gz-muted);
+              --pf-global--BorderColor--100: var(--gz-border);
+              --pf-global--BackgroundColor--100: var(--gz-card);
+              --pf-global--BackgroundColor--200: var(--gz-background);
+              --pf-global--danger-color--100: var(--gz-destructive);
+              --pf-global--FontFamily--sans-serif: var(--gz-font);
+              --pf-global--FontFamily--heading--sans-serif: var(--gz-font);
+              --ak-font-family-sans-serif: var(--gz-font);
+              --ak-font-family-heading: var(--gz-font);
 
-              --pf-global--primary-color--100: var(--macbytes-yellow);
-              --pf-global--primary-color--200: #e6bd4f;
-              --pf-global--link--Color: var(--macbytes-cyan);
-              --pf-global--link--Color--hover: var(--macbytes-yellow);
-              --pf-global--BackgroundColor--100: var(--macbytes-bg);
-              --pf-global--BackgroundColor--200: #343137;
-              --pf-global--Color--100: var(--macbytes-text);
-              --pf-global--Color--200: var(--macbytes-muted);
-              --pf-global--BorderColor--100: rgba(252, 252, 250, 0.14);
-              --pf-global--FontFamily--sans-serif: var(--macbytes-font-family);
-              --pf-global--BorderRadius--sm: 8px;
-              --pf-global--BorderRadius--lg: 12px;
-
-              --pf-v5-global--primary-color--100: var(--macbytes-yellow);
-              --pf-v5-global--primary-color--200: #e6bd4f;
-              --pf-v5-global--link--Color: var(--macbytes-cyan);
-              --pf-v5-global--link--Color--hover: var(--macbytes-yellow);
-              --pf-v5-global--BackgroundColor--100: var(--macbytes-bg);
-              --pf-v5-global--BackgroundColor--200: #343137;
-              --pf-v5-global--Color--100: var(--macbytes-text);
-              --pf-v5-global--Color--200: var(--macbytes-muted);
-              --pf-v5-global--BorderColor--100: rgba(252, 252, 250, 0.14);
-              --pf-v5-global--FontFamily--sans-serif: var(--macbytes-font-family);
-              --pf-v5-global--BorderRadius--sm: 8px;
-              --pf-v5-global--BorderRadius--lg: 12px;
+              font-family: var(--gz-font);
+              color: var(--gz-foreground);
+              -webkit-font-smoothing: antialiased;
             }
 
-            html,
-            body {
-              min-height: 100%;
-              background:
-                radial-gradient(circle at 18% 12%, rgba(255, 216, 102, 0.16), transparent 26rem),
-                radial-gradient(circle at 84% 20%, rgba(120, 220, 232, 0.13), transparent 24rem),
-                radial-gradient(circle at 75% 86%, rgba(255, 97, 136, 0.10), transparent 28rem),
-                linear-gradient(145deg, #211f22 0%, var(--macbytes-bg) 42%, #40353b 100%) !important;
-              color: var(--macbytes-text);
-              font-family: var(--macbytes-font-family);
+            /* Page */
+            .pf-c-login:not(#gz) {
+              --ak-c-login__main--BackgroundColor: var(--gz-card);
+              --ak-c-login__main--BoxShadow: none;
+              --ak-c-login__main--Color: var(--gz-foreground);
+              --ak-c-login__footer--Color: var(--gz-muted);
+              background: var(--gz-background);
+              font-family: var(--gz-font);
             }
 
-            button,
-            input,
-            select,
-            textarea {
-              font-family: inherit;
-            }
-
-            body::before {
-              content: "";
-              position: fixed;
-              inset: 0;
-              pointer-events: none;
-              background-image:
-                linear-gradient(rgba(252, 252, 250, 0.025) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(252, 252, 250, 0.025) 1px, transparent 1px);
-              background-size: 44px 44px;
-              mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.85), transparent 76%);
-            }
-
-            body::after {
-              content: "";
-              position: fixed;
-              inset: 0;
-              pointer-events: none;
-              background:
-                linear-gradient(90deg, transparent, rgba(255, 216, 102, 0.08), transparent)
-                0 0 / 100% 1px no-repeat;
-              opacity: 0.9;
-            }
-
-            a {
-              color: var(--macbytes-cyan);
-              text-decoration-color: rgba(120, 220, 232, 0.44);
-              text-underline-offset: 0.18em;
-            }
-
-            a:hover {
-              color: var(--macbytes-yellow);
-              text-decoration-color: rgba(255, 216, 102, 0.66);
-            }
-
-            .pf-c-login,
-            .pf-v5-c-login {
-              background: transparent !important;
-            }
-
-            .pf-c-login__container,
-            .pf-v5-c-login__container {
-              min-height: 100vh;
-            }
-
-            .pf-c-login__main,
-            .pf-v5-c-login__main {
-              position: relative;
-              overflow: hidden;
-              border: 1px solid var(--macbytes-border);
-              border-radius: 14px;
-              background:
-                linear-gradient(180deg, rgba(252, 252, 250, 0.08), rgba(252, 252, 250, 0.02)),
-                var(--macbytes-panel) !important;
-              box-shadow:
-                0 24px 80px rgba(0, 0, 0, 0.42),
-                0 0 0 1px rgba(252, 252, 250, 0.04) inset;
-              backdrop-filter: blur(18px) saturate(1.08);
-            }
-
-            .pf-c-login__main::before,
-            .pf-v5-c-login__main::before {
-              content: "";
-              position: absolute;
-              inset: 0 0 auto 0;
-              height: 3px;
-              background: linear-gradient(
-                90deg,
-                var(--macbytes-pink),
-                var(--macbytes-orange),
-                var(--macbytes-yellow),
-                var(--macbytes-green),
-                var(--macbytes-cyan),
-                var(--macbytes-purple)
-              );
-            }
-
-            .pf-c-login__main-header,
-            .pf-v5-c-login__main-header,
-            .pf-c-login__main-body,
-            .pf-v5-c-login__main-body,
-            .pf-c-login__main-footer,
-            .pf-v5-c-login__main-footer {
-              background: transparent !important;
-            }
-
-            .pf-c-title,
-            .pf-v5-c-title,
-            h1,
-            h2 {
-              color: var(--macbytes-text);
-              letter-spacing: 0;
-              font-weight: 750;
-            }
-
-            .pf-c-login__main img,
-            .pf-v5-c-login__main img {
-              display: block;
-              width: min(100%, 22rem) !important;
-              max-height: 18rem !important;
-              object-fit: contain;
+            /* Card */
+            .pf-c-login__main:not(#gz) {
+              width: 100%;
+              max-width: 24rem;
               margin-inline: auto;
-              margin-block-end: 2rem;
+              border: 1px solid var(--gz-border);
+              border-radius: var(--gz-radius-lg);
+              background: var(--gz-card);
+              color: var(--gz-foreground);
+              box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+              overflow: hidden;
             }
 
-            .pf-c-login__main h1,
-            .pf-v5-c-login__main h1 {
-              font-size: 0 !important;
-              line-height: 0 !important;
+            /* Brand: a small wordmark replaces the logo image */
+            .pf-c-login__main-header.pf-c-brand:not(#gz) {
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              gap: 0.5rem;
+              padding-block: 1.75rem 0.25rem;
             }
 
-            .pf-c-login__main h1::before,
-            .pf-v5-c-login__main h1::before {
-              content: "Welcome back to Macbytes";
-              display: block;
-              color: var(--macbytes-text);
-              font-size: clamp(2.25rem, 4vw, 3.35rem);
-              line-height: 1.08;
+            .pf-c-login__main-header.pf-c-brand:not(#gz) .branding-logo {
+              display: none;
             }
 
-            .pf-c-login__main-header-desc,
-            .pf-v5-c-login__main-header-desc,
-            .pf-c-form__helper-text,
-            .pf-v5-c-form__helper-text {
-              color: var(--macbytes-muted);
+            .pf-c-login__main-header.pf-c-brand:not(#gz)::before {
+              content: ">_";
+              display: grid;
+              place-items: center;
+              width: 1.75rem;
+              height: 1.75rem;
+              border: 1px solid var(--gz-border);
+              border-radius: 0.4rem;
+              background: var(--gz-secondary);
+              color: var(--gz-accent);
+              font-family: var(--gz-font-mono);
+              font-size: 0.75rem;
+              font-weight: 700;
+              letter-spacing: -0.05em;
             }
 
-            .pf-c-login__main-header-desc,
-            .pf-v5-c-login__main-header-desc {
-              font-size: 0 !important;
-              line-height: 0 !important;
-              margin-block-start: 1rem;
+            .pf-c-login__main-header.pf-c-brand:not(#gz)::after {
+              content: "GeekZoo";
+              color: var(--gz-foreground);
+              font-family: var(--gz-font);
+              font-size: 0.95rem;
+              font-weight: 600;
+              letter-spacing: -0.01em;
             }
 
-            .pf-c-login__main-header-desc::before,
-            .pf-v5-c-login__main-header-desc::before {
-              content: "Use your passkey for the quickest sign-in, or continue with your password.";
-              display: block;
-              max-width: 38rem;
-              color: var(--macbytes-muted);
-              font-size: clamp(1.05rem, 1.45vw, 1.35rem);
-              line-height: 1.45;
+            /* Title */
+            .pf-c-login__main-header:not(#gz) .pf-c-title {
+              font-family: var(--gz-font);
+              font-size: 1.25rem;
+              line-height: 1.75rem;
+              font-weight: 600;
+              letter-spacing: -0.02em;
+              text-align: center;
             }
 
-            .pf-c-form-control,
-            .pf-v5-c-form-control,
-            input,
-            select,
-            textarea {
-              color: var(--macbytes-text) !important;
-              border-color: rgba(252, 252, 250, 0.16) !important;
-              border-radius: 8px !important;
-              background-color: rgba(33, 31, 34, 0.78) !important;
-              box-shadow: 0 1px 0 rgba(255, 216, 102, 0.08) inset;
+            /* Form text */
+            ak-flow-card:not(#gz) .pf-c-form__label,
+            ak-flow-card:not(#gz) .pf-c-form__label-text {
+              font-size: 0.875rem;
+              font-weight: 500;
             }
 
-            .pf-c-form-control:focus,
-            .pf-v5-c-form-control:focus,
-            input:focus,
-            select:focus,
-            textarea:focus {
-              border-color: var(--macbytes-yellow) !important;
-              box-shadow:
-                0 0 0 1px var(--macbytes-yellow),
-                0 0 0 4px rgba(255, 216, 102, 0.16) !important;
+            ak-flow-card:not(#gz) .pf-c-form {
+              --pf-c-form__label-required--Color: var(--gz-muted);
             }
 
-            .pf-c-button.pf-m-primary,
-            .pf-v5-c-button.pf-m-primary,
-            button[type="submit"] {
-              color: #211f22 !important;
-              border: 0 !important;
-              border-radius: 8px !important;
-              background:
-                linear-gradient(135deg, var(--macbytes-yellow), var(--macbytes-orange)) !important;
-              box-shadow:
-                0 12px 30px rgba(252, 152, 103, 0.22),
-                0 1px 0 rgba(252, 252, 250, 0.42) inset;
-              font-weight: 650;
+            ak-flow-card:not(#gz) .pf-c-form__helper-text {
+              font-size: 0.8125rem;
+              color: var(--gz-muted);
             }
 
-            .pf-c-button.pf-m-primary:hover,
-            .pf-v5-c-button.pf-m-primary:hover,
-            button[type="submit"]:hover {
-              filter: brightness(1.04) saturate(1.04);
-              transform: translateY(-1px);
+            ak-flow-card:not(#gz) .pf-c-form__helper-text.pf-m-error {
+              color: var(--gz-destructive);
             }
 
-            .pf-c-button.pf-m-secondary,
-            .pf-v5-c-button.pf-m-secondary {
-              color: var(--macbytes-text) !important;
-              border-color: rgba(120, 220, 232, 0.28) !important;
-              border-radius: 8px !important;
-              background: rgba(120, 220, 232, 0.08) !important;
+            /* Inputs */
+            ak-flow-card:not(#gz) .pf-c-form-control {
+              height: 2.25rem;
+              padding: 0.25rem 0.75rem;
+              border: 1px solid var(--gz-input);
+              border-radius: var(--gz-radius);
+              background: transparent;
+              color: var(--gz-foreground);
+              font-size: 0.875rem;
+              box-shadow: none;
+              outline: 2px solid transparent;
+              transition: border-color 0.15s, box-shadow 0.15s;
             }
 
-            .pf-c-alert,
-            .pf-v5-c-alert,
-            .pf-c-card,
-            .pf-v5-c-card {
-              border-color: rgba(252, 252, 250, 0.12) !important;
-              border-radius: 10px !important;
-              background: var(--macbytes-panel-strong) !important;
-              color: var(--macbytes-text);
+            ak-flow-card:not(#gz) .pf-c-form-control::placeholder {
+              color: #8b8b94;
+              font-style: normal;
+              opacity: 1;
             }
 
-            .pf-c-divider,
-            .pf-v5-c-divider {
-              border-color: rgba(252, 252, 250, 0.10) !important;
+            ak-flow-card:not(#gz) .pf-c-form-control:focus,
+            ak-flow-card:not(#gz) .pf-c-form-control:focus-visible {
+              border-color: var(--gz-ring);
+              box-shadow: 0 0 0 3px rgba(113, 113, 122, 0.35);
             }
 
-            ak-stage-identification,
-            ak-stage-authenticator-validate,
-            ak-stage-authenticator-webauthn,
-            ak-stage-password {
-              --pf-global--primary-color--100: var(--macbytes-yellow);
-              --pf-v5-global--primary-color--100: var(--macbytes-yellow);
+            /* Buttons */
+            ak-flow-card:not(#gz) .pf-c-button {
+              border-radius: var(--gz-radius);
+              font-size: 0.875rem;
+              font-weight: 500;
             }
 
-            @media (max-width: 768px) {
-              .pf-c-login__main,
-              .pf-v5-c-login__main {
-                border-radius: 0;
+            ak-flow-card:not(#gz) .pf-c-button::after {
+              border-radius: var(--gz-radius);
+            }
+
+            ak-flow-card:not(#gz) .pf-c-button.pf-m-primary {
+              min-height: 2.25rem;
+              background: var(--gz-primary);
+              color: var(--gz-primary-foreground);
+              box-shadow: none;
+              transition: background-color 0.15s;
+            }
+
+            ak-flow-card:not(#gz) .pf-c-button.pf-m-primary:hover {
+              background: var(--gz-primary-hover);
+            }
+
+            ak-flow-card:not(#gz) .pf-c-button:focus-visible {
+              outline: 2px solid var(--gz-ring);
+              outline-offset: 2px;
+            }
+
+            ak-flow-card:not(#gz) .pf-c-button.pf-m-primary:disabled {
+              opacity: 0.5;
+            }
+
+            ak-flow-card:not(#gz) .pf-c-button.pf-m-secondary,
+            ak-flow-card:not(#gz) .pf-c-button.pf-m-control {
+              background: transparent;
+              color: var(--gz-foreground);
+            }
+
+            ak-flow-card:not(#gz) .pf-c-button.pf-m-secondary::after,
+            ak-flow-card:not(#gz) .pf-c-button.pf-m-control::after {
+              border: 1px solid var(--gz-input);
+            }
+
+            ak-flow-card:not(#gz) .pf-c-button.pf-m-secondary:hover,
+            ak-flow-card:not(#gz) .pf-c-button.pf-m-control:hover {
+              background: var(--gz-secondary);
+            }
+
+            /* Links */
+            ak-flow-card:not(#gz) a,
+            .pf-c-login__main:not(#gz) a {
+              color: var(--gz-foreground);
+              text-decoration: underline;
+              text-decoration-color: var(--gz-input);
+              text-underline-offset: 0.25em;
+            }
+
+            ak-flow-card:not(#gz) a:hover,
+            .pf-c-login__main:not(#gz) a:hover {
+              text-decoration-color: var(--gz-foreground);
+            }
+
+            /* Remember-me checkbox */
+            ak-flow-card:not(#gz) input[type="checkbox"] {
+              accent-color: var(--gz-primary);
+            }
+
+            ak-flow-card:not(#gz) .remember-me-switch .pf-c-form__label {
+              color: var(--gz-muted);
+              font-weight: 400;
+            }
+
+            /* Alerts */
+            ak-flow-card:not(#gz) .pf-c-alert {
+              border: 1px solid var(--gz-border);
+              border-radius: var(--gz-radius);
+              background: transparent;
+              box-shadow: none;
+            }
+
+            /* Footer and locale picker */
+            .pf-c-login__footer:not(#gz) {
+              font-size: 0.75rem;
+              color: var(--gz-muted);
+            }
+
+            ak-locale-select:not(#gz) {
+              --ak-c-locale-select--Color: var(--gz-muted);
+              font-size: 0.8125rem;
+            }
+
+            @media (max-width: 35rem) {
+              .pf-c-login__main:not(#gz) {
+                max-width: none;
                 border-inline: 0;
-                box-shadow: 0 18px 50px rgba(0, 0, 0, 0.38);
+                border-radius: 0;
               }
             }
 
             @media (prefers-reduced-motion: reduce) {
-              *,
-              *::before,
-              *::after {
+              .pf-c-login:not(#gz) *,
+              ak-flow-card:not(#gz) * {
                 transition: none !important;
                 animation: none !important;
-                transform: none !important;
               }
             }
           attributes:
